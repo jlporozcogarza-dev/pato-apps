@@ -1543,6 +1543,8 @@ render();
   }
   S.mcp = mcp;
   loadAll();
+  // Al volver a la app (iPhone la deja en segundo plano) se piden los datos nuevos sin esperar a que la cierres.
+  document.addEventListener("visibilitychange", ()=>{ if (!document.hidden) loadAll(); });
 })();
 })();
 </script>
