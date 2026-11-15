@@ -701,6 +701,9 @@ async function read(range){
     throw e;
   }
 }
+const CK = "pato-cache:" + SHEET_ID;
+function cacheGet(){ try{ return JSON.parse(localStorage.getItem(CK) || "null"); }catch(e){ return null; } }
+function cacheSet(v){ try{ localStorage.setItem(CK, JSON.stringify(v)); }catch(e){} }
 let q = Promise.resolve();
 function enqueue(fn){ q = q.catch(()=>{}).then(fn); return q; }
 
@@ -727,25 +730,29 @@ let loading = null;
 function loadAll(){
   if (!S.mcp) return Promise.resolve();
   if (loading) return loading;
-  setBusy(1);
+  setBusy(1); S.reading = true;
   loading = (async()=>{
     try{
-      const d = await read("Dias!A:K");
-      const c = await read("Comidas!A:F");
-      applyDias(d); applyComidas(c);
-      S.start = Object.keys(S.days).concat(S.foods.map(f=>f.fecha)).filter(Boolean).sort()[0] || null;
-      S.mode = "live"; S.banner = null;
-      // WHOOP es opcional: si la pestaña aún no existe, el tracker sigue igual.
+      const setStart = () => { S.start = Object.keys(S.days).concat(S.foods.map(f=>f.fecha)).filter(Boolean).sort()[0] || null; };
+      // Al abrir se muestra al instante lo último guardado en este dispositivo mientras llegan los datos nuevos.
+      const k = S.mode!=="live" && cacheGet();
+      if (k){ applyDias(k.d); applyComidas(k.c); setStart(); if (k.w){ applyWhoop(k.w); S.whoopTab = true; } S.mode = "live"; render(); }
+      // WHOOP es opcional: si la pestaña aún no existe (tool_error → null), el tracker sigue igual.
       // Se lee la pestaña completa para tomar la columna de pasos en cuanto exista.
-      try{ applyWhoop(await read("Whoop")); S.whoopTab = true; }
-      catch(e){ if (e && e.code==="tool_error"){ S.whoop = {}; S.whoopTab = false; } }
+      const [d, c, w] = await Promise.all([ read("Dias!A:K"), read("Comidas!A:F"),
+        read("Whoop").catch(e => (e && e.code==="tool_error") ? null : undefined) ]);
+      applyDias(d); applyComidas(c); setStart();
+      S.mode = "live"; S.banner = null;
+      if (w){ applyWhoop(w); S.whoopTab = true; }
+      else if (w===null){ S.whoop = {}; S.whoopTab = false; }
+      cacheSet({ d, c, w: w || null });
     }catch(e){
       const info = errInfo(e);
       if (info.retract){ S.days={}; S.foods=[]; }
       if (S.mode!=="live" || info.retract) S.mode = "error";
       S.banner = { t:info.t, msg:info.msg, btn:info.btn };
     }finally{
-      loading = null; setBusy(-1); render();
+      loading = null; S.reading = false; setBusy(-1); render();
     }
   })();
   return loading;
@@ -888,7 +895,7 @@ function setBusy(d){ S.busy = Math.max(0, S.busy+d); renderSync(); }
 function renderSync(){
   const dot=$("syncDot"), txt=$("syncText"), btn=$("refreshBtn");
   dot.className = "dot";
-  if (S.busy){ dot.classList.add("busy"); txt.textContent = S.mode==="connecting" ? "Conectando…" : "Guardando…"; }
+  if (S.busy){ dot.classList.add("busy"); txt.textContent = S.mode==="connecting" ? "Conectando…" : S.reading ? "Actualizando…" : "Guardando…"; }
   else if (S.mode==="live"){ dot.classList.add("live"); txt.textContent = "Sheet al día"; }
   else if (S.mode==="example"){ txt.textContent = "Ejemplo"; }
   else if (S.mode==="error"){ dot.classList.add("err"); txt.textContent = "Sin conexión"; }

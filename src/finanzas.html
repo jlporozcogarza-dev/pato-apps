@@ -774,6 +774,9 @@ async function read(range){
     throw e;
   }
 }
+const CK = "pato-cache:" + SHEET_ID;
+function cacheGet(){ try{ return JSON.parse(localStorage.getItem(CK) || "null"); }catch(e){ return null; } }
+function cacheSet(v){ try{ localStorage.setItem(CK, JSON.stringify(v)); }catch(e){} }
 let q = Promise.resolve();
 function enqueue(fn){ q = q.catch(()=>{}).then(fn); return q; }
 
@@ -800,25 +803,28 @@ let loading = null;
 function loadAll(){
   if (!S.mcp) return Promise.resolve();
   if (loading) return loading;
-  setBusy(1);
+  setBusy(1); S.reading = true;
   loading = (async()=>{
     try{
-      const mv = await read("Movimientos!A:I");
-      const cu = await read("Cuentas!A1:I20");
-      const cf = await read("Config!A1:G60");
-      let pg = [];
-      try{ pg = await read("Programados!A1:L200"); }catch(e){ if (!e || e.code!=="tool_error") throw e; }
-      let rl = [];
-      try{ rl = await read("Reglas!A1:C200"); S.rulesSheet = true; }catch(e){ if (!e || e.code!=="tool_error") throw e; S.rulesSheet = false; }
+      // Al abrir se muestra al instante lo último guardado en este dispositivo mientras llegan los datos nuevos.
+      const k = S.mode!=="live" && cacheGet();
+      if (k){ applyConfig(k.cf); applyCuentas(k.cu); applyMovs(k.mv); applyProgs(k.pg); applyRules(k.rl); S.rulesSheet = k.rs; S.mode = "live"; render(); }
+      // Programados y Reglas son opcionales: si la pestaña no existe (tool_error) se usa null.
+      const opt = p => p.catch(e => { if (!e || e.code!=="tool_error") throw e; return null; });
+      const [mv, cu, cf, pg0, rl0] = await Promise.all([ read("Movimientos!A:I"), read("Cuentas!A1:I20"), read("Config!A1:G60"),
+        opt(read("Programados!A1:L200")), opt(read("Reglas!A1:C200")) ]);
+      const pg = pg0 || [], rl = rl0 || [];
+      S.rulesSheet = rl0 !== null;
       applyConfig(cf); applyCuentas(cu); applyMovs(mv); applyProgs(pg); applyRules(rl);
       S.mode = "live"; S.banner = null;
+      cacheSet({ mv, cu, cf, pg, rl, rs: S.rulesSheet });
     }catch(e){
       const info = errInfo(e);
       if (info.retract){ S.movs=[]; S.cuentas=[]; }
       if (S.mode!=="live" || info.retract) S.mode = "error";
       S.banner = { t:info.t, msg:info.msg, btn:info.btn };
     }finally{
-      loading = null; setBusy(-1); render(); refreshSheet();
+      loading = null; S.reading = false; setBusy(-1); render(); refreshSheet();
       if (S.mode==="live") chargeDue();
     }
   })();
@@ -983,7 +989,7 @@ function setBusy(d){ S.busy = Math.max(0, S.busy+d); renderSync(); }
 function renderSync(){
   const dot=$("syncDot"), t=$("syncText"), b=$("refreshBtn");
   dot.className="dot";
-  if (S.busy){ dot.classList.add("busy"); t.textContent = S.mode==="connecting" ? "Conectando…" : "Guardando…"; }
+  if (S.busy){ dot.classList.add("busy"); t.textContent = S.mode==="connecting" ? "Conectando…" : S.reading ? "Actualizando…" : "Guardando…"; }
   else if (S.mode==="live"){ dot.classList.add("live"); t.textContent="Hoja al día"; }
   else if (S.mode==="example"){ t.textContent="Ejemplo"; }
   else if (S.mode==="error"){ dot.classList.add("err"); t.textContent="Sin conexión"; }
