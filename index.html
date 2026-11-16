@@ -32,7 +32,7 @@ html,body{margin:0;height:100%;overflow:hidden;background:var(--c60);color:var(-
 .vista{position:fixed;inset:0;z-index:1;border:0;width:100%;height:100%;background:transparent;display:none}
 .vista.on{display:block}
 /* las apps ya respetan la muesca del iPhone por su cuenta: el iframe va a pantalla completa */
-#v-inicio,#v-condotec,#v-pendientes,#v-camara{overflow-y:auto;-webkit-overflow-scrolling:touch;padding:max(14px,env(safe-area-inset-top)) 16px calc(78px + max(4px,calc(env(safe-area-inset-bottom) - var(--franja,0px) - 12px)))}
+#v-inicio,#v-condotec,#v-pendientes,#v-camara,#v-fede{overflow-y:auto;-webkit-overflow-scrolling:touch;padding:max(14px,env(safe-area-inset-top)) 16px calc(78px + max(4px,calc(env(safe-area-inset-bottom) - var(--franja,0px) - 12px)))}
 /* el Inicio cabe en una pantalla: la gráfica toma lo que sobre (si un teléfono es muy chico, se puede deslizar) */
 #v-inicio main{display:flex;flex-direction:column;min-height:100%;gap:10px}
 #v-inicio main>*{flex:none}
@@ -55,11 +55,95 @@ header p,.titulo-pagina h1,.hoja>h2{padding-bottom:.1em;background:linear-gradie
   -webkit-background-clip:text;background-clip:text;-webkit-text-fill-color:transparent}
 header p em{background:linear-gradient(180deg,var(--c10) 38%,color-mix(in srgb,var(--c10) 58%,var(--c60)));-webkit-background-clip:text;background-clip:text}
 header small{display:block;color:var(--muted);font-size:13px;margin-bottom:6px}
-.quien{display:flex;align-items:center;gap:12px;background:none;border:0;padding:0;margin:0;text-align:left;cursor:pointer;color:inherit;transition:transform .2s}
-.quien:active{transform:scale(.97)}
-.logo{position:relative}
+.quien{display:flex;align-items:center;gap:12px}
+/* el logo es el anillo de Fede (como en la compu): siempre vibra suave; tocarlo = Fede escucha */
+.logo{position:relative;width:72px;height:72px;margin:-5px;border-radius:50%;background:none;border:0;padding:0;cursor:pointer;transition:transform .2s}
+.logo:active{transform:scale(.92)}
+.logo canvas{width:100%;height:100%;display:block}
 .aviso{position:absolute;top:-5px;right:-5px;min-width:19px;height:19px;padding:0 5px;border-radius:10px;background:var(--c10);color:var(--c60);
   font:600 11px/19px var(--sans);font-style:normal;text-align:center;box-shadow:0 0 0 2px var(--c60)}
+
+/* ---------- Fede: la misma conversación que en la compu; la orden viaja por el server y Fede la hace allá ---------- */
+#v-fede{overflow:hidden}
+#v-fede main{height:100%;display:flex;flex-direction:column}
+#v-fede .titulo-pagina{display:flex;align-items:flex-end;justify-content:space-between;gap:10px;margin-bottom:10px}
+.fede-estado{display:inline-flex;align-items:center;gap:7px;font:600 12px/1 var(--sans);color:var(--muted);padding:7px 11px;border-radius:99px;background:rgba(255,255,255,.06);border:1px solid rgba(255,255,255,.08);white-space:nowrap}
+.fede-estado i{width:8px;height:8px;border-radius:50%;background:var(--st-neutro)}
+.fede-estado.vivo{color:var(--fg)}.fede-estado.vivo i{background:var(--st-ok);box-shadow:0 0 8px var(--st-ok)}
+.charla{flex:1;min-height:0;overflow-y:auto;-webkit-overflow-scrolling:touch;display:flex;flex-direction:column;gap:10px;padding:4px 2px 12px}
+.charla .vacia{margin:auto;text-align:center;color:var(--muted);font-size:14px;max-width:280px}
+.charla .vacia b{display:block;font:700 22px/1.2 var(--display);color:var(--fg);margin-bottom:6px}
+.globo{max-width:86%;padding:10px 14px;border-radius:20px;font-size:15px;line-height:1.4;overflow-wrap:anywhere}
+.globo.yo{align-self:flex-end;background:color-mix(in srgb,var(--c10) 24%,transparent);border:1px solid color-mix(in srgb,var(--c10) 40%,transparent);border-bottom-right-radius:6px}
+.globo.fede{align-self:flex-start;border-bottom-left-radius:6px}
+.globo small{display:block;margin-top:4px;font-size:11px;color:var(--muted)}
+.globo.fede ul{margin:6px 0 0;padding-left:18px}
+.globo.espera{color:var(--muted);display:flex;align-items:center;gap:8px}
+.globo.espera i{width:8px;height:8px;border-radius:50%;background:var(--c10);animation:latido 1s ease-in-out infinite}
+@keyframes latido{50%{opacity:.25;transform:scale(.7)}}
+.atajos-fede{display:flex;gap:8px;overflow-x:auto;padding:2px 2px 10px;scrollbar-width:none}
+.atajos-fede::-webkit-scrollbar{display:none}
+.atajos-fede button{flex:none;padding:8px 13px;border-radius:99px;border:1px solid rgba(255,255,255,.10);background:rgba(255,255,255,.06);font:600 13px/1 var(--display);cursor:pointer}
+.redactar{display:flex;gap:8px;align-items:flex-end;padding:6px;border-radius:26px}
+.redactar textarea{flex:1;min-height:42px;max-height:120px;resize:none;border:0;outline:0;background:none;color:var(--fg);font:16px/1.35 var(--sans);padding:10px 10px 8px}
+.redactar textarea::placeholder{color:var(--muted)}
+.redactar button{flex:none;width:42px;height:42px;border-radius:50%;border:0;background:var(--c10);color:var(--c60);display:grid;place-items:center;cursor:pointer;
+  box-shadow:0 0 18px color-mix(in srgb,var(--c10) 50%,transparent);transition:transform .15s,opacity .2s}
+.redactar button:active{transform:scale(.9)}.redactar button:disabled{opacity:.4}
+.redactar button svg{width:20px;height:20px}
+
+/* ---------- Cámara nativa (antes era el artefacto): foto → Fede (Claude) la analiza → la revisas → se guarda ---------- */
+#v-camara [hidden]{display:none!important}
+.cam-dos{display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-bottom:12px}
+.cam-op{display:flex;flex-direction:column;align-items:center;gap:6px;padding:20px 10px;border-radius:26px;text-align:center;cursor:pointer;color:inherit;font:inherit;border:1px solid rgba(255,255,255,.10)}
+.cam-op .ic{width:44px;height:44px;border-radius:15px;display:grid;place-items:center;background:color-mix(in srgb,var(--c10) 20%,transparent);color:var(--c10)}
+.cam-op .ic svg{width:22px;height:22px}.cam-op b{font:700 20px/1.1 var(--display)}.cam-op small{color:var(--muted);font-size:12.5px}
+.cam-fila{display:flex;align-items:center;gap:8px;margin:0 2px 10px;font-size:13px;color:var(--muted)}.cam-fila span{min-width:92px}
+.cam-chico{padding:9px 14px;border-radius:14px;border:1px solid rgba(255,255,255,.12);background:linear-gradient(150deg,rgba(255,255,255,.12),rgba(255,255,255,.03));font:600 14px/1 var(--sans);cursor:pointer}
+.cam-chico.t-in{color:var(--st-ok)}.cam-chico.t-out{color:var(--st-crit)}
+.cam-tarjeta{border-radius:28px;padding:16px;margin:12px 0;display:flex;flex-direction:column;gap:12px}
+.cam-cab{display:flex;justify-content:space-between;align-items:center}.cam-cab h2{margin:0;font:700 19px/1.15 var(--display)}
+.cam-x{width:32px;height:32px;border-radius:12px;border:1px solid rgba(255,255,255,.12);background:rgba(255,255,255,.06);color:var(--muted);font-size:18px;cursor:pointer}
+.cam-shot{display:block;width:100%;max-height:300px;object-fit:contain;border-radius:18px;background:rgba(0,0,0,.3)}
+.cam-status{font-size:14px;color:var(--muted);min-height:1.2em}.cam-status.err{color:var(--st-crit)}.cam-status.ok{color:var(--st-ok)}
+.cam-status.esperando::before{content:"";display:inline-block;width:8px;height:8px;margin-right:8px;border-radius:50%;background:var(--c10);animation:latido 1s ease-in-out infinite}
+.cam-grid{display:grid;grid-template-columns:1fr 1fr;gap:10px}.cam-grid .full{grid-column:1/-1}
+.cam-l{display:flex;flex-direction:column;gap:5px;font-size:12.5px;color:var(--muted);min-width:0}
+.cam-l small{color:var(--muted)}
+#v-camara :is(input,select,textarea){font:16px/1.3 var(--sans);color:var(--fg);background:rgba(0,0,0,.28);border:1px solid rgba(255,255,255,.12);border-radius:12px;padding:10px;width:100%;min-width:0;color-scheme:dark}
+#v-camara textarea{resize:vertical}
+.cam-seg{display:grid;grid-auto-flow:column;grid-auto-columns:1fr;padding:3px;border-radius:14px;border:1px solid rgba(255,255,255,.12);background:rgba(255,255,255,.05)}
+.cam-seg button{border:0;background:none;padding:10px 4px;border-radius:11px;font-size:14px;color:var(--muted);cursor:pointer}
+.cam-seg button[aria-pressed="true"]{background:color-mix(in srgb,var(--c10) 22%,transparent);color:var(--fg);font-weight:600}
+.cam-chips{display:flex;flex-wrap:wrap;gap:6px;margin-top:8px}
+.cam-chips button{border:1px solid rgba(255,255,255,.12);background:rgba(255,255,255,.06);border-radius:99px;padding:7px 12px;font-size:14px;cursor:pointer}
+.cam-chips button[aria-pressed="true"]{border-color:var(--c10);color:var(--c10)}
+.cam-btns{display:flex;gap:10px}
+.cam-go{flex:1;padding:14px;border-radius:16px;border:0;font:700 16px/1 var(--display);color:var(--c60);cursor:pointer;
+  background:linear-gradient(180deg,color-mix(in srgb,var(--c10) 68%,#fff),var(--c10) 58%,color-mix(in srgb,var(--c10) 82%,#000));box-shadow:0 0 22px color-mix(in srgb,var(--c10) 45%,transparent)}
+.cam-go:disabled{opacity:.45;cursor:default}
+.cam-items{display:flex;flex-direction:column;gap:8px}
+.cam-item{display:grid;grid-template-columns:1fr 1fr 32px;gap:8px;align-items:end;padding:10px;border-radius:16px;background:rgba(255,255,255,.05);border:1px solid rgba(255,255,255,.07)}
+.cam-item .iname{grid-column:1/3}
+.cam-total{display:flex;justify-content:space-between;padding-top:10px;border-top:1px solid rgba(255,255,255,.1);font-weight:600;font-variant-numeric:tabular-nums}
+.cam-dia{display:flex;flex-direction:column;gap:3px;padding:12px;border-radius:16px;background:rgba(255,255,255,.05);font-size:14px}.cam-dia span{color:var(--muted)}
+
+/* Tocar el logo: Fede escucha (voz del teléfono → texto → la orden va a Fede por el server) */
+.escucha{position:fixed;inset:0;z-index:20;display:none;flex-direction:column;align-items:center;justify-content:center;gap:22px;padding:24px;
+  background:color-mix(in srgb,var(--c60) 78%,transparent);-webkit-backdrop-filter:blur(26px) saturate(150%);backdrop-filter:blur(26px) saturate(150%)}
+.escucha.on{display:flex;animation:entrar .35s cubic-bezier(.16,1,.3,1) both}
+.escucha .orbe{width:150px;height:150px;border-radius:50%;position:relative;
+  background:radial-gradient(circle at 50% 40%,color-mix(in srgb,var(--c10) 55%,#fff) 0,var(--c10) 38%,color-mix(in srgb,var(--c10) 30%,transparent) 70%);
+  box-shadow:0 0 60px color-mix(in srgb,var(--c10) 60%,transparent);animation:respira 1.6s ease-in-out infinite}
+.escucha .orbe::after{content:"";position:absolute;inset:-18px;border-radius:50%;border:2px solid color-mix(in srgb,var(--c10) 50%,transparent);animation:onda 1.6s ease-out infinite}
+.escucha.pensando .orbe{animation-duration:.8s;filter:saturate(.7)}
+@keyframes respira{50%{transform:scale(1.08)}}
+@keyframes onda{from{opacity:1;transform:scale(.9)}to{opacity:0;transform:scale(1.35)}}
+.escucha b{font:700 26px/1.15 var(--display);text-align:center}
+.escucha p{margin:0;color:var(--muted);font-size:16px;text-align:center;max-width:320px;min-height:2.6em}
+.escucha .botones{display:flex;gap:10px}
+.escucha button{min-width:120px;padding:13px 18px;border-radius:18px;border:1px solid rgba(255,255,255,.14);background:rgba(255,255,255,.08);font:700 16px/1 var(--display);cursor:pointer}
+.escucha button.listo{background:var(--c10);color:var(--c60);border-color:transparent}
 /* hoja de Pendientes y Depas (como en Fede) */
 .accesos{display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-bottom:6px}
 .acceso{display:flex;align-items:center;gap:10px;padding:12px;border-radius:22px;border:1px solid rgba(255,255,255,.10);background:rgba(255,255,255,.05);color:inherit;text-decoration:none;min-height:56px}
@@ -223,23 +307,9 @@ button.card:active{transform:scale(.98)}
 /* página Condotec */
 .titulo-pagina{margin:4px 0 16px}.titulo-pagina small{color:var(--muted);font-size:13px}
 .titulo-pagina h1{margin:4px 0 0;font:700 38px/1 var(--display);letter-spacing:-.02em}
-/* pestaña Cámara: abre Captura de fotos en Claude (ahí Claude ve la foto) con el mismo estilo de JLP */
-.cam-abrir{display:grid;justify-items:center;gap:6px;padding:26px 18px 22px;border-radius:30px;text-align:center;color:inherit;text-decoration:none}
-.cam-ic{width:74px;height:74px;border-radius:24px;display:grid;place-items:center;margin-bottom:8px;color:var(--c60);
-  background:linear-gradient(180deg,color-mix(in srgb,var(--c10) 68%,#fff),var(--c10) 58%,color-mix(in srgb,var(--c10) 82%,#000));
-  box-shadow:inset 0 1px 0 rgba(255,255,255,.7),0 0 30px color-mix(in srgb,var(--c10) 55%,transparent)}
-.cam-ic svg{width:36px;height:36px}
-.cam-abrir b{font:700 26px/1.1 var(--display);letter-spacing:-.01em}
-.cam-abrir small{color:var(--muted);font-size:13.5px;line-height:1.35;max-width:260px}
-.cam-dos{display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-top:10px}
-.cam-op{display:grid;align-content:start;gap:4px;padding:14px;border-radius:24px;color:inherit;text-decoration:none}
-.cam-op .ic{width:34px;height:34px;border-radius:11px;display:grid;place-items:center;margin-bottom:6px;color:var(--c10);background:color-mix(in srgb,var(--c10) 18%,transparent)}
-.cam-op .ic svg{width:19px;height:19px}
-.cam-op b{font:700 17px/1.15 var(--display)}
-.cam-op small{color:var(--muted);font-size:12.5px;line-height:1.3}
-#v-camara.entra :is(.titulo-pagina,.cam-abrir,.cam-dos,.seccion,.renglones){animation:sube .55s cubic-bezier(.2,.8,.2,1) both}
-#v-camara.entra .cam-abrir{animation-delay:.06s}#v-camara.entra .cam-dos{animation-delay:.12s}#v-camara.entra :is(.seccion,.renglones){animation-delay:.18s}
-#v-camara.entra .cam-ic{animation:logoIn .7s cubic-bezier(.2,.9,.3,1.2) .15s both}
+#v-camara.entra :is(.titulo-pagina,.cam-dos,.cam-fila,.cam-tarjeta){animation:sube .55s cubic-bezier(.2,.8,.2,1) both}
+#v-camara.entra .cam-dos{animation-delay:.06s}#v-camara.entra .cam-fila{animation-delay:.12s}#v-camara.entra .cam-tarjeta{animation-delay:.18s}
+
 @media (prefers-reduced-motion:reduce){#v-camara.entra *{animation:none!important}}
 /* Condotec · Entradas y salidas: calendario de cuadritos con el número de cada depa (rojo = sale, verde = entra) y el plan de cada salida */
 .es-cifras{grid-template-columns:repeat(4,1fr);margin-bottom:12px}
@@ -296,6 +366,9 @@ nav{position:fixed;z-index:5;left:12px;right:12px;bottom:max(4px,calc(env(safe-a
   box-shadow:inset 0 1px 0 rgba(255,255,255,.26),inset 0 -1px 0 rgba(0,0,0,.4),0 20px 44px -12px rgba(0,0,0,.95)!important;
   transition:opacity .25s,transform .4s cubic-bezier(.2,.8,.2,1)}
 nav.oculta{opacity:0;pointer-events:none;transform:translateY(150%)}
+/* 7 pestañas: en teléfono angosto la letra se achica para que quepan todas */
+nav button{min-width:0}
+@media (max-width:440px){nav{padding:5px}nav button span{font-size:9px;letter-spacing:-.01em;white-space:nowrap}}
 nav button{position:relative;z-index:1;flex:1;height:54px;border:0;border-radius:24px;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:3px;
   background:none;color:rgba(244,241,234,.62);cursor:pointer;transition:color .35s;font:500 10.5px/1 var(--sans);letter-spacing:.01em}
 nav button svg{transition:transform .2s}
@@ -417,10 +490,10 @@ header .ajustes svg{width:20px;height:20px}
 
 <div class="vista on" id="v-inicio" role="tabpanel" aria-label="Inicio"><main>
 <header>
-  <button class="quien" data-ir="condotec" aria-label="Ir a Condotec: pendientes y depas">
-    <span class="logo glass" aria-hidden="true">JLP<i class="aviso" id="avisoPend" hidden></i></span>
+  <div class="quien">
+    <button class="logo" id="logoFede" title="Hablarle a Fede" aria-label="Hablarle a Fede"><canvas id="anilloFede" aria-hidden="true"></canvas><i class="aviso" id="avisoPend" hidden></i></button>
     <div><small id="fecha">Hoy</small><p>Hola, <em>Pato</em></p></div>
-  </button>
+  </div>
   <button class="ajustes glass" id="abrirColores" aria-label="Cambiar colores"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><circle cx="12" cy="12" r="9"/><circle cx="8.5" cy="9.5" r="1.4" fill="currentColor"/><circle cx="12.5" cy="7.5" r="1.4" fill="currentColor"/><circle cx="16" cy="10.5" r="1.4" fill="currentColor"/><path d="M12 21a2.5 2.5 0 0 1 0-5h2a3 3 0 0 0 3-3"/></svg></button>
 </header>
 <button class="conectar glass" id="conectar" hidden>Conectar mis datos · pega tu link de WhatsApp</button>
@@ -439,8 +512,8 @@ header .ajustes svg{width:20px;height:20px}
   <button class="stat glass card" data-ir="finanzas" data-ancla="hero"><small><svg class="ico" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="3" y="6" width="18" height="13" rx="3"/><path d="M3 10.5h18"/></svg>Gastado hoy</small><span class="valor"><b class="num" id="gasto">–</b><em></em></span><span class="medidor" hidden><i></i></span></button>
   <button class="stat glass card" data-ir="finanzas" data-ancla="hero"><small><svg class="ico" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="3" y="5" width="18" height="16" rx="3"/><path d="M3 10h18M8 3v4M16 3v4"/></svg>Gastado esta semana</small><span class="valor"><b class="num" id="semana">–</b><em></em></span><span class="medidor" hidden><i></i></span></button>
 </div>
-<button class="grafica glass card" data-ir="tracker" data-ancla="hero" aria-label="Recuperación de los últimos 7 días">
-  <div class="row"><span class="t">Recuperación por día</span><span class="cap">Últimos 7 días</span></div>
+<button class="grafica glass card" data-ir="tracker" data-ancla="hero" aria-label="Pasos de los últimos 7 días">
+  <div class="row"><span class="t">Pasos por día</span><span class="cap">Últimos 7 días</span></div>
   <div class="barras" id="bars"></div>
   <div class="dias" id="dias"></div>
 </button>
@@ -497,23 +570,84 @@ header .ajustes svg{width:20px;height:20px}
 
 <div class="vista" id="v-camara" role="tabpanel" aria-label="Cámara"><main>
 <header class="titulo-pagina"><div><small>Comida y tickets</small><h1>Cámara</h1></div></header>
-<a class="cam-abrir glass card" href="https://claude.ai/artifact/Ryy7u2wnbBq11h1n1Hrn5i" target="_blank" rel="noopener">
-  <span class="cam-ic" aria-hidden="true"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M4 8h3l2-3h6l2 3h3v11H4z"/><circle cx="12" cy="13" r="3.5"/></svg></span>
-  <b>Abrir cámara</b>
-  <small>Toma una foto o súbela de tu galería. Claude la analiza, la revisas y se guarda.</small>
-</a>
 <div class="cam-dos">
-  <a class="cam-op glass card" href="https://claude.ai/artifact/Ryy7u2wnbBq11h1n1Hrn5i" target="_blank" rel="noopener"><span class="ic" aria-hidden="true"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M12 3c1 3 4.5 5 4.5 9.5a4.5 4.5 0 0 1-9 0c0-2 1-3.2 2-4.2.2 2 1 3 2 3 .2-3-1-5 .5-8.3z"/></svg></span><b>Comida</b><small>Calorías y proteína. Se guarda en Comidas del Tracker.</small></a>
-  <a class="cam-op glass card" href="https://claude.ai/artifact/Ryy7u2wnbBq11h1n1Hrn5i" target="_blank" rel="noopener"><span class="ic" aria-hidden="true"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M6 3h12v18l-3-2-3 2-3-2-3 2z"/><path d="M9 8h6M9 12h6"/></svg></span><b>Ticket</b><small>Concepto, monto y forma de pago. Se guarda en Movimientos de Finanzas.</small></a>
+  <button class="cam-op glass card" data-cam="comida"><span class="ic" aria-hidden="true"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M12 3c1 3 4.5 5 4.5 9.5a4.5 4.5 0 0 1-9 0c0-2 1-3.2 2-4.2.2 2 1 3 2 3 .2-3-1-5 .5-8.3z"/></svg></span><b>Comida</b><small>Calorías y proteína</small></button>
+  <button class="cam-op glass card" data-cam="ticket"><span class="ic" aria-hidden="true"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M6 3h12v18l-3-2-3 2-3-2-3 2z"/><path d="M9 8h6M9 12h6"/></svg></span><b>Ticket</b><small>Concepto y monto</small></button>
 </div>
-<div class="seccion"><h2>También puedes</h2></div>
-<div class="renglones">
-  <div class="renglon"><b>Escribir lo que comiste</b><p>Sin foto: Claude separa cada alimento y calcula kcal y proteína.</p></div>
-  <div class="renglon"><b>Anotar un ingreso o egreso a mano</b><p>Con concepto y forma de pago, sin ticket.</p></div>
-</div>
-<p class="nota">Se abre en Claude porque ahí es donde Claude puede ver la foto.</p>
+<div class="cam-fila"><span>Desde galería</span><button class="cam-chico" data-gal="comida">Comida</button><button class="cam-chico" data-gal="ticket">Ticket</button></div>
+<div class="cam-fila"><span>Sin foto</span><button class="cam-chico t-in" data-manual="ingreso">+ Ingreso</button><button class="cam-chico t-out" data-manual="egreso">− Egreso</button></div>
+<input id="camIn" type="file" accept="image/*" capture="environment" hidden><input id="galIn" type="file" accept="image/*" hidden>
+
+<section id="cFoto" class="cam-tarjeta glass" hidden>
+  <div class="cam-cab"><h2 id="cFotoT">Foto</h2><button class="cam-x" id="cFotoX" aria-label="Cerrar">×</button></div>
+  <img id="cShot" class="cam-shot" alt="Foto tomada">
+  <div id="cCtxBox" hidden><label class="cam-l">Contexto de la comida (opcional)<textarea id="cCtx" rows="2" placeholder="Ej. plato chico, frito, 2 tortillas de harina"></textarea></label>
+    <button class="cam-chico" id="cCalc">Calcular</button></div>
+  <div id="cStatus" class="cam-status"></div>
+  <div id="cFood" class="cam-grid" hidden>
+    <label class="cam-l full">Comida<input id="fComida"></label>
+    <label class="cam-l">Kcal<input id="fKcal" type="number" inputmode="decimal" step="any"></label>
+    <label class="cam-l">Proteína (g)<input id="fProt" type="number" inputmode="decimal" step="any"></label>
+    <label class="cam-l">Fecha<input id="fFecha" type="date"></label><label class="cam-l">Hora<input id="fHora" type="time"></label>
+  </div>
+  <div id="cMoney" class="cam-grid" hidden>
+    <div class="cam-l full">Tipo<div class="cam-seg" id="pTipo"><button type="button" data-t="auto">Auto</button><button type="button" data-t="egreso">Egreso</button><button type="button" data-t="ingreso">Ingreso</button></div><small id="pTipoHint"></small></div>
+    <div class="cam-l full"><span id="pPayLbl">Forma de pago</span><div id="pPay"></div></div>
+    <label class="cam-l full">Concepto<input id="pConcepto"></label>
+    <label class="cam-l">Monto<input id="pMonto" type="number" inputmode="decimal" step="any"></label>
+    <label class="cam-l">Categoría<select id="pCat"></select></label>
+    <label class="cam-l">Fecha<input id="pFecha" type="date"></label><label class="cam-l">Hora<input id="pHora" type="time"></label>
+    <label class="cam-l full">Nota (opcional)<input id="pNota"></label>
+  </div>
+  <div class="cam-btns"><button class="cam-chico" id="cOtra">Otra foto</button><button class="cam-go" id="cSave" disabled>Guardar</button></div>
+</section>
+
+<section id="cManual" class="cam-tarjeta glass" hidden>
+  <div class="cam-cab"><h2>Movimiento manual</h2><button class="cam-x" id="cManualX" aria-label="Cerrar">×</button></div>
+  <div class="cam-seg" id="mTipo"><button type="button" data-t="egreso">Egreso</button><button type="button" data-t="ingreso">Ingreso</button></div>
+  <label class="cam-l">Concepto<input id="mConcepto" placeholder="Ej. Renta depa 3 de octubre"></label>
+  <div class="cam-grid"><label class="cam-l">Monto<input id="mMonto" type="number" inputmode="decimal" step="any" placeholder="0.00"></label><label class="cam-l">Fecha<input id="mFecha" type="date"></label></div>
+  <div class="cam-l"><span id="mPayLbl">Forma de pago</span><div id="mPay"></div></div>
+  <label class="cam-l">Categoría<select id="mCat"></select></label>
+  <label class="cam-l">Nota (opcional)<input id="mNota"></label>
+  <div id="mStatus" class="cam-status"></div>
+  <div class="cam-btns"><button class="cam-go" id="mSave">Guardar en Finanzas</button></div>
+</section>
+
+<section class="cam-tarjeta glass" aria-labelledby="tT">
+  <div class="cam-cab"><h2 id="tT">Comida escrita</h2></div>
+  <label class="cam-l">Escribe lo que comiste, como se lo dirías a Claude<textarea id="tTexto" rows="3" placeholder="Ej. Cené 2 latas de atún con elote y mayonesa y 3 paquetes de saladitas de 45 calorías"></textarea></label>
+  <div class="cam-btns"><button class="cam-go" id="tCalc">Calcular</button></div>
+  <div id="tRes" hidden>
+    <div id="tItems" class="cam-items"></div>
+    <div class="cam-total"><span>Total</span><span id="tTotal"></span></div>
+    <p id="tNote" class="nota" hidden></p>
+    <div class="cam-grid"><label class="cam-l">Fecha<input id="tFecha" type="date"></label><label class="cam-l">Hora<input id="tHora" type="time"></label></div>
+    <div class="cam-btns"><button class="cam-chico" id="tClear">Descartar</button><button class="cam-go" id="tSave" disabled>Guardar en Tracker</button></div>
+  </div>
+  <div id="tStatus" class="cam-status"></div>
+  <div id="tDay" class="cam-dia" hidden></div>
+</section>
+<p class="nota">Las fotos las analiza Fede (Claude, en la compu de la casa): tiene que estar prendida.</p>
 </main></div>
 
+<div class="vista" id="v-fede" role="tabpanel" aria-label="Fede"><main>
+<header class="titulo-pagina"><div><small>Su asistente, en la compu</small><h1>Fede</h1></div><span class="fede-estado" id="fedeEstado"><i></i><span>…</span></span></header>
+<div class="charla" id="charla" aria-live="polite"><div class="vacia"><b>A su servicio, señor.</b>Escríbale a Fede: lo hace en la compu de la casa y le contesta aquí.</div></div>
+<div class="atajos-fede" id="atajosFede">
+  <button data-dile="Hazme el resumen del día">Resumen del día</button><button data-dile="¿Qué tengo hoy en la agenda?">Mi agenda</button>
+  <button data-dile="¿Qué correos importantes tengo?">Correos que importan</button><button data-dile="¿Cuánto llevo gastado esta semana?">Gasto de la semana</button>
+</div>
+<form class="redactar glass" id="redactar"><textarea id="fedeTexto" rows="1" placeholder="Escriba una orden, señor…" aria-label="Orden para Fede"></textarea>
+<button type="submit" id="fedeEnviar" aria-label="Enviar a Fede"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 19V5M5 12l7-7 7 7"/></svg></button></form>
+</main></div>
+
+<div class="escucha" id="escucha" role="dialog" aria-modal="true" aria-label="Fede le escucha">
+  <div class="orbe" aria-hidden="true"></div>
+  <b id="escuchaT">Le escucho, señor</b>
+  <p id="escuchaTxt">Diga su orden.</p>
+  <div class="botones"><button id="escuchaNo">Cancelar</button><button class="listo" id="escuchaSi">Listo</button></div>
+</div>
 <div class="velo" id="velo"></div>
 <section class="hoja" id="hoja" role="dialog" aria-modal="true" aria-labelledby="hojaTitulo" aria-hidden="true">
   <div class="asa"></div>
@@ -530,6 +664,7 @@ header .ajustes svg{width:20px;height:20px}
   <button role="tab" data-ir="tracker" aria-selected="false" aria-label="Tracker"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M3 12h4l2-6 4 12 2-6h6"/></svg><span>Tracker</span></button>
   <button role="tab" data-ir="finanzas" aria-selected="false" aria-label="Finanzas"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><rect x="3" y="6" width="18" height="13" rx="3"/><path d="M3 10h18M16 15h2"/></svg><span>Finanzas</span></button>
   <button role="tab" data-ir="condotec" aria-selected="false" aria-label="Condotec"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M4 20V8l8-4 8 4v12"/><path d="M9 20v-5h6v5M9 10h.01M15 10h.01"/></svg><span>Condotec</span></button>
+  <button role="tab" data-ir="fede" aria-selected="false" aria-label="Fede"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><circle cx="12" cy="12" r="8.5"/><path d="M8.5 12.5v-1M11 14v-4M13.5 15V9M16 13v-2"/></svg><span>Fede</span></button>
   <button role="tab" data-ir="pendientes" aria-selected="false" aria-label="Pendientes"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><rect x="3" y="5" width="18" height="16" rx="3"/><path d="M3 10h18M8 3v4M16 3v4M8 15l2 2 4-4"/></svg><span>Pendientes</span></button>
   <button role="tab" data-ir="camara" aria-selected="false" aria-label="Cámara"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M4 8h3l2-3h6l2 3h3v11H4z"/><circle cx="12" cy="13" r="3.5"/></svg><span>Cámara</span></button>
 </nav>
@@ -566,8 +701,8 @@ const PALETAS = [
   { id:"nanohana",   n:"Nanohana",   k:"苔 · 海松 · 菜の花",   c60:"#14150C", c30:"#838A2D", c10:"#F7D94C" },
   { id:"arazome",    n:"Arazome",    k:"墨 · 胡桃 · 退紅",     c60:"#1B1717", c30:"#947A6D", c10:"#F596AA" },
 ];
-const ORDEN = ["inicio", "tracker", "finanzas", "condotec", "pendientes", "camara"], NOMBRE = { inicio:"Inicio", tracker:"Tracker", finanzas:"Finanzas", condotec:"Condotec", pendientes:"Pendientes", camara:"Cámara" };
-const DEF = { inicio:"daidai", tracker:"torinoko", finanzas:"kanzo", condotec:"neri", pendientes:"kaki", camara:"shu" }, LSP = "jlp-paletas";
+const ORDEN = ["inicio", "tracker", "finanzas", "condotec", "fede", "pendientes", "camara"], NOMBRE = { inicio:"Inicio", tracker:"Tracker", finanzas:"Finanzas", condotec:"Condotec", fede:"Fede", pendientes:"Pendientes", camara:"Cámara" };
+const DEF = { inicio:"daidai", tracker:"torinoko", finanzas:"kanzo", condotec:"neri", fede:"daidai", pendientes:"kaki", camara:"shu" }, LSP = "jlp-paletas";
 let elegidas = (() => { try{ return Object.assign({}, DEF, JSON.parse(localStorage.getItem(LSP) || "{}")); }catch(e){ return { ...DEF }; } })();
 const pal = tab => PALETAS.find(p => p.id === elegidas[tab]) || PALETAS.find(p => p.id === DEF[tab]);
 function pintar(){
@@ -1036,7 +1171,7 @@ $("esLista").addEventListener("toggle", e => { const d = e.target.closest("detai
 pintarSalidas(); // lo guardado en el teléfono se ve al instante
 
 /* ---------- pestañas: cada app vive en su iframe, se crea la primera vez y se queda viva ---------- */
-const vistas = { inicio:$("v-inicio"), condotec:$("v-condotec"), pendientes:$("v-pendientes"), camara:$("v-camara") };
+const vistas = { inicio:$("v-inicio"), condotec:$("v-condotec"), fede:$("v-fede"), pendientes:$("v-pendientes"), camara:$("v-camara") };
 let actual = "inicio";
 function vista(tab){
   if (!vistas[tab]){
@@ -1123,10 +1258,465 @@ function refrescar(){
   if (actual === "inicio") { const c = cfg(); if (c) cargar(c); return; }
   if (actual === "condotec") { const c = cfg(); if (c){ cargarPanel(c); cargarSalidas(c); } return; }
   if (actual === "pendientes") { const c = cfg(); if (c){ cargarAgenda(c); cargarTareas(c); cargarSalidas(c); } return; }
+  if (actual === "fede") { cargarFede(); return; }
   try{ const d = vistas[actual].contentDocument; if (d && d.readyState === "complete") d.dispatchEvent(new Event("visibilitychange")); }catch(e){}
 }
 document.addEventListener("visibilitychange", refrescar);
 setInterval(refrescar, 30000);
+
+/* ---------- Fede: órdenes por el server (puente.py, herramientas fede_*); la compu las toma al momento ---------- */
+const LSF = "jlp-fede";
+let FEDE = (() => { try{ return JSON.parse(localStorage.getItem(LSF) || "null"); }catch(e){ return null; } })(), fedeT = 0;
+const escF = t => String(t == null ? "" : t).replace(/[&<>"]/g, ch => ({ "&":"&amp;", "<":"&lt;", ">":"&gt;", '"':"&quot;" })[ch]);
+function mdF(t){ // markdown mínimo: negritas, listas y saltos de línea (todo escapado antes)
+  return escF(t).replace(/\*\*(.+?)\*\*/g, "<b>$1</b>").replace(/^#{1,4} (.+)$/gm, "<b>$1</b>")
+    .replace(/(?:^|\n)((?:[-*•] .+(?:\n|$))+)/g, (m, l) => "<ul>" + l.trim().split("\n").map(x => "<li>" + x.replace(/^[-*•] /, "") + "</li>").join("") + "</ul>")
+    .replace(/\n/g, "<br>");
+}
+function horaF(iso){ try{ return new Date(iso).toLocaleTimeString("es-MX", { hour:"numeric", minute:"2-digit" }); }catch(e){ return ""; } }
+function pintarFede(){
+  const r = FEDE, est = $("fedeEstado"); if (!r) return;
+  est.classList.toggle("vivo", !!r.en_linea);
+  est.lastElementChild.textContent = r.en_linea ? "En línea" : "Compu apagada";
+  const ch = $("charla"), abajo = ch.scrollHeight - ch.scrollTop - ch.clientHeight < 60;
+  if (!r.mensajes.length) return;
+  ch.innerHTML = r.mensajes.map(m => `<div class="globo yo">${escF(m.texto)}<small>${horaF(m.hora)}</small></div>` +
+    (m.estado === "lista" ? `<div class="globo fede glass">${mdF(m.respuesta)}</div>`
+      : `<div class="globo fede glass espera"><i></i>${m.estado === "tomada" ? "Fede está en eso…" : (r.en_linea ? "Enviado…" : "Esperando a que se prenda la compu")}</div>`)).join("");
+  if (abajo || pintarFede.forzar){ ch.scrollTop = ch.scrollHeight; pintarFede.forzar = false; }
+}
+async function cargarFede(){
+  clearTimeout(fedeT);
+  const c = cfg(); if (!c) return;
+  try{
+    FEDE = await api(c, "fede_charla", {});
+    try{ localStorage.setItem(LSF, JSON.stringify(FEDE)); }catch(e){}
+    pintarFede();
+  }catch(e){ $("fedeEstado").lastElementChild.textContent = "Sin server"; }
+  const pendiente = FEDE && FEDE.mensajes.some(m => m.estado !== "lista");
+  if (actual === "fede" && !document.hidden) fedeT = setTimeout(cargarFede, pendiente ? 1500 : 8000);
+}
+async function mandarFede(texto){
+  texto = String(texto || "").trim(); const c = cfg(); if (!texto || !c) return;
+  $("fedeEnviar").disabled = true;
+  try{
+    await api(c, "fede_orden", { texto });
+    $("fedeTexto").value = ""; $("fedeTexto").style.height = "";
+    pintarFede.forzar = true; await cargarFede();
+  }catch(e){ alert("No llegó a Fede: " + e.message); }
+  finally{ $("fedeEnviar").disabled = false; }
+}
+$("redactar").addEventListener("submit", e => { e.preventDefault(); mandarFede($("fedeTexto").value); });
+$("fedeTexto").addEventListener("keydown", e => { if (e.key === "Enter" && !e.shiftKey && !e.isComposing){ e.preventDefault(); mandarFede(e.target.value); } });
+$("fedeTexto").addEventListener("input", e => { e.target.style.height = "auto"; e.target.style.height = Math.min(120, e.target.scrollHeight) + "px"; });
+$("atajosFede").addEventListener("click", e => { const b = e.target.closest("[data-dile]"); if (b) mandarFede(b.dataset.dile); });
+pintarFede.forzar = true; pintarFede();
+
+/* ---------- Cámara (igual que el artefacto «Captura de fotos», pero dentro de JLP) ----------
+   La foto se achica en el teléfono, viaja al server (fede_analizar) y Fede la analiza con Claude en la compu;
+   la app espera el JSON (fede_resultado), lo muestra para revisar y lo guarda por el puente (append_values). */
+(() => {
+  const TRACK_ID = TRACKER, PASTA_ID = FIN;
+  let ACCOUNTS = [{nombre:"BBVA",tipo:"debito"},{nombre:"NU",tipo:"debito"},{nombre:"Revolut",tipo:"debito"},{nombre:"Plata",tipo:"debito"},
+    {nombre:"Tarjeta BBVA",tipo:"credito"},{nombre:"Efectivo",tipo:"efectivo"}];
+  let CATS = { egreso:["Súper","Comida fuera","Gasolina","Transporte","Salidas","Suscripciones","Salud","Aseo y cuidado personal","Ropa","Escuela","Casa","Regalos","Otros gastos"],
+    ingreso:["Rentas","Pago de trabajo","Reembolso","Otros ingresos"] };
+  const OTHER = { egreso:"Otros gastos", ingreso:"Otros ingresos" };
+  const p2 = n => String(n).padStart(2, "0");
+  const today = () => { const d = new Date(); return d.getFullYear() + "-" + p2(d.getMonth() + 1) + "-" + p2(d.getDate()); };
+  const nowHM = () => { const d = new Date(); return p2(d.getHours()) + ":" + p2(d.getMinutes()); };
+  const norm = s => String(s || "").normalize("NFD").replace(/[̀-ͯ]/g, "").toLowerCase().trim();
+  const esc = s => String(s).replace(/[&<>"']/g, c => ({ "&":"&amp;", "<":"&lt;", ">":"&gt;", '"':"&quot;", "'":"&#39;" }[c]));
+  const money = n => (n < 0 ? "−" : "+") + "$" + Math.abs(n).toLocaleString("es-MX", { minimumFractionDigits:2, maximumFractionDigits:2 });
+  const lsGet = k => { try{ return localStorage.getItem("cap_" + k); }catch(e){ return null; } };
+  const lsSet = (k, v) => { try{ localStorage.setItem("cap_" + k, v); }catch(e){} };
+  const isDate = s => /^\d{4}-\d{2}-\d{2}$/.test(String(s || ""));
+  const isTime = s => /^\d{1,2}:\d{2}$/.test(String(s || ""));
+  const pressed = (seg, val) => seg.querySelectorAll("button").forEach(b => b.setAttribute("aria-pressed", String(b.dataset.t === val)));
+  const newId = p => p + Date.now().toString(36) + Math.random().toString(36).slice(2, 5);
+  const setStatus = (el, msg, cls) => { el.textContent = msg; el.className = "cam-status" + (cls ? " " + cls : ""); };
+  const conf = () => { const c = cfg(); if (!c) throw new Error("Falta la clave de JLP"); return c; };
+  const leerH = (sheet, range) => api(conf(), "get_values", { spreadsheetId:sheet, range }).then(r => (r && r.values) || []);
+  const anexar = (sheet, range, values) => api(conf(), "append_values", { spreadsheetId:sheet, range, values, valueInputOption:"USER_ENTERED" });
+
+  /* Lo que en el artefacto hacía Claude (sample.json): ahora lo hace Fede en la compu. */
+  const blobB64 = b => new Promise((res, rej) => { const r = new FileReader(); r.onload = () => res(String(r.result).split(",")[1]); r.onerror = rej; r.readAsDataURL(b); });
+  async function askJSON(prompt, blob, statusEl){
+    const datos = { prompt };
+    if (blob){ datos.imagen = await blobB64(blob); datos.mime = "image/jpeg"; }
+    const { id } = await api(conf(), "fede_analizar", datos);
+    const hasta = Date.now() + 180000;
+    while (Date.now() < hasta){
+      await new Promise(r => setTimeout(r, 1500));
+      const r = await api(conf(), "fede_resultado", { id });
+      if (r.estado === "lista"){
+        const m = String(r.respuesta || "").match(/\{[\s\S]*\}/);
+        if (!m) throw new Error("respuesta sin JSON");
+        return JSON.parse(m[0]);
+      }
+      if (statusEl && r.en_linea === false) setStatus(statusEl, "La compu de Fede está apagada: lo hace en cuanto se prenda…", "esperando");
+    }
+    throw new Error("tiempo");
+  }
+
+  async function loadPasta(){
+    try{
+      const acc = await leerH(PASTA_ID, "Cuentas!A2:B20");
+      const list = acc.filter(r => r && r[0] && ["debito","credito","efectivo"].includes(norm(r[1]))).map(r => ({ nombre:String(r[0]).trim(), tipo:norm(r[1]) }));
+      if (list.length) ACCOUNTS = list;
+    }catch(e){}
+    try{
+      const cf = await leerH(PASTA_ID, "Config!E2:F60"), eg = [], ing = [];
+      cf.forEach(r => { if (!r || !r[0]) return; const t = norm(r[1]); if (t === "egreso") eg.push(String(r[0]).trim()); else if (t === "ingreso") ing.push(String(r[0]).trim()); });
+      if (eg.length) CATS.egreso = eg; if (ing.length) CATS.ingreso = ing;
+    }catch(e){}
+    photoPay.redraw(); manualPay.redraw();
+  }
+
+  function Pay(root){
+    const st = { metodo:"", cuenta:"" };
+    root.innerHTML = '<div class="cam-seg"><button type="button" data-t="efectivo">Efectivo</button><button type="button" data-t="debito">Débito</button><button type="button" data-t="credito">Crédito</button></div><div class="cam-chips" hidden></div>';
+    const seg = root.querySelector(".cam-seg"), chips = root.querySelector(".cam-chips");
+    const ofType = m => ACCOUNTS.filter(a => a.tipo === m);
+    function draw(){
+      pressed(seg, st.metodo);
+      const list = st.metodo ? ofType(st.metodo) : [];
+      const show = list.length > 1 || (list.length === 1 && norm(list[0].nombre) !== st.metodo);
+      chips.hidden = !show;
+      chips.innerHTML = show ? list.map(a => '<button type="button" data-c="' + esc(a.nombre) + '" aria-pressed="' + (a.nombre === st.cuenta) + '">' + esc(a.nombre) + "</button>").join("") : "";
+    }
+    function pick(m){
+      st.metodo = m; const list = ofType(m);
+      if (!list.some(a => a.nombre === st.cuenta)){ const last = lsGet("acc_" + m); const hit = list.find(a => a.nombre === last) || list[0]; st.cuenta = hit ? hit.nombre : ""; }
+      draw();
+    }
+    seg.onclick = e => { const b = e.target.closest("button"); if (b) pick(b.dataset.t); };
+    chips.onclick = e => { const b = e.target.closest("button"); if (b){ st.cuenta = b.dataset.c; lsSet("acc_" + st.metodo, st.cuenta); draw(); } };
+    return { get:() => ({ ...st }), set:m => { if (m) pick(m); else { st.metodo = ""; st.cuenta = ""; draw(); } }, redraw:() => { if (st.metodo) pick(st.metodo); else draw(); } };
+  }
+  const photoPay = Pay($("pPay")), manualPay = Pay($("mPay"));
+
+  function fillCats(sel, dir, chosen, withAuto){
+    const list = CATS[dir] || [];
+    const val = withAuto && !chosen ? "" : (list.includes(chosen) ? chosen : OTHER[dir]);
+    sel.innerHTML = (withAuto ? '<option value="">Que la elija Claude</option>' : "") + list.map(c => "<option" + (c === val ? " selected" : "") + ">" + esc(c) + "</option>").join("");
+    if (withAuto && !chosen) sel.value = "";
+  }
+
+  function photoPrompt(ctx){
+    return `Analiza esta foto y responde SOLO con un objeto JSON, sin texto extra.
+${ctx ? 'Contexto del usuario sobre la foto: "' + ctx.replace(/"/g, "'") + '". Úsalo para ajustar porciones, preparación e ingredientes.\n' : ""}
+Casos:
+1) Comida o bebida: {"tipo":"comida","comida":"nombre corto en español","kcal":número,"proteina":gramos}
+   Estima las porciones que se ven. Cuenta aceite, salsas y acompañamientos.
+2) Ticket, recibo o factura de una compra: {"tipo":"ticket","concepto":"...","monto":número,"fecha":"...","hora":"...","metodo":"...","cat_egreso":"...","cat_ingreso":"..."}
+3) Comprobante de transferencia, depósito o pago bancario: {"tipo":"transferencia","direccion":"egreso" si el usuario envió el dinero o "ingreso" si lo recibió,"concepto":"...","monto":número,"fecha":"...","hora":"...","metodo":"...","cat_egreso":"...","cat_ingreso":"..."}
+4) Cualquier otra cosa: {"tipo":"otro"}
+Campos de 2 y 3:
+- concepto: comercio o persona y qué fue, corto. Ej. "OXXO (leche y pan)".
+- monto: total pagado, número positivo sin signo.
+- fecha: "YYYY-MM-DD" si aparece, si no "".
+- hora: "HH:MM" en 24 h si aparece, si no "".
+- metodo: "efectivo", "debito" o "credito" si el ticket lo dice, si no "".
+- cat_egreso: una de ${JSON.stringify(CATS.egreso)}.
+- cat_ingreso: una de ${JSON.stringify(CATS.ingreso)}.`;
+  }
+
+  /* ---------- foto ---------- */
+  let mode = "", blob = null, draft = null, pTipo = "auto";
+  const openPicker = (id, m) => { mode = m; $(id).value = ""; $(id).click(); };
+  document.querySelectorAll("#v-camara [data-cam]").forEach(b => b.onclick = () => openPicker("camIn", b.dataset.cam));
+  document.querySelectorAll("#v-camara [data-gal]").forEach(b => b.onclick = () => openPicker("galIn", b.dataset.gal));
+  $("cOtra").onclick = () => openPicker("camIn", mode || "ticket");
+  $("cFotoX").onclick = () => { $("cFoto").hidden = true; };
+
+  async function shrink(file){
+    const img = new Image(); img.src = URL.createObjectURL(file); await img.decode();
+    const k = Math.min(1, 1400 / Math.max(img.naturalWidth, img.naturalHeight)), c = document.createElement("canvas");
+    c.width = Math.round(img.naturalWidth * k); c.height = Math.round(img.naturalHeight * k);
+    c.getContext("2d").drawImage(img, 0, 0, c.width, c.height);
+    return new Promise((res, rej) => c.toBlob(b => b ? res(b) : rej(new Error("blob")), "image/jpeg", 0.85));
+  }
+  async function handleFile(f){
+    if (!f) return;
+    $("cManual").hidden = true; $("cFoto").hidden = false; $("cFood").hidden = true; $("cMoney").hidden = true;
+    $("cSave").disabled = true; $("cCtx").value = ""; $("cFotoT").textContent = mode === "comida" ? "Comida" : "Ticket"; draft = null;
+    setStatus($("cStatus"), "Preparando foto…");
+    try{ blob = await shrink(f); $("cShot").src = URL.createObjectURL(blob); }
+    catch(e){ setStatus($("cStatus"), "No pude abrir la foto. Intenta con otra.", "err"); return; }
+    $("cFoto").scrollIntoView({ behavior:"smooth", block:"start" });
+    if (mode === "comida"){ $("cCtxBox").hidden = false; $("cCalc").textContent = "Calcular"; setStatus($("cStatus"), "Agrega contexto si quieres y toca Calcular."); }
+    else { $("cCtxBox").hidden = true; analyze(); }
+  }
+  $("camIn").onchange = () => handleFile($("camIn").files[0]);
+  $("galIn").onchange = () => handleFile($("galIn").files[0]);
+  $("cCalc").onclick = () => analyze();
+
+  async function analyze(){
+    if (!blob) return;
+    $("cSave").disabled = true; $("cCalc").disabled = true;
+    setStatus($("cStatus"), "Fede está viendo la foto…", "esperando");
+    try{ draft = await askJSON(photoPrompt($("cCtx").value.trim()), blob, $("cStatus")); draft.tipo = norm(draft.tipo || "otro"); showDraft(); }
+    catch(e){ setStatus($("cStatus"), e.message === "tiempo" ? "Fede no contestó a tiempo. ¿Está prendida la compu?" : "No pude analizar la foto. Intenta de nuevo.", "err"); }
+    finally{ $("cCalc").disabled = false; }
+  }
+  const autoDir = () => draft && draft.tipo === "transferencia" && norm(draft.direccion) === "ingreso" ? "ingreso" : "egreso";
+  const curDir = () => pTipo === "auto" ? autoDir() : pTipo;
+  function drawTipo(){
+    pressed($("pTipo"), pTipo);
+    const d = curDir();
+    $("pTipoHint").textContent = pTipo === "auto" ? (draft.tipo === "transferencia" ? "Auto: " + d + " (transferencia " + (d === "ingreso" ? "recibida" : "enviada") + ")." : "Auto: egreso (ticket de compra).") : "";
+    $("pPayLbl").textContent = d === "ingreso" ? "Entró a" : "Forma de pago";
+    const want = d === "ingreso" ? draft.cat_ingreso : draft.cat_egreso, cur = $("pCat").value;
+    fillCats($("pCat"), d, (CATS[d] || []).includes(cur) && $("pCat").dataset.dir === d ? cur : want, false);
+    $("pCat").dataset.dir = d;
+  }
+  $("pTipo").onclick = e => { const b = e.target.closest("button"); if (b && draft){ pTipo = b.dataset.t; drawTipo(); } };
+  function showDraft(){
+    const t = draft.tipo;
+    if (t === "comida"){
+      $("cFotoT").textContent = "Comida"; $("cMoney").hidden = true; $("cFood").hidden = false; $("cCtxBox").hidden = false; $("cCalc").textContent = "Recalcular con contexto";
+      $("fComida").value = draft.comida || ""; $("fKcal").value = Math.round(Number(draft.kcal) || 0); $("fProt").value = Math.round(Number(draft.proteina) || 0);
+      $("fFecha").value = today(); $("fHora").value = nowHM();
+      $("cSave").textContent = "Guardar en Tracker"; $("cSave").disabled = false;
+      setStatus($("cStatus"), mode === "ticket" ? "La foto parece comida. Se guarda en Tracker." : "Revisa y guarda.");
+    } else if (t === "ticket" || t === "transferencia"){
+      $("cFotoT").textContent = t === "ticket" ? "Ticket" : "Transferencia"; $("cFood").hidden = true; $("cCtxBox").hidden = true; $("cMoney").hidden = false;
+      pTipo = "auto"; $("pCat").dataset.dir = "";
+      $("pConcepto").value = draft.concepto || ""; $("pMonto").value = Math.abs(Number(draft.monto) || 0) || "";
+      $("pFecha").value = isDate(draft.fecha) ? draft.fecha : today(); $("pHora").value = isTime(draft.hora) ? draft.hora.padStart(5, "0") : nowHM(); $("pNota").value = "";
+      const m = norm(draft.metodo); photoPay.set(["efectivo","debito","credito"].includes(m) ? m : "");
+      drawTipo(); $("cSave").textContent = "Guardar en Finanzas"; $("cSave").disabled = false;
+      setStatus($("cStatus"), mode === "comida" ? "La foto parece " + (t === "ticket" ? "un ticket" : "una transferencia") + ". Se guarda en Finanzas." : "Revisa y guarda.");
+    } else {
+      $("cFood").hidden = true; $("cMoney").hidden = true;
+      setStatus($("cStatus"), "No reconocí comida, ticket ni transferencia. Toma otra foto.", "err");
+    }
+  }
+  async function saveMov(statusEl, m){
+    await anexar(PASTA_ID, "Movimientos!A1", [[m.fecha, m.hora || "", m.concepto, m.cat, m.cuenta, Math.round(m.monto * 100) / 100, m.nota || "", m.origen, newId(m.origen === "Foto" ? "f" : "q")]]);
+    lsSet("acc_" + m.metodo, m.cuenta);
+    setStatus(statusEl, "Guardado en Finanzas: " + m.concepto + " · " + m.cat + " · " + money(m.monto) + " · " + m.cuenta + ".", "ok");
+  }
+  function checkMoney(statusEl, v){
+    if (!(v.amt > 0)){ setStatus(statusEl, "Escribe el monto.", "err"); return false; }
+    if (!v.pay.metodo){ setStatus(statusEl, "Elige la forma de pago.", "err"); return false; }
+    if (!v.pay.cuenta){ setStatus(statusEl, "No encontré una cuenta de " + v.pay.metodo + " en Finanzas.", "err"); return false; }
+    if (!isDate(v.fecha)){ setStatus(statusEl, "Elige la fecha.", "err"); return false; }
+    return true;
+  }
+  $("cSave").onclick = async () => {
+    if (!draft) return;
+    const st = $("cStatus"); $("cSave").disabled = true;
+    try{
+      if (draft.tipo === "comida"){
+        setStatus(st, "Guardando…");
+        await anexar(TRACK_ID, "Comidas!A1", [["'" + ($("fFecha").value || today()), "'" + ($("fHora").value || nowHM()), "'" + $("fComida").value.trim(), Number($("fKcal").value) || 0, Number($("fProt").value) || 0, "'Foto"]]);
+        setStatus(st, "Guardado en Tracker: " + $("fComida").value.trim() + " · " + (Number($("fKcal").value) || 0) + " kcal · " + (Number($("fProt").value) || 0) + " g de proteína.", "ok");
+      } else {
+        const dir = curDir(), v = { amt:Math.abs(Number($("pMonto").value)), pay:photoPay.get(), fecha:$("pFecha").value };
+        if (!checkMoney(st, v)){ $("cSave").disabled = false; return; }
+        setStatus(st, "Guardando…");
+        await saveMov(st, { fecha:v.fecha, hora:$("pHora").value, concepto:$("pConcepto").value.trim() || $("pCat").value, cat:$("pCat").value,
+          cuenta:v.pay.cuenta, metodo:v.pay.metodo, monto:dir === "ingreso" ? v.amt : -v.amt, nota:$("pNota").value.trim(), origen:"Foto" });
+      }
+    }catch(e){ setStatus(st, "No se guardó. Revisa tu conexión y vuelve a intentar.", "err"); $("cSave").disabled = false; }
+  };
+
+  /* ---------- movimiento manual ---------- */
+  let mTipo = "egreso";
+  function drawManual(){
+    pressed($("mTipo"), mTipo); $("mPayLbl").textContent = mTipo === "ingreso" ? "Entró a" : "Forma de pago";
+    const cur = $("mCat").value; fillCats($("mCat"), mTipo, (CATS[mTipo] || []).includes(cur) ? cur : "", true);
+  }
+  document.querySelectorAll("#v-camara [data-manual]").forEach(b => b.onclick = () => {
+    mTipo = b.dataset.manual; $("cFoto").hidden = true; $("cManual").hidden = false;
+    if (!$("mFecha").value) $("mFecha").value = today();
+    $("mCat").value = ""; drawManual(); setStatus($("mStatus"), "");
+    $("cManual").scrollIntoView({ behavior:"smooth", block:"start" }); $("mConcepto").focus();
+  });
+  $("mTipo").onclick = e => { const b = e.target.closest("button"); if (b){ mTipo = b.dataset.t; drawManual(); } };
+  $("cManualX").onclick = () => { $("cManual").hidden = true; };
+  $("mSave").onclick = async () => {
+    const st = $("mStatus"), raw = $("mConcepto").value.trim();
+    if (!raw){ setStatus(st, "Escribe el concepto.", "err"); return; }
+    let amt = Math.abs(Number($("mMonto").value)), cat = $("mCat").value;
+    const v = { amt:amt || 1, pay:manualPay.get(), fecha:$("mFecha").value };
+    if (!checkMoney(st, v)) return;
+    $("mSave").disabled = true;
+    try{
+      if (!cat || !amt){
+        setStatus(st, "Fede está acomodando el movimiento…", "esperando");
+        const r = await askJSON(`Clasifica este movimiento de dinero de tipo ${mTipo}. Texto del usuario: "${raw.replace(/"/g, "'")}".
+Responde SOLO JSON: {"categoria":"una de ${JSON.stringify(CATS[mTipo])}","monto":número positivo si el texto menciona una cantidad, si no 0}`, null, st);
+        if (!cat) cat = (CATS[mTipo] || []).includes(r && r.categoria) ? r.categoria : OTHER[mTipo];
+        if (!amt) amt = Math.abs(Number(r && r.monto)) || 0;
+      }
+      if (!(amt > 0)){ setStatus(st, "Escribe el monto.", "err"); return; }
+      setStatus(st, "Guardando…");
+      await saveMov(st, { fecha:v.fecha, hora:nowHM(), concepto:raw.charAt(0).toUpperCase() + raw.slice(1), cat, cuenta:v.pay.cuenta, metodo:v.pay.metodo,
+        monto:mTipo === "ingreso" ? amt : -amt, nota:$("mNota").value.trim(), origen:"Manual" });
+      $("mConcepto").value = ""; $("mMonto").value = ""; $("mNota").value = ""; $("mCat").value = "";
+    }catch(e){ setStatus(st, "No se guardó. Revisa tu conexión y vuelve a intentar.", "err"); }
+    finally{ $("mSave").disabled = false; }
+  };
+
+  /* ---------- comida escrita ---------- */
+  const GOAL = { kcal:[2000, 2300], prot:150 };
+  const fmt = n => Math.round(Number(n) || 0).toLocaleString("es-MX");
+  const numero = v => Number(String(v == null ? "" : v).replace(/[^\d.-]/g, "")) || 0;
+  const sumOf = (list, k) => list.reduce((s, x) => s + (Number(x[k]) || 0), 0);
+  let tItems = [];
+  function textPrompt(txt){
+    const d = new Date(), y = new Date(d.getTime() - 864e5), ymd = x => x.getFullYear() + "-" + p2(x.getMonth() + 1) + "-" + p2(x.getDate());
+    return `Eres nutriólogo. El usuario escribió lo que comió, en español de México:
+"${txt.replace(/"/g, "'")}"
+Hoy es ${ymd(d)} y son las ${nowHM()}.
+Separa cada alimento o bebida en su propio renglón y estima calorías y proteína.
+- Si el usuario da calorías o proteína de algo (ej. "3 paquetes de 45 calorías"), usa sus números exactos y multiplícalos por la cantidad.
+- Para lo demás usa porciones y productos típicos de México (latas, paquetes, piezas, tortillas). Cuenta aceite, mayonesa, crema y salsas.
+- Si dice cené, desayuné, comí o snack, empieza el nombre con "Cena: ", "Desayuno: ", "Comida: " o "Snack: ".
+- comida: nombre corto en español con la cantidad, ej. "Cena: 2 latas de atún en agua".
+- fecha: ${ymd(y)} si dice ayer; si no, ${ymd(d)}.
+- hora: HH:MM en 24 h solo si menciona la hora; si no, texto vacío.
+- supuestos: una frase corta con lo que tuviste que suponer; texto vacío si nada.
+Responde SOLO con JSON, sin texto extra:
+{"items":[{"comida":"...","kcal":número,"proteina":gramos}],"fecha":"YYYY-MM-DD","hora":"","supuestos":""}
+Si el texto no describe comida, responde {"items":[]}.`;
+  }
+  const drawTotal = () => { $("tTotal").textContent = fmt(sumOf(tItems, "kcal")) + " kcal · " + fmt(sumOf(tItems, "prot")) + " g proteína"; $("tSave").disabled = !tItems.length; };
+  function drawItems(){
+    $("tItems").innerHTML = tItems.map((it, i) => '<div class="cam-item"><input class="iname" data-i="' + i + '" data-k="comida" value="' + esc(it.comida) + '" aria-label="Alimento">' +
+      '<button class="cam-x" type="button" data-rm="' + i + '" aria-label="Quitar ' + esc(it.comida) + '">×</button>' +
+      '<label class="cam-l">Kcal<input data-i="' + i + '" data-k="kcal" type="number" inputmode="decimal" step="any" value="' + it.kcal + '"></label>' +
+      '<label class="cam-l">Proteína (g)<input data-i="' + i + '" data-k="prot" type="number" inputmode="decimal" step="any" value="' + it.prot + '"></label></div>').join("");
+    drawTotal();
+  }
+  function resetTexto(clear){ tItems = []; $("tRes").hidden = true; $("tItems").innerHTML = ""; $("tCalc").textContent = "Calcular"; if (clear) $("tTexto").value = ""; }
+  $("tItems").addEventListener("input", e => { const el = e.target, it = tItems[Number(el.dataset.i)]; if (!el.dataset.k || !it) return; it[el.dataset.k] = el.dataset.k === "comida" ? el.value : (Number(el.value) || 0); drawTotal(); });
+  $("tItems").addEventListener("click", e => { const b = e.target.closest("[data-rm]"); if (!b) return; tItems.splice(Number(b.dataset.rm), 1);
+    if (tItems.length) drawItems(); else { resetTexto(false); setStatus($("tStatus"), "Quitaste todo. Corrige el texto y vuelve a calcular."); } });
+  $("tClear").onclick = () => { resetTexto(true); setStatus($("tStatus"), ""); $("tDay").hidden = true; };
+  $("tCalc").onclick = async () => {
+    const st = $("tStatus"), txt = $("tTexto").value.trim(); $("tDay").hidden = true;
+    if (!txt){ setStatus(st, "Escribe qué comiste.", "err"); return; }
+    $("tCalc").disabled = true; $("tSave").disabled = true; setStatus(st, "Fede está calculando…", "esperando");
+    try{
+      const r = await askJSON(textPrompt(txt), null, st);
+      const list = (r && Array.isArray(r.items) ? r.items : []).map(x => ({ comida:String((x && x.comida) || "").trim(), kcal:Math.round(Number(x && x.kcal) || 0), prot:Math.round(Number(x && x.proteina) || 0) })).filter(x => x.comida);
+      if (!list.length){ resetTexto(false); setStatus(st, "No encontré comida en el texto. Escribe qué comiste y cuánto.", "err"); return; }
+      tItems = list; drawItems();
+      $("tFecha").value = isDate(r.fecha) ? r.fecha : today(); $("tHora").value = isTime(r.hora) ? String(r.hora).padStart(5, "0") : nowHM();
+      const sup = String(r.supuestos || "").trim(); $("tNote").textContent = sup ? "Supuestos: " + sup : ""; $("tNote").hidden = !sup;
+      $("tRes").hidden = false; $("tCalc").textContent = "Recalcular"; setStatus(st, "Revisa y guarda. Puedes corregir cualquier número.");
+    }catch(e){ setStatus(st, e.message === "tiempo" ? "Fede no contestó a tiempo. ¿Está prendida la compu?" : "No pude calcular. Intenta de nuevo.", "err"); }
+    finally{ $("tCalc").disabled = false; }
+  };
+  $("tSave").onclick = async () => {
+    const st = $("tStatus"), items = tItems.map(x => ({ comida:String(x.comida).trim(), kcal:Number(x.kcal) || 0, prot:Number(x.prot) || 0 })).filter(x => x.comida);
+    if (!items.length){ setStatus(st, "No hay nada que guardar.", "err"); return; }
+    const fecha = isDate($("tFecha").value) ? $("tFecha").value : today(), hora = $("tHora").value || "";
+    $("tSave").disabled = true; $("tCalc").disabled = true; setStatus(st, "Guardando…");
+    try{ await anexar(TRACK_ID, "Comidas!A1", items.map(x => ["'" + fecha, hora ? "'" + hora : "", "'" + x.comida, x.kcal, x.prot, "'Texto"])); }
+    catch(e){ setStatus(st, "No se guardó. Revisa tu conexión y vuelve a intentar.", "err"); $("tSave").disabled = false; $("tCalc").disabled = false; return; }
+    setStatus(st, "Guardado en Tracker: " + items.length + (items.length === 1 ? " alimento" : " alimentos") + " · " + fmt(sumOf(items, "kcal")) + " kcal · " + fmt(sumOf(items, "prot")) + " g de proteína.", "ok");
+    resetTexto(true); $("tCalc").disabled = false; showDay(fecha);
+  };
+  async function showDay(fecha){
+    const box = $("tDay"); box.hidden = true; box.textContent = "";
+    try{
+      const rows = await leerH(TRACK_ID, "Comidas!A2:F"); let k = 0, p = 0;
+      rows.forEach(r => { if (r && String(r[0] || "").replace(/^'/, "").trim() === fecha){ k += numero(r[3]); p += numero(r[4]); } });
+      const rango = fmt(GOAL.kcal[0]) + "–" + fmt(GOAL.kcal[1]);
+      const head = (fecha === today() ? "Hoy llevas " : "Ese día llevas ") + fmt(k) + " kcal · " + fmt(p) + " g de proteína";
+      const kTxt = k > GOAL.kcal[1] ? "Te pasaste " + fmt(k - GOAL.kcal[1]) + " kcal de tu meta (" + rango + ")." : k >= GOAL.kcal[0] ? "Calorías dentro de tu meta (" + rango + ")." : "Te quedan " + fmt(GOAL.kcal[1] - k) + " kcal antes de tu máximo (" + fmt(GOAL.kcal[1]) + ").";
+      const pTxt = p >= GOAL.prot ? "Proteína cumplida: " + fmt(p) + " g de " + GOAL.prot + " g." : "Te faltan " + fmt(GOAL.prot - p) + " g de proteína para llegar a " + GOAL.prot + " g.";
+      [head, kTxt, pTxt].forEach((t, i) => { const el = document.createElement(i ? "span" : "strong"); el.textContent = t; box.appendChild(el); });
+      box.hidden = false;
+    }catch(e){}
+  }
+
+  if (cfg()) loadPasta();
+})();
+
+
+/* ---------- Tocar el logo: Fede escucha ----------
+   Si el teléfono reconoce voz (Safari/Chrome), se manda el texto. Si no, se graba una nota y Fede la transcribe en la compu. */
+(() => {
+  const RV = window.SpeechRecognition || window.webkitSpeechRecognition;
+  let rec = null, grab = null, trozos = [], texto = "", activo = false, corte = 0;
+  const caja = $("escucha"), lbl = $("escuchaTxt");
+  function cerrar(){ activo = false; clearTimeout(corte); caja.classList.remove("on", "pensando"); try{ rec && rec.abort(); }catch(e){} try{ grab && grab.state !== "inactive" && grab.stop(); }catch(e){} rec = null; }
+  async function enviar(){
+    if (!activo) return;
+    activo = false; caja.classList.add("pensando"); $("escuchaT").textContent = "Enviando a Fede…";
+    try{
+      if (rec){ try{ rec.stop(); }catch(e){} if (texto.trim()){ await mandarFede(texto.trim()); } else { lbl.textContent = "No le oí nada, señor."; setTimeout(cerrar, 1200); return; } }
+      else if (grab){
+        await new Promise(r => { grab.onstop = r; grab.state !== "inactive" ? grab.stop() : r(); });
+        grab.stream.getTracks().forEach(t => t.stop());
+        const b = new Blob(trozos, { type:grab.mimeType || "audio/mp4" });
+        if (b.size < 2000){ lbl.textContent = "No le oí nada, señor."; setTimeout(cerrar, 1200); return; }
+        const audio = await new Promise((res, rej) => { const f = new FileReader(); f.onload = () => res(String(f.result).split(",")[1]); f.onerror = rej; f.readAsDataURL(b); });
+        await api(cfg(), "fede_orden", { audio, mime:b.type }); pintarFede.forzar = true;
+      }
+      else { cerrar(); return; }  // ni reconocimiento ni grabación (micrófono negado): no se manda nada
+      cerrar(); ir("fede"); cargarFede();
+    }catch(e){ lbl.textContent = "No llegó a Fede: " + e.message; setTimeout(cerrar, 2200); }
+  }
+  async function abrir(){
+    if (!cfg()) return;
+    texto = ""; trozos = []; activo = true; lbl.textContent = "Diga su orden."; $("escuchaT").textContent = "Le escucho, señor";
+    caja.classList.add("on");
+    if (navigator.vibrate) navigator.vibrate(15);
+    if (RV){
+      rec = new RV(); rec.lang = "es-MX"; rec.interimResults = true; rec.continuous = false;
+      rec.onresult = e => { texto = Array.from(e.results).map(r => r[0].transcript).join(" "); lbl.textContent = "«" + texto + "»"; };
+      rec.onend = () => { if (activo && rec) enviar(); };      // al dejar de hablar se manda solo
+      rec.onerror = e => { if (e.error === "not-allowed" || e.error === "service-not-allowed"){ rec = null; grabar(); } };
+      try{ rec.start(); return; }catch(e){ rec = null; }
+    }
+    grabar();
+  }
+  async function grabar(){
+    try{
+      const st = await navigator.mediaDevices.getUserMedia({ audio:true });
+      grab = new MediaRecorder(st); trozos = [];
+      grab.ondataavailable = e => { if (e.data && e.data.size) trozos.push(e.data); };
+      grab.start(); lbl.textContent = "Grabando… toque Listo al terminar.";
+      corte = setTimeout(enviar, 30000);
+    }catch(e){ lbl.textContent = "Necesito permiso para el micrófono."; setTimeout(cerrar, 2200); }
+  }
+  // Anillo de Fede en el logo: el mismo de la compu (hub, interfaz "jlp"), en reposo.
+  (() => {
+    const cv = $("anilloFede"), ctx = cv.getContext("2d"), N = 64, quieto = matchMedia("(prefers-reduced-motion:reduce)").matches;
+    const TONOS = [[255,128,0],[227,211,197],[255,166,77],[255,128,0]];
+    const tono = f => { f = (((f % 1) + 1) % 1) * 3; const i = Math.floor(f), r = f - i, a = TONOS[i], b = TONOS[i + 1]; return a.map((x, k) => Math.round(x + (b[k] - x) * r)); };
+    function cuadro(t){
+      const dpr = devicePixelRatio || 1, s = cv.clientWidth * dpr;
+      if (!s) return requestAnimationFrame(cuadro);
+      if (cv.width !== s){ cv.width = cv.height = s; }
+      const c = s / 2, R = s * 0.27;
+      ctx.clearRect(0, 0, s, s);
+      const g = ctx.createRadialGradient(c, c - R * .2, 0, c, c, R * 1.05);
+      g.addColorStop(0, "rgba(255,255,255,.22)"); g.addColorStop(.65, "rgba(255,128,0,.12)"); g.addColorStop(1, "rgba(255,128,0,0)");
+      ctx.fillStyle = g; ctx.beginPath(); ctx.arc(c, c, R * 1.05, 0, 6.2832); ctx.fill();
+      ctx.strokeStyle = "rgba(255,255,255,.5)"; ctx.lineWidth = Math.max(1, dpr * .8); ctx.beginPath(); ctx.arc(c, c, R * .98, 0, 6.2832); ctx.stroke();
+      ctx.lineCap = "round"; ctx.lineWidth = Math.max(1.5, s * .022);
+      for (let i = 0; i < N; i++){
+        const a = i / N * 6.2832 - 1.5708 + t / 40000, ruido = .5 + .5 * Math.sin(t / 700 + i * .45) * Math.cos(t / 1100 + i * .13);
+        const largo = R * (.06 + .32 * ruido), k = tono(i / N + t / 24000);
+        ctx.strokeStyle = `rgba(${k},.9)`; ctx.beginPath();
+        ctx.moveTo(c + Math.cos(a) * R * 1.1, c + Math.sin(a) * R * 1.1); ctx.lineTo(c + Math.cos(a) * (R * 1.1 + largo), c + Math.sin(a) * (R * 1.1 + largo)); ctx.stroke();
+      }
+      if (!quieto) requestAnimationFrame(cuadro);
+    }
+    requestAnimationFrame(cuadro);
+  })();
+  $("logoFede").addEventListener("click", e => { e.stopPropagation(); e.preventDefault(); abrir(); });
+  $("escuchaSi").addEventListener("click", enviar);
+  $("escuchaNo").addEventListener("click", cerrar);
+})();
 
 /* ---------- Inicio ---------- */
 function cfg(){
@@ -1145,16 +1735,18 @@ const pesos = n => "$" + Math.round(n).toLocaleString("es-MX");
 
 function barras(serie){
   const D = ["Do","Lu","Ma","Mi","Ju","Vi","Sá"], dia = x => D[new Date(x.d + "T12:00").getDay()];
-  // Una sola serie = un solo color. Solo el día más reciente con dato va en acento (es el del anillo).
-  // Un día sin dato no dibuja nada. Las dos líneas son las zonas de recuperación de WHOOP (34 y 67).
-  const foco = [...serie].reverse().find(x => isFinite(x.v));
-  $("bars").innerHTML = '<span class="zona" style="bottom:53.6%"><b>67</b></span><span class="zona" style="bottom:27.2%"><b>34</b></span>' +
+  // Pasos por día. Una sola serie = un solo color; solo el día más reciente con dato va en acento.
+  // Un día sin dato no dibuja nada. La línea es la meta de 10,000 del Tracker.
+  const META = 10000, foco = [...serie].reverse().find(x => isFinite(x.v));
+  const tope = Math.max(META, ...serie.map(x => isFinite(x.v) ? x.v : 0)), alto = v => v / tope * 80;
+  const k = v => v >= 1000 ? (v / 1000).toFixed(1).replace(/\.0$/, "") + "k" : String(Math.round(v));
+  $("bars").innerHTML = `<span class="zona" style="bottom:${alto(META)}%"><b>10k</b></span>` +
     serie.map(x => isFinite(x.v)
-      ? `<div class="col${x === foco ? " foco" : ""}"><span class="val">${Math.round(x.v)}</span><i style="height:${x.v * .8}%"></i></div>`
+      ? `<div class="col${x === foco ? " foco" : ""}"><span class="val">${k(x.v)}</span><i style="height:${alto(x.v)}%"></i></div>`
       : `<div class="col"></div>`).join("");
   $("dias").innerHTML = serie.map(x => `<span>${dia(x)}</span>`).join("");
-  $("bars").closest(".grafica").setAttribute("aria-label", "Recuperación de los últimos 7 días: " +
-    serie.map(x => dia(x) + " " + (isFinite(x.v) ? Math.round(x.v) + "%" : "sin dato")).join(", ") + ". Líneas de zona en 34 y 67.");
+  $("bars").closest(".grafica").setAttribute("aria-label", "Pasos de los últimos 7 días: " +
+    serie.map(x => dia(x) + " " + (isFinite(x.v) ? Math.round(x.v).toLocaleString("es-MX") : "sin dato")).join(", ") + ". Meta de 10,000.");
 }
 function ultimos7(){ return [...Array(7)].map((_, i) => { const d = new Date(); d.setDate(d.getDate() - 6 + i); return d.toLocaleDateString("sv-SE"); }); }
 barras(ultimos7().map(d => ({ d, v:NaN })));
@@ -1182,7 +1774,7 @@ function poner(id, txt){
   el.textContent = txt; el.classList.remove("nuevo"); void el.offsetWidth; el.classList.add("nuevo");
 }
 function mostrar(r){ // { serie:[[fecha, recovery]], rec, recFecha, sueno, hrv, gastoHoy, gastoMes }
-  const v = Object.fromEntries(r.serie || []);
+  const v = Object.fromEntries(r.seriePasos || []);
   barras(ultimos7().map(d => ({ d, v:v[d] == null ? NaN : v[d] })));
   poner("rec", r.rec == null ? "–" : String(Math.round(r.rec)));
   $("recNota").textContent = !r.recFecha ? "" : r.recFecha === hoy ? "hoy" : "del " + new Date(r.recFecha + "T12:00").toLocaleDateString("es-MX", { day:"numeric", month:"short" });
@@ -1227,13 +1819,14 @@ async function resumenLento(c){
   const gastos = m.slice(1).filter(r => !/pago de tarjeta|transferencia/i.test(r[3] || "")).map(r => ({ d:fecha(r[0]), m:num(r[5]) })).filter(x => isFinite(x.m) && x.m < 0);
   const ok = x => isFinite(x) ? x : null;
   const lunes = (() => { const d = new Date(); d.setDate(d.getDate() - (d.getDay() + 6) % 7); return d.toLocaleDateString("sv-SE"); })();
-  return { serie:ultimos7().map(d => [d, ok(num((porDia[d] || [])[6]))]), rec:ok(num(u[6])), recFecha:u[0] ? fecha(u[0]) : null,
+  return { serie:ultimos7().map(d => [d, ok(num((porDia[d] || [])[6]))]), seriePasos:ultimos7().map(d => [d, ok(num((porDia[d] || [])[14]))]), rec:ok(num(u[6])), recFecha:u[0] ? fecha(u[0]) : null,
     sueno:ultimo(3), suenoPct:ultimo(5), hrv:ultimo(7), kcal:ultimo(10), pasos:ultimo(14), gastoHoy:-gastos.filter(x => x.d === hoy).reduce((a, x) => a + x.m, 0),
     gastoMes:-gastos.filter(x => x.d.slice(0, 7) === hoy.slice(0, 7)).reduce((a, x) => a + x.m, 0),
     gastoSemana:-gastos.filter(x => x.d >= lunes && x.d <= hoy).reduce((a, x) => a + x.m, 0) };
 }
 function cargar(c){
-  api(c, "resumen", { hoy }).catch(() => resumenLento(c)).then(r => {
+  // shortcut: si el server aún no manda seriePasos (puente viejo), se arma lento; quitar cuando el puente nuevo esté arriba
+  api(c, "resumen", { hoy }).then(r => r.seriePasos ? r : resumenLento(c)).catch(() => resumenLento(c)).then(r => {
     mostrar(r);
     try{ localStorage.setItem(LSR, JSON.stringify(r)); }catch(e){}
   }).catch(() => {});
