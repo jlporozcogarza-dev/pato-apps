@@ -99,7 +99,11 @@ button.card:active{transform:scale(.98)}
 .cuatro{display:grid;grid-template-columns:1fr 1fr;gap:8px}
 .stat{position:relative;overflow:hidden;border-radius:24px;padding:13px 14px;min-height:84px;display:flex;flex-direction:column;justify-content:flex-end;gap:6px}
 .stat[hidden]{display:none}
-.stat.ancha{grid-column:1/-1}
+/* con 3 tarjetas (p. ej. sin pasos) van en una fila para que la gráfica tenga más alto */
+.cuatro.tres{grid-template-columns:repeat(3,1fr)}
+.cuatro.tres .stat{padding:12px;min-height:78px;border-radius:22px}
+.cuatro.tres .num{font-size:clamp(24px,7.5vw,32px)}
+.cuatro.tres small{font-size:11.5px;line-height:1.2}
 .stat .relleno{position:absolute;left:0;top:0;bottom:0;width:calc(var(--p,0) * 1%);transition:width .9s cubic-bezier(.2,.8,.2,1);
   background:linear-gradient(160deg,color-mix(in srgb,var(--c10) 30%,transparent),color-mix(in srgb,var(--c10) 10%,transparent))}
 .stat .num{position:relative;font-size:clamp(30px,9vw,38px)}
@@ -496,8 +500,8 @@ function mostrar(r){ // { serie:[[fecha, recovery]], rec, recFecha, sueno, hrv, 
   stat("kcal", r.kcal, entero, x => x / 3500 * 100);
   stat("gasto", r.gastoHoy || 0, pesos);
   stat("semana", r.gastoSemana || 0, pesos);
-  const vis = [...document.querySelectorAll(".cuatro .stat")].filter(s => !s.hidden); // si quedan nones, la última ocupa todo el ancho
-  vis.forEach(s => s.classList.remove("ancha")); if (vis.length % 2) vis[vis.length - 1].classList.add("ancha");
+  const vis = [...document.querySelectorAll(".cuatro .stat")].filter(s => !s.hidden); // 3 tarjetas: en una sola fila
+  $("pasos").closest(".cuatro").classList.toggle("tres", vis.length === 3);
 }
 /* Respaldo por si el server todavía no tiene "resumen": lo arma con las dos pestañas completas. */
 async function resumenLento(c){
