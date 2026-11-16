@@ -36,10 +36,12 @@ SHIM = """<script>
     // u = URL completa de un puente, o id de Apps Script. Con id: primero el server de la casa (rápido) y,
     // si no contesta, Apps Script directo. Solo se reintenta lo que no duplica datos (leer y sobrescribir).
     var gas = "https://script.google.com/macros/s/" + encodeURIComponent(c.u) + "/exec";
-    var urls = /^https:/.test(c.u) ? [c.u] : ["https://pato-api.condotecmty.com/", gas];
-    return { callTool: async function(server, tool, input){
+    // shortcut: pato-api.condotecmty.com es el respaldo mientras se conecta api.jlpog.app; quitarlo después
+    var server = ["https://api.jlpog.app/", "https://pato-api.condotecmty.com/"];
+    var urls = /^https:/.test(c.u) ? [c.u] : server.concat([gas]);
+    return { callTool: async function(srv, tool, input){
       var res, j, body = JSON.stringify({ k:c.k, tool:tool, input:input });
-      var lista = (tool === "get_values" || tool === "update_values") ? urls : urls.slice(0, 1);
+      var lista = (tool === "get_values" || tool === "update_values" || /^https:/.test(c.u)) ? urls : server;
       for (var i = 0; i < lista.length; i++){
         try{
           res = await fetch(lista[i], { method:"POST", headers:{ "Content-Type":"text/plain;charset=utf-8" }, body:body, signal: i < lista.length - 1 && AbortSignal.timeout ? AbortSignal.timeout(6000) : undefined });
