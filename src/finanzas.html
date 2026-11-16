@@ -650,7 +650,7 @@ function lastLike(concepto){
   return best;
 }
 function chipsHtml(list, sel, attr){
-  return list.length ? list.map(n=>'<button class="chip" '+attr+'="'+esc(n)+'" aria-pressed="'+(n===sel)+'">'+esc(n)+(isCredit(n) && strip(n)!=="credito"?'<span class="tag">crédito</span>':'')+'</button>').join("") : '<span class="hint">Sin opciones en la hoja.</span>';
+  return list.length ? list.map(n=>'<button class="chip" '+attr+'="'+esc(n)+'" aria-pressed="'+(n===sel)+'">'+esc(n)+(isCredit(n) && strip(n)!=="credito"?'<span class="tag">crédito</span>':'')+'</button>').join("") : '<span class="hint">Sin opciones todavía.</span>';
 }
 
 /* ---------- Cálculos ---------- */
@@ -788,7 +788,7 @@ const ERR = {
   approval_required:   { t:"warn", msg:"La app necesita tu permiso para leer y guardar en tu hoja de finanzas.", btn:"Dar permiso", retract:true },
   consent_required:    { t:"warn", msg:"La app necesita tu permiso para leer y guardar en tu hoja de finanzas.", btn:"Dar permiso", retract:true },
   blocked_by_policy:   { t:"err",  msg:"Tu organización bloquea Google Sheets en esta app.", retract:true },
-  server_unavailable:  { t:"warn", msg:"Google Sheets no responde ahora. Intenta de nuevo en un momento.", btn:"Reintentar" },
+  server_unavailable:  { t:"warn", msg:"No hay conexión con tus datos ahora. Intenta de nuevo en un momento.", btn:"Reintentar" },
   not_granted:         { t:"warn", msg:"Esta vista no puede conectarse a Google Sheets. Abre la app desde claude.ai.", btn:"Reintentar" },
   capability_disabled: { t:"warn", msg:"Esta vista no puede conectarse a Google Sheets. Abre la app desde claude.ai.", btn:"Reintentar" }
 };
@@ -1431,7 +1431,7 @@ function buildProg(sh, id){
     + '<div class="sh-actions">'+(p?'<button class="btn danger" data-act="pdel" id="pDelBtn">Borrar</button>':'<button class="btn" data-act="close">Cancelar</button>')+'<button class="btn primary" data-act="psave">Guardar</button></div>'
     + '</div>';
   function chips(elId, list, sel, attr){
-    $(elId).innerHTML = list.length ? list.map(x=>'<button class="chip" '+attr+'="'+esc(x)+'" aria-pressed="'+(x===sel)+'">'+esc(x)+(isCredit(x) && strip(x)!=="credito"?'<span class="tag">crédito</span>':'')+'</button>').join("") : '<span class="hint">Sin opciones en la hoja.</span>';
+    $(elId).innerHTML = list.length ? list.map(x=>'<button class="chip" '+attr+'="'+esc(x)+'" aria-pressed="'+(x===sel)+'">'+esc(x)+(isCredit(x) && strip(x)!=="credito"?'<span class="tag">crédito</span>':'')+'</button>').join("") : '<span class="hint">Sin opciones todavía.</span>';
   }
   function draw(){
     document.querySelectorAll("#pTipo button").forEach(b=>b.setAttribute("aria-pressed", String(b.dataset.ptipo===st.tipo)));
@@ -1620,7 +1620,7 @@ function buildAdd(sh, date){
     + '<div class="sh-actions"><button class="btn" data-act="close">Cancelar</button><button class="btn primary" data-act="save" id="saveBtn">Guardar gasto</button></div>'
     + '</div>';
   function chips(id, list, sel, attr){
-    $(id).innerHTML = list.length ? list.map(n=>'<button class="chip" '+attr+'="'+esc(n)+'" aria-pressed="'+(n===sel)+'">'+esc(n)+(isCredit(n) && strip(n)!=="credito"?'<span class="tag">crédito</span>':'')+'</button>').join("") : '<span class="hint">Sin opciones en la hoja.</span>';
+    $(id).innerHTML = list.length ? list.map(n=>'<button class="chip" '+attr+'="'+esc(n)+'" aria-pressed="'+(n===sel)+'">'+esc(n)+(isCredit(n) && strip(n)!=="credito"?'<span class="tag">crédito</span>':'')+'</button>').join("") : '<span class="hint">Sin opciones todavía.</span>';
   }
   function draw(){
     document.querySelectorAll("#tipoSeg button").forEach(b=>b.setAttribute("aria-pressed", String(b.dataset.tipo===st.tipo)));

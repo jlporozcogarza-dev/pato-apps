@@ -1,4 +1,17 @@
-<!doctype html><html><head><meta charset=utf8><meta name=viewport content="width=device-width,initial-scale=1,viewport-fit=cover"><style>:root{color-scheme:light;box-sizing:border-box;padding-top:env(safe-area-inset-top,0px);padding-bottom:env(safe-area-inset-bottom,0px)}html{scroll-padding-top:env(safe-area-inset-top,0px)}body{margin:0;padding:0;font:14px -apple-system,BlinkMacSystemFont,sans-serif;background:#fff;color:#000}img{max-width:100%}[hidden]:not([hidden=until-found i]){display:none!important}</style></head><body>
+<!doctype html><html><head><meta charset=utf8><meta name=viewport content="width=device-width,initial-scale=1,viewport-fit=cover"><style>:root{color-scheme:light;box-sizing:border-box;padding-top:env(safe-area-inset-top,0px);padding-bottom:env(safe-area-inset-bottom,0px)}html{scroll-padding-top:env(safe-area-inset-top,0px)}body{margin:0;padding:0;font:14px -apple-system,BlinkMacSystemFont,sans-serif;background:#fff;color:#000}img{max-width:100%}[hidden]:not([hidden=until-found i]){display:none!important}</style><script>if (window.top !== window) document.documentElement.classList.add("embed");</script>
+<style id="jlp-tema">
+/* JLP: oscuro con vidrio, 60-30-10 en colores japoneses. Gana sobre los temas claro/oscuro de la app. */
+html:root:root{color-scheme:dark;--bg:#08192D;--surface:rgba(86,108,115,0.2);--surface-2:rgba(86,108,115,0.28);--line:rgba(86,108,115,0.36);--track:rgba(86,108,115,0.24);
+  --fg:#F4F1EA;--muted:#B5AEA4;--faint:#7E7870;--accent:#A8D8B9;--accent-soft:rgba(168,216,185,0.16);--accent-line:rgba(168,216,185,0.42);
+  --scrim:rgba(0,0,0,.55);--card-shadow:0 18px 40px -22px rgba(0,0,0,.75)}
+html{background:#08192D} html.embed,html.embed body,body{background:transparent!important}
+html:not(.embed) body{background:radial-gradient(60% 40% at 90% 0%,rgba(168,216,185,0.16),transparent 70%),radial-gradient(60% 40% at 0% 60%,rgba(86,108,115,0.22),transparent 70%),#08192D!important;background-attachment:fixed!important}
+html.embed body{padding-bottom:calc(104px + env(safe-area-inset-bottom))!important}
+.banner,.buds,.chart,.hero,.iconbtn,.mc,.saldos,.tot,.txs,.wd{-webkit-backdrop-filter:blur(24px) saturate(160%);backdrop-filter:blur(24px) saturate(160%);border-color:rgba(86,108,115,0.36)!important;
+  box-shadow:inset 0 1px 0 rgba(255,255,255,.14),var(--card-shadow)!important}
+.sheet{background:linear-gradient(180deg,rgba(86,108,115,0.3),rgba(8,25,45,0.92)),#08192D!important;-webkit-backdrop-filter:blur(30px);backdrop-filter:blur(30px);border-top:1px solid rgba(86,108,115,0.45)}
+</style>
+</head><body>
 <title>Finanzas de Pato</title>
 <link rel="manifest" href="manifest.webmanifest">
 <link rel="apple-touch-icon" href="icon-180.png">
@@ -702,7 +715,7 @@ function lastLike(concepto){
   return best;
 }
 function chipsHtml(list, sel, attr){
-  return list.length ? list.map(n=>'<button class="chip" '+attr+'="'+esc(n)+'" aria-pressed="'+(n===sel)+'">'+esc(n)+(isCredit(n) && strip(n)!=="credito"?'<span class="tag">crédito</span>':'')+'</button>').join("") : '<span class="hint">Sin opciones en la hoja.</span>';
+  return list.length ? list.map(n=>'<button class="chip" '+attr+'="'+esc(n)+'" aria-pressed="'+(n===sel)+'">'+esc(n)+(isCredit(n) && strip(n)!=="credito"?'<span class="tag">crédito</span>':'')+'</button>').join("") : '<span class="hint">Sin opciones todavía.</span>';
 }
 
 /* ---------- Cálculos ---------- */
@@ -840,7 +853,7 @@ const ERR = {
   approval_required:   { t:"warn", msg:"La app necesita tu permiso para leer y guardar en tu hoja de finanzas.", btn:"Dar permiso", retract:true },
   consent_required:    { t:"warn", msg:"La app necesita tu permiso para leer y guardar en tu hoja de finanzas.", btn:"Dar permiso", retract:true },
   blocked_by_policy:   { t:"err",  msg:"Tu organización bloquea Google Sheets en esta app.", retract:true },
-  server_unavailable:  { t:"warn", msg:"Google Sheets no responde ahora. Intenta de nuevo en un momento.", btn:"Reintentar" },
+  server_unavailable:  { t:"warn", msg:"No hay conexión con tus datos ahora. Intenta de nuevo en un momento.", btn:"Reintentar" },
   not_granted:         { t:"warn", msg:"Esta vista no puede conectarse a Google Sheets. Abre la app desde claude.ai.", btn:"Reintentar" },
   capability_disabled: { t:"warn", msg:"Esta vista no puede conectarse a Google Sheets. Abre la app desde claude.ai.", btn:"Reintentar" }
 };
@@ -1483,7 +1496,7 @@ function buildProg(sh, id){
     + '<div class="sh-actions">'+(p?'<button class="btn danger" data-act="pdel" id="pDelBtn">Borrar</button>':'<button class="btn" data-act="close">Cancelar</button>')+'<button class="btn primary" data-act="psave">Guardar</button></div>'
     + '</div>';
   function chips(elId, list, sel, attr){
-    $(elId).innerHTML = list.length ? list.map(x=>'<button class="chip" '+attr+'="'+esc(x)+'" aria-pressed="'+(x===sel)+'">'+esc(x)+(isCredit(x) && strip(x)!=="credito"?'<span class="tag">crédito</span>':'')+'</button>').join("") : '<span class="hint">Sin opciones en la hoja.</span>';
+    $(elId).innerHTML = list.length ? list.map(x=>'<button class="chip" '+attr+'="'+esc(x)+'" aria-pressed="'+(x===sel)+'">'+esc(x)+(isCredit(x) && strip(x)!=="credito"?'<span class="tag">crédito</span>':'')+'</button>').join("") : '<span class="hint">Sin opciones todavía.</span>';
   }
   function draw(){
     document.querySelectorAll("#pTipo button").forEach(b=>b.setAttribute("aria-pressed", String(b.dataset.ptipo===st.tipo)));
@@ -1672,7 +1685,7 @@ function buildAdd(sh, date){
     + '<div class="sh-actions"><button class="btn" data-act="close">Cancelar</button><button class="btn primary" data-act="save" id="saveBtn">Guardar gasto</button></div>'
     + '</div>';
   function chips(id, list, sel, attr){
-    $(id).innerHTML = list.length ? list.map(n=>'<button class="chip" '+attr+'="'+esc(n)+'" aria-pressed="'+(n===sel)+'">'+esc(n)+(isCredit(n) && strip(n)!=="credito"?'<span class="tag">crédito</span>':'')+'</button>').join("") : '<span class="hint">Sin opciones en la hoja.</span>';
+    $(id).innerHTML = list.length ? list.map(n=>'<button class="chip" '+attr+'="'+esc(n)+'" aria-pressed="'+(n===sel)+'">'+esc(n)+(isCredit(n) && strip(n)!=="credito"?'<span class="tag">crédito</span>':'')+'</button>').join("") : '<span class="hint">Sin opciones todavía.</span>';
   }
   function draw(){
     document.querySelectorAll("#tipoSeg button").forEach(b=>b.setAttribute("aria-pressed", String(b.dataset.tipo===st.tipo)));

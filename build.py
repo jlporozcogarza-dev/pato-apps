@@ -81,6 +81,38 @@ def icon(kind, size):
             d.rounded_rectangle((x, 812 - h, x + 96, 812), radius=40, fill=CORAL if i == 3 else (240, 232, 230))
     return im.resize((size, size), Image.LANCZOS)
 
+# Tema JLP: colores tradicionales japoneses (nippon iro, diccionario de Sanzo Wada) con la regla 60-30-10:
+# 60 = fondo, 30 = tarjetas de vidrio, 10 = acento. El mismo dict vive en index.html (PALETAS); cambiar los dos.
+PALETAS = {
+    "tracker":  {"c60": "#1E1512", "c30": "#B54434", "c10": "#F17C67"},  # 鳶 Tobi oscurecido · 紅樺 Benikaba · 珊瑚朱 Sangoshu
+    "finanzas": {"c60": "#08192D", "c30": "#566C73", "c10": "#A8D8B9"},  # 褐 Kachi · 藍鼠 Ainezumi · 白緑 Byakuroku
+}
+VIDRIO = {  # clases que son tarjetas en cada app
+    "tracker": ".banner,.hero,.iconbtn,.mday,.rows,.wcard",
+    "finanzas": ".banner,.buds,.chart,.hero,.iconbtn,.mc,.saldos,.tot,.txs,.wd",
+}
+
+def rgba(h, a):
+    return "rgba(%d,%d,%d,%s)" % (int(h[1:3], 16), int(h[3:5], 16), int(h[5:7], 16), a)
+
+def tema(key):
+    p = PALETAS[key]
+    c60, c30, c10 = p["c60"], p["c30"], p["c10"]
+    return f"""<script>if (window.top !== window) document.documentElement.classList.add("embed");</script>
+<style id="jlp-tema">
+/* JLP: oscuro con vidrio, 60-30-10 en colores japoneses. Gana sobre los temas claro/oscuro de la app. */
+html:root:root{{color-scheme:dark;--bg:{c60};--surface:{rgba(c30, .20)};--surface-2:{rgba(c30, .28)};--line:{rgba(c30, .36)};--track:{rgba(c30, .24)};
+  --fg:#F4F1EA;--muted:#B5AEA4;--faint:#7E7870;--accent:{c10};--accent-soft:{rgba(c10, .16)};--accent-line:{rgba(c10, .42)};
+  --scrim:rgba(0,0,0,.55);--card-shadow:0 18px 40px -22px rgba(0,0,0,.75)}}
+html{{background:{c60}}} html.embed,html.embed body,body{{background:transparent!important}}
+html:not(.embed) body{{background:radial-gradient(60% 40% at 90% 0%,{rgba(c10, .16)},transparent 70%),radial-gradient(60% 40% at 0% 60%,{rgba(c30, .22)},transparent 70%),{c60}!important;background-attachment:fixed!important}}
+html.embed body{{padding-bottom:calc(104px + env(safe-area-inset-bottom))!important}}
+{VIDRIO[key]}{{-webkit-backdrop-filter:blur(24px) saturate(160%);backdrop-filter:blur(24px) saturate(160%);border-color:{rgba(c30, .36)}!important;
+  box-shadow:inset 0 1px 0 rgba(255,255,255,.14),var(--card-shadow)!important}}
+.sheet{{background:linear-gradient(180deg,{rgba(c30, .30)},{rgba(c60, .92)}),{c60}!important;-webkit-backdrop-filter:blur(30px);backdrop-filter:blur(30px);border-top:1px solid {rgba(c30, .45)}}}
+</style>
+"""
+
 def sub(t, old, new):
     assert t.count(old) == 1, old
     return t.replace(old, new)
@@ -92,6 +124,7 @@ for key, a in APPS.items():
     title = t[t.index("<title>"):t.index("</title>") + 8]
     t = sub(t, title, title + "\n" + head(a["short"]))
     t = sub(t, "<script>\n(function(){", SHIM + "<script>\n(function(){")
+    t = sub(t, "</head>", tema(key) + "</head>")
     (out / "index.html").write_text(t, encoding="utf-8", newline="")
     for s in (180, 192, 512):
         icon(key, s).save(out / f"icon-{s}.png", optimize=True)
