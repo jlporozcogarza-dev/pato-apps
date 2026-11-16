@@ -477,12 +477,19 @@ h1{font-weight:700;letter-spacing:-.035em}
   window.claude = { use: async function(cap){
     if (cap !== "mcp") return null;
     var c = load(); if (!c) return null;
-    var url = "https://script.google.com/macros/s/" + encodeURIComponent(c.u) + "/exec";
+    // u = URL completa de un puente, o id de Apps Script. Con id: primero el server de la casa (rápido) y,
+    // si no contesta, Apps Script directo. Solo se reintenta lo que no duplica datos (leer y sobrescribir).
+    var gas = "https://script.google.com/macros/s/" + encodeURIComponent(c.u) + "/exec";
+    var urls = /^https:/.test(c.u) ? [c.u] : ["https://pato-api.condotecmty.com/", gas];
     return { callTool: async function(server, tool, input){
-      var res, j;
-      try{ res = await fetch(url, { method:"POST", headers:{ "Content-Type":"text/plain;charset=utf-8" }, body:JSON.stringify({ k:c.k, tool:tool, input:input }) }); }
-      catch(e){ throw { code:"server_unavailable", message:String(e) }; }
-      try{ j = await res.json(); }catch(e){ throw { code:"server_unavailable", message:"Respuesta inválida del puente" }; }
+      var res, j, body = JSON.stringify({ k:c.k, tool:tool, input:input });
+      var lista = (tool === "get_values" || tool === "update_values") ? urls : urls.slice(0, 1);
+      for (var i = 0; i < lista.length; i++){
+        try{
+          res = await fetch(lista[i], { method:"POST", headers:{ "Content-Type":"text/plain;charset=utf-8" }, body:body, signal: i < lista.length - 1 && AbortSignal.timeout ? AbortSignal.timeout(6000) : undefined });
+          j = await res.json(); break;
+        }catch(e){ if (i === lista.length - 1) throw { code:"server_unavailable", message:String(e) }; }
+      }
       if (j.error) throw { code:"tool_error", message:j.error };
       return { payload:j.result };
     } };
