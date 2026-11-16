@@ -74,6 +74,8 @@ nav button[aria-selected=true] svg{animation:pop .5s cubic-bezier(.34,1.6,.5,1)}
 #v-inicio.entra .hero{animation-delay:.06s}
 #v-inicio.entra .tile:nth-child(1){animation-delay:.12s}#v-inicio.entra .tile:nth-child(2){animation-delay:.16s}
 #v-inicio.entra .tile:nth-child(3){animation-delay:.20s}#v-inicio.entra .tile:nth-child(4){animation-delay:.24s}
+#v-inicio.entra .tile:nth-child(5){animation-delay:.28s}#v-inicio.entra .tile:nth-child(6){animation-delay:.32s}#v-inicio.entra .tile:nth-child(7){animation-delay:.36s}
+.tile.ancha{grid-column:1/-1;min-height:104px}
 /* un número que cambia hace un pequeño destello */
 @keyframes nuevo{from{opacity:.2;filter:blur(6px);transform:translateY(6px)}to{opacity:1;filter:none;transform:none}}
 .nuevo{animation:nuevo .45s ease both}
@@ -123,10 +125,13 @@ header .ajustes svg{width:20px;height:20px}
   <div class="dias" id="dias"></div>
 </button>
 <section class="grid">
+  <button class="tile glass" data-ir="tracker"><svg class="arrow" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M7 17 17 7M8 7h9v9"/></svg><span class="n" id="suenoPct">–</span><span class="l">calificación<br>de sueño</span></button>
+  <button class="tile glass" data-ir="tracker"><svg class="arrow" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M7 17 17 7M8 7h9v9"/></svg><span class="n" id="sueno">–</span><span class="l">horas<br>dormidas</span></button>
+  <button class="tile glass" data-ir="tracker"><svg class="arrow" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M7 17 17 7M8 7h9v9"/></svg><span class="n" id="kcal">–</span><span class="l">calorías<br>quemadas</span></button>
+  <button class="tile glass" data-ir="tracker"><svg class="arrow" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M7 17 17 7M8 7h9v9"/></svg><span class="n" id="pasos">–</span><span class="l">pasos</span></button>
+  <button class="tile glass" data-ir="tracker"><svg class="arrow" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M7 17 17 7M8 7h9v9"/></svg><span class="n" id="hrv">–</span><span class="l">HRV ahora<br>(ms)</span></button>
   <button class="tile glass" data-ir="finanzas"><svg class="arrow" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M7 17 17 7M8 7h9v9"/></svg><span class="n" id="gasto">–</span><span class="l">gastado<br>hoy</span></button>
-  <button class="tile glass" data-ir="tracker"><svg class="arrow" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M7 17 17 7M8 7h9v9"/></svg><span class="n" id="sueno">–</span><span class="l">horas de<br>sueño</span></button>
-  <button class="tile glass" data-ir="tracker"><svg class="arrow" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M7 17 17 7M8 7h9v9"/></svg><span class="n" id="hrv">–</span><span class="l">HRV<br>(ms)</span></button>
-  <button class="tile glass" data-ir="finanzas"><svg class="arrow" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M7 17 17 7M8 7h9v9"/></svg><span class="n" id="mes">–</span><span class="l">gastado<br>este mes</span></button>
+  <button class="tile glass ancha" data-ir="finanzas"><svg class="arrow" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M7 17 17 7M8 7h9v9"/></svg><span class="n" id="mes">–</span><span class="l">gastado este mes</span></button>
 </section>
 <button class="conectar glass" id="conectar" hidden>Conectar mis datos</button>
 </main></div>
@@ -304,20 +309,27 @@ function mostrar(r){ // { serie:[[fecha, recovery]], rec, recFecha, sueno, hrv, 
   barras(ultimos7().map(d => ({ d, v:v[d] == null ? NaN : v[d] })));
   poner("rec", r.rec == null ? "–" : r.rec + "%");
   $("recNota").textContent = !r.recFecha ? "" : r.recFecha === hoy ? "hoy" : "del " + new Date(r.recFecha + "T12:00").toLocaleDateString("es-MX", { day:"numeric", month:"short" });
+  const entero = x => x == null ? "–" : Math.round(x).toLocaleString("es-MX");
+  poner("suenoPct", r.suenoPct == null ? "–" : Math.round(r.suenoPct) + "%");
   poner("sueno", r.sueno == null ? "–" : r.sueno.toFixed(1));
-  poner("hrv", r.hrv == null ? "–" : String(Math.round(r.hrv)));
+  poner("kcal", entero(r.kcal));
+  poner("pasos", entero(r.pasos));
+  poner("hrv", entero(r.hrv));
   poner("gasto", pesos(r.gastoHoy || 0));
   poner("mes", pesos(r.gastoMes || 0));
 }
 /* Respaldo por si el server todavía no tiene "resumen": lo arma con las dos pestañas completas. */
 async function resumenLento(c){
-  const [w, m] = await Promise.all([leer(c, TRACKER, "Whoop!A:H"), leer(c, FIN, "Movimientos!A:F")]);
+  const [w, m] = await Promise.all([leer(c, TRACKER, "Whoop!A:O"), leer(c, FIN, "Movimientos!A:F")]);
   const porDia = {}; w.slice(1).forEach(r => { if (r[0]) porDia[fecha(r[0])] = r; });
-  const u = Object.keys(porDia).sort().map(k => porDia[k]).filter(r => isFinite(num(r[6]))).pop() || [];
+  const filas = Object.keys(porDia).sort().map(k => porDia[k]);
+  const u = filas.filter(r => isFinite(num(r[6]))).pop() || [];
+  const ayer = (() => { const d = new Date(); d.setDate(d.getDate() - 1); return d.toLocaleDateString("sv-SE"); })();
+  const ultimo = i => { const r = filas.filter(r => fecha(r[0]) >= ayer && isFinite(num(r[i]))).pop(); return r ? num(r[i]) : null; };
   const gastos = m.slice(1).filter(r => !/pago de tarjeta|transferencia/i.test(r[3] || "")).map(r => ({ d:fecha(r[0]), m:num(r[5]) })).filter(x => isFinite(x.m) && x.m < 0);
   const ok = x => isFinite(x) ? x : null;
   return { serie:ultimos7().map(d => [d, ok(num((porDia[d] || [])[6]))]), rec:ok(num(u[6])), recFecha:u[0] ? fecha(u[0]) : null,
-    sueno:ok(num(u[3])), hrv:ok(num(u[7])), gastoHoy:-gastos.filter(x => x.d === hoy).reduce((a, x) => a + x.m, 0),
+    sueno:ultimo(3), suenoPct:ultimo(5), hrv:ultimo(7), kcal:ultimo(10), pasos:ultimo(14), gastoHoy:-gastos.filter(x => x.d === hoy).reduce((a, x) => a + x.m, 0),
     gastoMes:-gastos.filter(x => x.d.slice(0, 7) === hoy.slice(0, 7)).reduce((a, x) => a + x.m, 0) };
 }
 function cargar(c){
