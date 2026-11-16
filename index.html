@@ -32,7 +32,7 @@ html,body{margin:0;height:100%;overflow:hidden;background:var(--c60);color:var(-
 .vista{position:fixed;inset:0;z-index:1;border:0;width:100%;height:100%;background:transparent;display:none}
 .vista.on{display:block}
 /* las apps ya respetan la muesca del iPhone por su cuenta: el iframe va a pantalla completa */
-#v-inicio,#v-condotec,#v-pendientes{overflow-y:auto;-webkit-overflow-scrolling:touch;padding:max(14px,env(safe-area-inset-top)) 16px calc(84px + max(10px,env(safe-area-inset-bottom)))}
+#v-inicio,#v-condotec,#v-pendientes{overflow-y:auto;-webkit-overflow-scrolling:touch;padding:max(14px,env(safe-area-inset-top)) 16px calc(78px + max(4px,calc(env(safe-area-inset-bottom) - var(--franja,0px) - 12px)))}
 /* el Inicio cabe en una pantalla: la gráfica toma lo que sobre (si un teléfono es muy chico, se puede deslizar) */
 #v-inicio main{display:flex;flex-direction:column;min-height:100%;gap:10px}
 #v-inicio main>*{flex:none}
@@ -224,7 +224,8 @@ button.card:active{transform:scale(.98)}
 .titulo-pagina{margin:4px 0 16px}.titulo-pagina small{color:var(--muted);font-size:13px}
 .titulo-pagina h1{margin:4px 0 0;font:700 38px/1 var(--display);letter-spacing:-.02em}
 /* barra de pestañas: cápsula de vidrio flotante (como iOS 26 y la referencia) */
-nav{position:fixed;z-index:5;left:12px;right:12px;bottom:max(10px,env(safe-area-inset-bottom));max-width:520px;margin:0 auto;display:flex;padding:6px;
+/* lo más abajo posible: si iOS ya dejó su franja abajo (--franja), la barra va a 4px del borde; si no, justo arriba de la rayita de inicio */
+nav{position:fixed;z-index:5;left:12px;right:12px;bottom:max(4px,calc(env(safe-area-inset-bottom) - var(--franja,0px) - 12px));max-width:520px;margin:0 auto;display:flex;padding:6px;
   border-radius:30px!important;border:1px solid rgba(255,255,255,.12)!important;
   background:linear-gradient(150deg,rgba(255,255,255,.13),rgba(255,255,255,.04) 45%,color-mix(in srgb,var(--c30) 18%,transparent)),color-mix(in srgb,var(--c60) 60%,transparent)!important;
   box-shadow:inset 0 1px 0 rgba(255,255,255,.26),inset 0 -1px 0 rgba(0,0,0,.4),0 20px 44px -12px rgba(0,0,0,.95)!important;
@@ -617,6 +618,13 @@ document.addEventListener("click", e => {
   const b = e.target.closest("[data-ir]"); if (b){ ir(b.dataset.ir); if (b.dataset.ancla) llevarA(b.dataset.ir, b.dataset.ancla); }
 });
 addEventListener("popstate", () => ir(location.hash.slice(1) || "inicio", false));
+
+/* Franja que iOS deja abajo en la app de pantalla de inicio (pantalla menos alto de la página). */
+function medirFranja(){
+  const f = navigator.standalone ? Math.max(0, Math.min(120, screen.height - innerHeight)) : 0;
+  document.documentElement.style.setProperty("--franja", f + "px");
+}
+medirFranja(); addEventListener("resize", medirFranja);
 
 /* La pastilla mide y se mueve al botón activo (los botones se reparten el ancho de la pantalla). */
 
