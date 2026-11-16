@@ -970,7 +970,7 @@ function renderSync(){
   const dot=$("syncDot"), txt=$("syncText"), btn=$("refreshBtn");
   dot.className = "dot";
   if (S.busy){ dot.classList.add("busy"); txt.textContent = S.mode==="connecting" ? "Conectando…" : S.reading ? "Actualizando…" : "Guardando…"; }
-  else if (S.mode==="live"){ dot.classList.add("live"); txt.textContent = "Sheet al día"; }
+  else if (S.mode==="live"){ dot.classList.add("live"); txt.textContent = "Al día"; }
   else if (S.mode==="example"){ txt.textContent = "Ejemplo"; }
   else if (S.mode==="error"){ dot.classList.add("err"); txt.textContent = "Sin conexión"; }
   else txt.textContent = "Conectando…";

@@ -1064,7 +1064,7 @@ function renderSync(){
   const dot=$("syncDot"), t=$("syncText"), b=$("refreshBtn");
   dot.className="dot";
   if (S.busy){ dot.classList.add("busy"); t.textContent = S.mode==="connecting" ? "Conectando…" : S.reading ? "Actualizando…" : "Guardando…"; }
-  else if (S.mode==="live"){ dot.classList.add("live"); t.textContent="Hoja al día"; }
+  else if (S.mode==="live"){ dot.classList.add("live"); t.textContent="Al día"; }
   else if (S.mode==="example"){ t.textContent="Ejemplo"; }
   else if (S.mode==="error"){ dot.classList.add("err"); t.textContent="Sin conexión"; }
   else t.textContent="Conectando…";
