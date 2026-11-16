@@ -29,13 +29,16 @@ html,body{margin:0;height:100%;overflow:hidden;background:var(--c60);color:var(-
 .vista{position:fixed;inset:0;z-index:1;border:0;width:100%;height:calc(100% + var(--hueco, 0px));background:transparent;display:none}
 .vista.on{display:block}
 /* las apps ya respetan la muesca del iPhone por su cuenta: el iframe va a pantalla completa */
-#v-inicio{overflow-y:auto;-webkit-overflow-scrolling:touch;padding:max(18px,env(safe-area-inset-top)) 16px calc(112px + env(safe-area-inset-bottom))}
+#v-inicio,#v-condotec{overflow-y:auto;-webkit-overflow-scrolling:touch;padding:max(14px,env(safe-area-inset-top)) 16px calc(76px + env(safe-area-inset-bottom))}
+/* el Inicio cabe en una pantalla: la gráfica toma lo que sobre (si un teléfono es muy chico, se puede deslizar) */
+#v-inicio main{display:flex;flex-direction:column;min-height:100%;gap:10px}
+#v-inicio main>*{flex:none}
 main{max-width:460px;margin:0 auto}
 button{font:inherit;color:inherit}
 .glass{background:linear-gradient(180deg,color-mix(in srgb,var(--c30) 30%,transparent),color-mix(in srgb,var(--c30) 16%,transparent));
   -webkit-backdrop-filter:var(--blur);backdrop-filter:var(--blur);border:1px solid color-mix(in srgb,var(--c30) 45%,transparent);
   box-shadow:inset 0 1px 0 rgba(255,255,255,.16),0 18px 40px -20px rgba(0,0,0,.75)}
-header{display:flex;align-items:center;gap:12px;margin:6px 0 18px}
+header{display:flex;align-items:center;gap:12px;margin:4px 0 2px}
 .logo{width:62px;height:62px;border-radius:20px;color:var(--c10);display:grid;place-items:center;font:400 24px/1 var(--serif);letter-spacing:.01em}
 header p{margin:0;font:400 34px/1 var(--serif);letter-spacing:-.01em}
 header p em{color:var(--c10)}
@@ -63,7 +66,7 @@ header small{display:block;color:var(--muted);font-size:13px;margin-bottom:6px}
 .t-rojo{color:#FF8A80;background:rgba(255,90,80,.16)}.t-ambar{color:#F6C35B;background:rgba(246,195,91,.15)}
 .t-verde{color:#86E0A6;background:rgba(80,200,120,.15)}.t-azul{color:#8EC5FF;background:rgba(80,150,255,.16)}.t-gris{color:var(--muted)}
 .cifra b.t-rojo,.cifra b.t-ambar,.cifra b.t-verde,.cifra b.t-azul{background:none}
-.hoja .nota{color:var(--muted);font-size:12px;margin:8px 2px 0}
+.nota{color:var(--muted);font-size:12px;margin:8px 2px 0}
 .seccion{display:flex;align-items:baseline;justify-content:space-between;margin:26px 4px 12px}
 .seccion h2{margin:0;font:italic 400 26px/1 var(--serif);letter-spacing:-.01em}
 .seccion span{color:var(--muted);font-size:12px}
@@ -77,13 +80,13 @@ button.card{width:100%;text-align:left;cursor:pointer;color:inherit;font:inherit
 button.card:active{transform:scale(.98)}
 @media (hover:hover){button.card:hover{transform:translateY(-2px)}}
 /* WHOOP: tres anillos con los colores de la paleta (60-30-10) */
-.whoop{border-radius:30px;padding:16px 12px 16px;margin-bottom:12px;
+.whoop{border-radius:30px;padding:14px 10px 12px;
   --a-sueno:color-mix(in srgb,var(--c30) 50%,#fff 50%);--a-rec:var(--c10);--a-esf:color-mix(in srgb,var(--c10) 50%,#fff 50%)}
-.marca-whoop{text-align:center;font:500 15px/1 var(--sans);letter-spacing:.42em;padding-left:.42em;margin:2px 0 14px}
+.marca-whoop{text-align:center;font:500 14px/1 var(--sans);letter-spacing:.42em;padding-left:.42em;margin:0 0 10px}
 .anillos{display:grid;grid-template-columns:repeat(3,1fr);gap:6px}
 .anillo{display:grid;justify-items:center;gap:10px;background:none;border:0;padding:0;color:inherit;cursor:pointer;font:inherit;transition:transform .2s}
 .anillo:active{transform:scale(.96)}
-.aro{position:relative;width:100%;max-width:106px;aspect-ratio:1;display:grid;place-items:center}
+.aro{position:relative;width:100%;max-width:min(96px,25vw);aspect-ratio:1;display:grid;place-items:center}
 .aro svg{position:absolute;inset:0;width:100%;height:100%;transform:rotate(-90deg);overflow:visible}
 .aro .pista{fill:none;stroke:rgba(255,255,255,.09);stroke-width:9}
 .aro .arco{fill:none;stroke:var(--col);stroke-width:9;stroke-linecap:round;stroke-dasharray:0 100;
@@ -91,20 +94,21 @@ button.card:active{transform:scale(.98)}
 .aro .num{position:relative;font-size:clamp(28px,8.5vw,34px)}
 .anillo .lbl{font:600 11px/1 var(--sans);letter-spacing:.14em;text-transform:uppercase;color:var(--fg);white-space:nowrap}
 .anillo .lbl i{font-style:normal;color:var(--muted);margin-left:3px}
-.whoop-pie{display:flex;justify-content:center;gap:16px;flex-wrap:wrap;margin-top:16px;padding-top:12px;border-top:1px solid color-mix(in srgb,var(--c30) 35%,transparent);font-size:12.5px;color:var(--muted)}
+.whoop-pie{display:flex;justify-content:center;gap:16px;flex-wrap:wrap;margin-top:12px;padding-top:10px;border-top:1px solid color-mix(in srgb,var(--c30) 35%,transparent);font-size:12.5px;color:var(--muted)}
 .whoop-pie b{color:var(--fg);font-weight:500}
 /* pasos, calorías, gastado hoy y mes */
-.cuatro{display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-bottom:6px}
-.stat{position:relative;overflow:hidden;border-radius:26px;padding:16px;min-height:118px;display:flex;flex-direction:column;justify-content:flex-end;gap:6px}
+.cuatro{display:grid;grid-template-columns:1fr 1fr;gap:8px}
+.stat{position:relative;overflow:hidden;border-radius:24px;padding:13px 14px;min-height:84px;display:flex;flex-direction:column;justify-content:flex-end;gap:6px}
 .stat[hidden]{display:none}
 .stat.ancha{grid-column:1/-1}
 .stat .relleno{position:absolute;left:0;top:0;bottom:0;width:calc(var(--p,0) * 1%);transition:width .9s cubic-bezier(.2,.8,.2,1);
   background:linear-gradient(160deg,color-mix(in srgb,var(--c10) 30%,transparent),color-mix(in srgb,var(--c10) 10%,transparent))}
-.stat .num{position:relative;font-size:clamp(36px,11vw,46px)}
+.stat .num{position:relative;font-size:clamp(30px,9vw,38px)}
 .stat small{position:relative;color:var(--muted);font-size:12.5px}
-.grafica{display:block;border-radius:30px;padding:18px 16px 14px}
-.grafica .t{font-size:20px;font-weight:500}
-.barras{display:grid;grid-template-columns:repeat(7,1fr);gap:7px;align-items:end;height:190px;margin-top:16px}
+.grafica{display:flex!important;flex-direction:column;border-radius:28px;padding:14px 14px 10px}
+#v-inicio .grafica{flex:1 1 0;min-height:130px}
+.grafica .t{font-size:16px;font-weight:500}
+.barras{display:grid;grid-template-columns:repeat(7,1fr);gap:7px;align-items:end;flex:1;min-height:60px;margin-top:10px}
 .col{display:flex;flex-direction:column;justify-content:flex-end;height:100%;gap:6px}
 .col .chip{align-self:center;min-width:32px;padding:5px 6px;border-radius:10px;text-align:center;font:500 12px/1 var(--sans);background:color-mix(in srgb,var(--c30) 45%,rgba(0,0,0,.35))}
 .col i{display:block;border-radius:12px;min-height:8px;transform-origin:bottom;transition:height .6s cubic-bezier(.2,.8,.2,1);
@@ -115,8 +119,9 @@ button.card:active{transform:scale(.98)}
 .dias{display:grid;grid-template-columns:repeat(7,1fr);gap:7px;margin-top:8px;font-size:12px;text-align:center;color:var(--muted)}
 
 
-.pills{display:flex;gap:8px;margin:16px 0 4px}
-.pill{flex:1;white-space:nowrap;text-align:center;padding:14px 10px;border-radius:999px;font:500 14px/1 var(--sans);color:var(--fg);text-decoration:none;cursor:pointer}
+/* página Condotec */
+.titulo-pagina{margin:4px 0 16px}.titulo-pagina small{color:var(--muted);font-size:13px}
+.titulo-pagina h1{margin:4px 0 0;font:400 52px/1 var(--serif);letter-spacing:-.01em}
 /* barra de pestañas pegada abajo a todo lo ancho, como en una app normal */
 nav{position:fixed;z-index:5;left:0;right:0;bottom:calc(-1 * var(--hueco, 0px));display:flex;padding:6px 12px calc(4px + env(safe-area-inset-bottom));
   border-radius:0!important;border-width:1px 0 0!important;transition:opacity .2s,transform .3s cubic-bezier(.2,.8,.2,1)}
@@ -138,10 +143,10 @@ nav button[aria-selected=true] svg{animation:pop .5s cubic-bezier(.34,1.6,.5,1)}
 .vista.on{z-index:1}
 @keyframes sube{from{opacity:0;transform:translateY(16px)}to{opacity:1;transform:none}}
 .vista.entra{animation:entrar .55s cubic-bezier(.22,1,.36,1) both;will-change:transform,opacity}
-#v-inicio.entra :is(header,.whoop,.stat,.grafica,.pills){animation:sube .55s cubic-bezier(.2,.8,.2,1) both}
+#v-inicio.entra :is(header,.whoop,.stat,.grafica){animation:sube .55s cubic-bezier(.2,.8,.2,1) both}
 #v-inicio.entra .whoop{animation-delay:.05s}#v-inicio.entra .stat:nth-child(1){animation-delay:.1s}#v-inicio.entra .stat:nth-child(2){animation-delay:.14s}
 #v-inicio.entra .stat:nth-child(3){animation-delay:.18s}#v-inicio.entra .stat:nth-child(4){animation-delay:.22s}
-#v-inicio.entra .grafica{animation-delay:.26s}#v-inicio.entra .pills{animation-delay:.3s}
+#v-inicio.entra .grafica{animation-delay:.26s}
 /* Entrada al abrir la app (o al volver después de un rato): todo aparece por partes */
 @keyframes fondoIn{from{opacity:0}to{opacity:1}}
 @keyframes logoIn{from{opacity:0;transform:scale(.6) rotate(-8deg);filter:blur(8px)}to{opacity:1;transform:none;filter:none}}
@@ -165,7 +170,7 @@ nav button[aria-selected=true] svg{animation:pop .5s cubic-bezier(.34,1.6,.5,1)}
 #v-inicio.intro .col i{animation:crece .7s cubic-bezier(.2,.9,.3,1.1) both}
 #v-inicio.intro .col .chip{animation:subeBlur .5s ease both}
 #v-inicio.intro .col:nth-child(1) i{animation-delay:1.35s}#v-inicio.intro .col:nth-child(1) .chip{animation-delay:1.55s}#v-inicio.intro .col:nth-child(2) i{animation-delay:1.40s}#v-inicio.intro .col:nth-child(2) .chip{animation-delay:1.60s}#v-inicio.intro .col:nth-child(3) i{animation-delay:1.45s}#v-inicio.intro .col:nth-child(3) .chip{animation-delay:1.65s}#v-inicio.intro .col:nth-child(4) i{animation-delay:1.50s}#v-inicio.intro .col:nth-child(4) .chip{animation-delay:1.70s}#v-inicio.intro .col:nth-child(5) i{animation-delay:1.55s}#v-inicio.intro .col:nth-child(5) .chip{animation-delay:1.75s}#v-inicio.intro .col:nth-child(6) i{animation-delay:1.60s}#v-inicio.intro .col:nth-child(6) .chip{animation-delay:1.80s}#v-inicio.intro .col:nth-child(7) i{animation-delay:1.65s}#v-inicio.intro .col:nth-child(7) .chip{animation-delay:1.85s}
-#v-inicio.intro .pills{animation:subeBlur .7s cubic-bezier(.2,.8,.2,1) 1.5s both}
+
 @media (prefers-reduced-motion:reduce){#v-inicio.intro *,.intro-on .fondo,.intro-on nav{animation:none!important}}
 /* un número que cambia hace un pequeño destello */
 @keyframes nuevo{from{opacity:.2;filter:blur(6px);transform:translateY(6px)}to{opacity:1;filter:none;transform:none}}
@@ -206,7 +211,7 @@ header .ajustes svg{width:20px;height:20px}
 
 <div class="vista on" id="v-inicio" role="tabpanel" aria-label="Inicio"><main>
 <header>
-  <button class="quien" id="abrirPanel" aria-label="Ver pendientes, depas y mis páginas">
+  <button class="quien" data-ir="condotec" aria-label="Ir a Condotec: pendientes y depas">
     <span class="logo glass" aria-hidden="true">JLP<i class="aviso" id="avisoPend" hidden></i></span>
     <div><small id="fecha">Hoy</small><p>Hola, <em>Pato</em></p></div>
   </button>
@@ -215,29 +220,33 @@ header .ajustes svg{width:20px;height:20px}
 <section class="whoop glass" aria-label="WHOOP">
   <div class="marca-whoop">WHOOP</div>
   <div class="anillos">
-    <button class="anillo" data-ir="tracker" style="--col:var(--a-sueno)"><span class="aro"><svg viewBox="0 0 120 120" aria-hidden="true"><circle class="pista" cx="60" cy="60" r="52"/><circle class="arco" id="arco-suenoPct" cx="60" cy="60" r="52" pathLength="100"/></svg><b class="num"><span id="suenoPct">–</span><sup>%</sup></b></span><span class="lbl">Sueño<i>›</i></span></button>
-    <button class="anillo" data-ir="tracker" style="--col:var(--a-rec)"><span class="aro"><svg viewBox="0 0 120 120" aria-hidden="true"><circle class="pista" cx="60" cy="60" r="52"/><circle class="arco" id="arco-rec" cx="60" cy="60" r="52" pathLength="100"/></svg><b class="num"><span id="rec">–</span><sup>%</sup></b></span><span class="lbl">Recuperación<i>›</i></span></button>
-    <button class="anillo" data-ir="tracker" style="--col:var(--a-esf)"><span class="aro"><svg viewBox="0 0 120 120" aria-hidden="true"><circle class="pista" cx="60" cy="60" r="52"/><circle class="arco" id="arco-strain" cx="60" cy="60" r="52" pathLength="100"/></svg><b class="num"><span id="strain">–</span></b></span><span class="lbl">Esfuerzo<i>›</i></span></button>
+    <button class="anillo" data-ir="tracker" data-ancla="whoopCard" style="--col:var(--a-sueno)"><span class="aro"><svg viewBox="0 0 120 120" aria-hidden="true"><circle class="pista" cx="60" cy="60" r="52"/><circle class="arco" id="arco-suenoPct" cx="60" cy="60" r="52" pathLength="100"/></svg><b class="num"><span id="suenoPct">–</span><sup>%</sup></b></span><span class="lbl">Sueño<i>›</i></span></button>
+    <button class="anillo" data-ir="tracker" data-ancla="whoopCard" style="--col:var(--a-rec)"><span class="aro"><svg viewBox="0 0 120 120" aria-hidden="true"><circle class="pista" cx="60" cy="60" r="52"/><circle class="arco" id="arco-rec" cx="60" cy="60" r="52" pathLength="100"/></svg><b class="num"><span id="rec">–</span><sup>%</sup></b></span><span class="lbl">Recuperación<i>›</i></span></button>
+    <button class="anillo" data-ir="tracker" data-ancla="whoopCard" style="--col:var(--a-esf)"><span class="aro"><svg viewBox="0 0 120 120" aria-hidden="true"><circle class="pista" cx="60" cy="60" r="52"/><circle class="arco" id="arco-strain" cx="60" cy="60" r="52" pathLength="100"/></svg><b class="num"><span id="strain">–</span></b></span><span class="lbl">Esfuerzo<i>›</i></span></button>
   </div>
   <div class="whoop-pie"><span>HRV <b id="hrv">–</b> ms</span><span>Dormiste <b id="sueno">–</b> h</span><span id="recNota"></span></div>
 </section>
 <div class="cuatro">
-  <button class="stat glass card" data-ir="tracker"><span class="relleno"></span><b class="num" id="pasos">–</b><small>pasos</small></button>
-  <button class="stat glass card" data-ir="tracker"><span class="relleno"></span><b class="num" id="kcal">–</b><small>calorías quemadas</small></button>
-  <button class="stat glass card" data-ir="finanzas"><b class="num" id="gasto">–</b><small>gastado hoy</small></button>
-  <button class="stat glass card" data-ir="finanzas"><b class="num" id="mes">–</b><small>gastado este mes</small></button>
+  <button class="stat glass card" data-ir="tracker" data-ancla="whoopCard"><span class="relleno"></span><b class="num" id="pasos">–</b><small>pasos</small></button>
+  <button class="stat glass card" data-ir="tracker" data-ancla="whoopCard"><span class="relleno"></span><b class="num" id="kcal">–</b><small>calorías quemadas</small></button>
+  <button class="stat glass card" data-ir="finanzas" data-ancla="hero"><b class="num" id="gasto">–</b><small>gastado hoy</small></button>
+  <button class="stat glass card" data-ir="finanzas" data-ancla="hero"><b class="num" id="semana">–</b><small>gastado esta semana</small></button>
 </div>
-<button class="grafica glass card" data-ir="tracker" aria-label="Recovery de los últimos 7 días">
+<button class="grafica glass card" data-ir="tracker" data-ancla="hero" aria-label="Recovery de los últimos 7 días">
   <div class="row"><span class="t">Recovery por día</span><span class="cap">7 días</span></div>
   <div class="barras" id="bars"></div>
   <div class="dias" id="dias"></div>
 </button>
-<div class="pills">
-  <button class="pill glass" data-accion="panel">Tu día</button>
-  <a class="pill glass" href="https://condotecmty.com" target="_blank" rel="noopener">Condotec</a>
-  <button class="pill glass" data-accion="colores">Colores</button>
-</div>
 <button class="conectar glass" id="conectar" hidden>Conectar mis datos</button>
+</main></div>
+
+<div class="vista" id="v-condotec" role="tabpanel" aria-label="Condotec"><main>
+<header class="titulo-pagina"><div><small>Departamentos</small><h1>Condotec</h1></div></header>
+<div class="accesos">
+  <a class="acceso glass" href="https://condotecmty.com" target="_blank" rel="noopener"><span class="ic"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M3 10.5 12 4l9 6.5V20H3z"/><path d="M9 20v-6h6v6"/></svg></span><span><b>Condotec</b><small>Página de promo</small></span></a>
+  <a class="acceso glass" href="https://portal.condotecmty.com" target="_blank" rel="noopener"><span class="ic"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><rect x="3" y="4" width="18" height="16" rx="3"/><path d="M3 9h18M8 14h3M8 17h6"/></svg></span><span><b>Condotec Admin</b><small>Portal</small></span></a>
+</div>
+<div id="panelCuerpo"><p class="nota">Cargando…</p></div>
 </main></div>
 
 <div class="velo" id="velo"></div>
@@ -249,23 +258,13 @@ header .ajustes svg{width:20px;height:20px}
   <div class="fila"><button id="restablecer">Restablecer</button><button class="listo" id="cerrarColores">Listo</button></div>
 </section>
 
-<section class="hoja" id="hojaPanel" role="dialog" aria-modal="true" aria-labelledby="panelTitulo" aria-hidden="true">
-  <div class="asa"></div>
-  <h2 id="panelTitulo">Tu día</h2>
-  <p class="sub" id="panelSub">Pendientes y depas de Condotec, y tus páginas.</p>
-  <div class="accesos">
-    <a class="acceso" href="https://condotecmty.com" target="_blank" rel="noopener"><span class="ic"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M3 10.5 12 4l9 6.5V20H3z"/><path d="M9 20v-6h6v6"/></svg></span><span><b>Condotec</b><small>Página de promo</small></span></a>
-    <a class="acceso" href="https://portal.condotecmty.com" target="_blank" rel="noopener"><span class="ic"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><rect x="3" y="4" width="18" height="16" rx="3"/><path d="M3 9h18M8 14h3M8 17h6"/></svg></span><span><b>Condotec Admin</b><small>Portal</small></span></a>
-  </div>
-  <div id="panelCuerpo"><p class="nota">Cargando…</p></div>
-  <div class="fila"><button class="listo" id="cerrarPanel">Listo</button></div>
-</section>
 
 <nav class="glass" role="tablist" aria-label="Secciones">
   <span class="pastilla" id="pastilla" aria-hidden="true"></span>
   <button role="tab" data-ir="inicio" aria-selected="true" aria-label="Inicio"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M4 10.5 12 4l8 6.5V20H4z"/><path d="M10 20v-5h4v5"/></svg><span>Inicio</span></button>
   <button role="tab" data-ir="tracker" aria-selected="false" aria-label="Tracker"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M3 12h4l2-6 4 12 2-6h6"/></svg><span>Tracker</span></button>
   <button role="tab" data-ir="finanzas" aria-selected="false" aria-label="Finanzas"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><rect x="3" y="6" width="18" height="13" rx="3"/><path d="M3 10h18M16 15h2"/></svg><span>Finanzas</span></button>
+  <button role="tab" data-ir="condotec" aria-selected="false" aria-label="Condotec"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M4 20V8l8-4 8 4v12"/><path d="M9 20v-5h6v5M9 10h.01M15 10h.01"/></svg><span>Condotec</span></button>
 </nav>
 
 <script>
@@ -293,8 +292,8 @@ const PALETAS = [
   { id:"nanohana",   n:"Nanohana",   k:"苔 · 海松 · 菜の花",   c60:"#14150C", c30:"#838A2D", c10:"#F7D94C" },
   { id:"arazome",    n:"Arazome",    k:"墨 · 胡桃 · 退紅",     c60:"#1B1717", c30:"#947A6D", c10:"#F596AA" },
 ];
-const ORDEN = ["inicio", "tracker", "finanzas"], NOMBRE = { inicio:"Inicio", tracker:"Tracker", finanzas:"Finanzas" };
-const DEF = { inicio:"hiwa", tracker:"sangoshu", finanzas:"byakuroku" }, LSP = "jlp-paletas";
+const ORDEN = ["inicio", "tracker", "finanzas", "condotec"], NOMBRE = { inicio:"Inicio", tracker:"Tracker", finanzas:"Finanzas", condotec:"Condotec" };
+const DEF = { inicio:"hiwa", tracker:"sangoshu", finanzas:"byakuroku", condotec:"kuchiba" }, LSP = "jlp-paletas";
 let elegidas = (() => { try{ return Object.assign({}, DEF, JSON.parse(localStorage.getItem(LSP) || "{}")); }catch(e){ return { ...DEF }; } })();
 const pal = tab => PALETAS.find(p => p.id === elegidas[tab]) || PALETAS.find(p => p.id === DEF[tab]);
 function pintar(){
@@ -352,8 +351,6 @@ function cargarPanel(c){
   return api(c, "panel", { hoy }).then(p => { pintarPanel(p); try{ localStorage.setItem(LSPANEL, JSON.stringify(p)); }catch(e){} })
     .catch(() => { if (!localStorage.getItem(LSPANEL)) $("panelCuerpo").innerHTML = '<p class="nota">No pude cargar tus pendientes. Revisa tu conexión.</p>'; });
 }
-$("abrirPanel").onclick = () => { hoja($("hojaPanel"), true); $("cerrarPanel").focus({ preventScroll:true }); const c = cfg(); if (c) cargarPanel(c); };
-$("cerrarPanel").onclick = cerrarHojas;
 try{ const p = JSON.parse(localStorage.getItem(LSPANEL) || "null"); if (p) pintarPanel(p); }catch(e){}
 $("restablecer").onclick = () => { elegidas = { ...DEF }; try{ localStorage.removeItem(LSP); }catch(e){} pintar(); dibujarCarriles(); };
 $("carriles").addEventListener("click", e => { const b = e.target.closest("[data-pal]"); if (b) elegir(b.dataset.tabPal, b.dataset.pal); });
@@ -362,7 +359,7 @@ const hoy = new Date().toLocaleDateString("sv-SE");
 $("fecha").textContent = new Date().toLocaleDateString("es-MX", { weekday:"long", day:"numeric", month:"long" });
 
 /* ---------- pestañas: cada app vive en su iframe, se crea la primera vez y se queda viva ---------- */
-const vistas = { inicio:$("v-inicio") };
+const vistas = { inicio:$("v-inicio"), condotec:$("v-condotec") };
 let actual = "inicio";
 function vista(tab){
   if (!vistas[tab]){
@@ -376,7 +373,7 @@ function vista(tab){
   return vistas[tab];
 }
 function ir(tab, push){
-  if (!vistas[tab] && !["tracker","finanzas","inicio"].includes(tab)) tab = "inicio";
+  if (!ORDEN.includes(tab)) tab = "inicio";
   const anterior = actual; actual = tab;
   document.documentElement.dataset.tab = tab;
   pintar();
@@ -397,10 +394,7 @@ function ir(tab, push){
   if (anterior !== tab) refrescar();
 }
 document.addEventListener("click", e => {
-  const b = e.target.closest("[data-ir]"); if (b) return ir(b.dataset.ir);
-  const a = e.target.closest("[data-accion]");
-  if (a && a.dataset.accion === "panel") $("abrirPanel").click();
-  if (a && a.dataset.accion === "colores") hojaColores(true);
+  const b = e.target.closest("[data-ir]"); if (b){ ir(b.dataset.ir); if (b.dataset.ancla) llevarA(b.dataset.ir, b.dataset.ancla); }
 });
 addEventListener("popstate", () => ir(location.hash.slice(1) || "inicio", false));
 
@@ -430,6 +424,13 @@ function animarEntrada(v, dir){
   }catch(e){}
 }
 
+/* Un toque en el Inicio lleva a la pestaña y a la parte exacta (p. ej. la tarjeta de WHOOP del Tracker). */
+function llevarA(tab, ancla){
+  const f = vistas[tab];
+  const ve = () => { try{ const el = f.contentDocument.getElementById(ancla); if (el && !el.hidden) el.scrollIntoView({ behavior:"smooth", block:"start" }); }catch(e){} };
+  if (f.contentDocument && f.contentDocument.readyState === "complete") setTimeout(ve, 250); else f.addEventListener("load", () => setTimeout(ve, 600), { once:true });
+}
+
 /* Mientras una app tiene abierta su hoja de abajo, se esconde la barra de pestañas para no taparla. */
 function vigilarHojas(f){
   try{
@@ -443,6 +444,7 @@ function vigilarHojas(f){
 function refrescar(){
   if (document.hidden) return;
   if (actual === "inicio") { const c = cfg(); if (c) cargar(c); return; }
+  if (actual === "condotec") { const c = cfg(); if (c) cargarPanel(c); return; }
   try{ const d = vistas[actual].contentDocument; if (d && d.readyState === "complete") d.dispatchEvent(new Event("visibilitychange")); }catch(e){}
 }
 document.addEventListener("visibilitychange", refrescar);
@@ -503,7 +505,7 @@ function mostrar(r){ // { serie:[[fecha, recovery]], rec, recFecha, sueno, hrv, 
   stat("pasos", r.pasos, entero, x => x / 10000 * 100);
   stat("kcal", r.kcal, entero, x => x / 3500 * 100);
   stat("gasto", r.gastoHoy || 0, pesos);
-  stat("mes", r.gastoMes || 0, pesos);
+  stat("semana", r.gastoSemana || 0, pesos);
   const vis = [...document.querySelectorAll(".cuatro .stat")].filter(s => !s.hidden); // si quedan nones, la última ocupa todo el ancho
   vis.forEach(s => s.classList.remove("ancha")); if (vis.length % 2) vis[vis.length - 1].classList.add("ancha");
 }
@@ -517,9 +519,11 @@ async function resumenLento(c){
   const ultimo = i => { const r = filas.filter(r => fecha(r[0]) >= ayer && isFinite(num(r[i]))).pop(); return r ? num(r[i]) : null; };
   const gastos = m.slice(1).filter(r => !/pago de tarjeta|transferencia/i.test(r[3] || "")).map(r => ({ d:fecha(r[0]), m:num(r[5]) })).filter(x => isFinite(x.m) && x.m < 0);
   const ok = x => isFinite(x) ? x : null;
+  const lunes = (() => { const d = new Date(); d.setDate(d.getDate() - (d.getDay() + 6) % 7); return d.toLocaleDateString("sv-SE"); })();
   return { serie:ultimos7().map(d => [d, ok(num((porDia[d] || [])[6]))]), rec:ok(num(u[6])), recFecha:u[0] ? fecha(u[0]) : null,
     sueno:ultimo(3), suenoPct:ultimo(5), hrv:ultimo(7), kcal:ultimo(10), pasos:ultimo(14), gastoHoy:-gastos.filter(x => x.d === hoy).reduce((a, x) => a + x.m, 0),
-    gastoMes:-gastos.filter(x => x.d.slice(0, 7) === hoy.slice(0, 7)).reduce((a, x) => a + x.m, 0) };
+    gastoMes:-gastos.filter(x => x.d.slice(0, 7) === hoy.slice(0, 7)).reduce((a, x) => a + x.m, 0),
+    gastoSemana:-gastos.filter(x => x.d >= lunes && x.d <= hoy).reduce((a, x) => a + x.m, 0) };
 }
 function cargar(c){
   api(c, "resumen", { hoy }).catch(() => resumenLento(c)).then(r => {
@@ -564,7 +568,7 @@ function intro(){
   v.classList.add("intro"); raiz.classList.add("intro-on");
   contar($("rec"), 400);
   contar($("suenoPct"), 550); contar($("strain"), 750);
-  ["pasos", "kcal", "gasto", "mes"].map($).filter(n => !n.closest(".stat").hidden).forEach((n, i) => contar(n, 950 + i * 80));
+  ["pasos", "kcal", "gasto", "semana"].map($).filter(n => !n.closest(".stat").hidden).forEach((n, i) => contar(n, 950 + i * 80));
   // los anillos se dibujan desde cero
   document.querySelectorAll(".aro .arco").forEach(a => { const d = a.style.strokeDasharray; a.style.transition = "none"; a.style.strokeDasharray = "0 100";
     void a.getBoundingClientRect(); a.style.transition = ""; setTimeout(() => { a.style.strokeDasharray = d; }, 500); });
