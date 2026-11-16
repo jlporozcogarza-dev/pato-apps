@@ -149,6 +149,55 @@ button.card:active{transform:scale(.98)}
 .evento .hora{flex:none;width:56px;font:500 13px/1.3 var(--sans);color:var(--muted)}
 .evento b{display:block;font-weight:500;font-size:14px;line-height:1.3}
 .evento small{display:block;color:var(--muted);font-size:12px;margin-top:3px}
+/* página Condotec: ocupación + mapa del edificio */
+[data-e=rentado]{--e:var(--c10)}[data-e=vence]{--e:#F6C35B}[data-e=vencido]{--e:#FF7A6E}[data-e=duda]{--e:#9A9A9A}[data-e=libre]{--e:#7FD6FF}
+.ocupa{border-radius:30px;padding:16px 16px 14px;margin:10px 0}
+.ocupa-num{display:flex;align-items:flex-end;gap:12px;margin:12px 0 14px}
+.ocupa-num .num{font-size:clamp(64px,20vw,84px);color:var(--c10)}
+.ocupa-num .num sup{color:var(--muted);font-size:.36em;top:.2em}
+.ocupa-num>span{font-size:16px;line-height:1.15;padding-bottom:8px}
+.ocupa-num small{display:block;color:var(--muted);font-size:12.5px;margin-top:3px}
+.segmentos{display:flex;gap:3px;height:14px}
+.segmentos i{border-radius:7px;background:var(--e);min-width:6px;box-shadow:inset 0 1px 0 rgba(255,255,255,.35),0 0 12px color-mix(in srgb,var(--e) 45%,transparent)}
+.leyenda{display:flex;flex-wrap:wrap;gap:6px 12px;margin-top:12px;font-size:12px;color:var(--muted)}
+.leyenda span{display:flex;align-items:center;gap:5px}.leyenda b{color:var(--fg);font-weight:500}
+.leyenda i{width:8px;height:8px;border-radius:50%;background:var(--e)}
+.edificio{border-radius:30px;padding:16px 14px 14px}
+.edificio .t{font-size:16px;font-weight:500}
+.unidades{display:grid;grid-template-columns:repeat(7,1fr);gap:6px;margin-top:12px}
+.uni{aspect-ratio:1;padding:0;border-radius:12px;border:1px solid color-mix(in srgb,var(--e) 45%,transparent);cursor:pointer;display:grid;place-items:center;
+  font:500 13px/1 var(--sans);color:var(--fg);background:color-mix(in srgb,var(--e) 24%,transparent);box-shadow:inset 0 1px 0 rgba(255,255,255,.2);
+  transition:transform .25s cubic-bezier(.34,1.4,.5,1),box-shadow .25s}
+.uni{position:relative}
+.uni.largo{font-size:9.5px;letter-spacing:-.02em}
+/* los que vencen llevan además un puntito, para no depender solo del color */
+.uni[data-e=vence]::after,.uni[data-e=vencido]::after{content:"";position:absolute;top:4px;right:4px;width:6px;height:6px;border-radius:50%;background:var(--e);box-shadow:0 0 6px var(--e)}
+.uni[data-e=libre]{background:none;border:1.5px dashed var(--e);color:var(--e);box-shadow:none}
+.uni[data-e=duda]{color:var(--muted)}
+.uni:active{transform:scale(.9)}
+.uni.sel{box-shadow:0 0 0 2px var(--c60),0 0 0 4px var(--e),0 0 18px color-mix(in srgb,var(--e) 60%,transparent)}
+.uni-detalle{margin-top:12px;padding:12px 14px;border-radius:16px;background:rgba(255,255,255,.05);border:1px solid rgba(255,255,255,.08);min-height:62px}
+.uni-detalle .arriba{display:flex;justify-content:space-between;align-items:center;gap:10px}
+.uni-detalle b{font:400 24px/1 var(--serif)}
+.uni-detalle p{margin:6px 0 0;color:var(--muted);font-size:13px;line-height:1.4}
+.uni-detalle p b{font:500 13px/1.4 var(--sans);color:var(--fg)}
+.marca[data-e]{color:var(--e);background:color-mix(in srgb,var(--e) 16%,transparent)}
+.tira-pend{display:flex;align-items:center;gap:14px;width:100%;margin-top:18px;padding:14px 16px;border-radius:24px;text-align:left}
+.tira-pend .num{font-size:44px;color:var(--c10)}
+.tira-pend span{flex:1;font-size:15px;line-height:1.2}.tira-pend small{display:block;color:var(--muted);font-size:12.5px;margin-top:3px}
+.tira-pend em{font-style:normal;color:var(--muted);font-size:22px}
+/* cada pestaña entra a su manera: en Condotec los depas aparecen uno por uno; en Pendientes el calendario baja y la agenda sube */
+@keyframes brota{from{opacity:0;transform:scale(.4)}to{opacity:1;transform:none}}
+@keyframes baja{from{opacity:0;transform:translateY(-18px)}to{opacity:1;transform:none}}
+#v-condotec.entra :is(.titulo-pagina,.accesos,.ocupa,.edificio,.seccion,.renglones,.tira-pend){animation:sube .55s cubic-bezier(.2,.8,.2,1) both}
+#v-condotec.entra .accesos{animation-delay:.05s}#v-condotec.entra .ocupa{animation-delay:.1s}#v-condotec.entra .edificio{animation-delay:.16s}
+#v-condotec.entra .uni{animation:brota .45s cubic-bezier(.34,1.4,.5,1) both;animation-delay:calc(.28s + var(--n) * 14ms)}
+#v-condotec.entra .segmentos i{transform-origin:left;animation:estira .7s cubic-bezier(.2,.8,.2,1) .3s both}
+@keyframes estira{from{transform:scaleX(0)}to{transform:none}}
+#v-pendientes.entra .titulo-pagina{animation:sube .5s cubic-bezier(.2,.8,.2,1) both}
+#v-pendientes.entra .calendario{animation:baja .6s cubic-bezier(.2,.8,.2,1) .05s both}
+#v-pendientes.entra :is(.seccion,.renglones){animation:sube .55s cubic-bezier(.2,.8,.2,1) .18s both}
+@media (prefers-reduced-motion:reduce){#v-condotec.entra *,#v-pendientes.entra *{animation:none!important}}
 /* página Condotec */
 .titulo-pagina{margin:4px 0 16px}.titulo-pagina small{color:var(--muted);font-size:13px}
 .titulo-pagina h1{margin:4px 0 0;font:400 52px/1 var(--serif);letter-spacing:-.01em}
@@ -344,7 +393,7 @@ const PALETAS = [
   { id:"arazome",    n:"Arazome",    k:"墨 · 胡桃 · 退紅",     c60:"#1B1717", c30:"#947A6D", c10:"#F596AA" },
 ];
 const ORDEN = ["inicio", "tracker", "finanzas", "condotec", "pendientes"], NOMBRE = { inicio:"Inicio", tracker:"Tracker", finanzas:"Finanzas", condotec:"Condotec", pendientes:"Pendientes" };
-const DEF = { inicio:"kikyo", tracker:"sangoshu", finanzas:"byakuroku", condotec:"kuchiba", pendientes:"sora" }, LSP = "jlp-paletas";
+const DEF = { inicio:"kikyo", tracker:"sangoshu", finanzas:"byakuroku", condotec:"moegi", pendientes:"sora" }, LSP = "jlp-paletas";
 let elegidas = (() => { try{ return Object.assign({}, DEF, JSON.parse(localStorage.getItem(LSP) || "{}")); }catch(e){ return { ...DEF }; } })();
 const pal = tab => PALETAS.find(p => p.id === elegidas[tab]) || PALETAS.find(p => p.id === DEF[tab]);
 function pintar(){
@@ -427,7 +476,9 @@ function pintarPend(){
 }
 function pintarAgenda(){ agSel = agSel || hoy; agMes = agMes || hoy.slice(0, 7); if (AG){ pintarCal(); pintarDia(); pintarPend(); } }
 function cargarAgenda(c){
-  return api(c, "agenda", {}).then(r => { AG = r; try{ localStorage.setItem(LSAG, JSON.stringify(r)); }catch(e){} pintarAgenda(); })
+  return api(c, "agenda", {}).then(r => {
+    const igual = JSON.stringify(r) === JSON.stringify(AG); // sin cambios: no se redibuja
+    AG = r; try{ localStorage.setItem(LSAG, JSON.stringify(r)); }catch(e){} if (!igual) pintarAgenda(); })
     .catch(() => { if (!AG) $("agDia").innerHTML = '<p class="nota">No pude cargar tu agenda. Revisa tu conexión.</p>'; });
 }
 $("calDias").addEventListener("click", e => {
@@ -440,21 +491,52 @@ $("mesAnt").onclick = () => moverMes(-1); $("mesSig").onclick = () => moverMes(1
 /* ---------- Tu día: Pendientes y Depas de Condotec (mismas cuentas que el panel de Fede, las hace el server) ---------- */
 const LSPANEL = "jlp-panel";
 const esc = s => String(s ?? "").replace(/[&<>"]/g, ch => ({ "&":"&amp;", "<":"&lt;", ">":"&gt;", '"':"&quot;" })[ch]);
-function seccionPanel(s){
-  if (!s) return "";
-  return `<div class="seccion"><h2>${esc(s.titulo)}</h2><span>${esc(s.resumen)}</span></div>` +
-    `<div class="cifras">${(s.cifras || []).map(x => `<div class="cifra"><b class="t-${esc(x.tono)}">${esc(x.valor)}</b><small>${esc(x.rotulo)}</small></div>`).join("")}</div>` +
-    `<div class="renglones">${(s.renglones || []).map(r => `<div class="renglon"><div class="arriba"><b>${esc(r.texto)}</b>` +
-      (r.marca ? `<span class="marca t-${esc(r.tono || "gris")}">${esc(r.marca)}</span>` : "") + `</div>` +
-      (r.detalle ? `<p>${esc(r.detalle)}</p>` : "") + `</div>`).join("")}</div>` +
-    (s.nota ? `<p class="nota">${esc(s.nota)}</p>` : "");
+const ESTADOS = [["rentado", "Rentado"], ["vence", "Vence pronto"], ["vencido", "Contrato vencido"], ["duda", "Por confirmar"], ["libre", "Libre"]];
+const rotuloUni = d => String(d).replace(/^(loft|depa|depto\.?)\s*/i, "");
+let PANEL = null, uniSel = null, panelPintado = "";
+function detalleUni(u){
+  if (!u) return '<p style="margin:0">Toca un depa para ver quién vive ahí, su renta y cuándo vence.</p>';
+  const nombre = (ESTADOS.find(e => e[0] === u.e) || [, u.e])[1];
+  const vence = u.s ? new Date(u.s + "T12:00").toLocaleDateString("es-MX", { day:"numeric", month:"short", year:"numeric" }) : "";
+  const cuando = u.dias == null ? "" : u.dias < 0 ? ` · venció hace ${-u.dias} d` : ` · en ${u.dias} d`;
+  return `<div class="arriba"><b>${esc(u.d)}</b><span class="marca" data-e="${esc(u.e)}">${esc(nombre)}</span></div>` +
+    (u.q && u.q.length ? `<p><b>${esc(u.q.join(" y "))}</b></p>` : `<p>Sin inquilino.</p>`) +
+    ((u.r || vence) ? `<p>${u.r ? "Renta " + pesos(u.r) + "/mes" : ""}${u.r && vence ? " · " : ""}${vence ? "Contrato hasta " + esc(vence) + cuando : ""}</p>` : "");
 }
-function pintarPanel(p){
-  $("panelCuerpo").innerHTML = seccionPanel(p.pendientes) + seccionPanel(p.depas);
-  const alta = ((p.pendientes || {}).cifras || []).find(x => x.rotulo === "alta");
-  const n = alta ? parseInt(alta.valor, 10) || 0 : 0;
+function pintarPanel(p, forzar){
+  const firma = JSON.stringify(p) + "|" + uniSel;
+  if (!forzar && firma === panelPintado) return; // sin cambios: no se redibuja (así no se repiten las animaciones)
+  panelPintado = firma; PANEL = p;
+  const us = p.unidades || [], cif = (s, r) => (((p[s] || {}).cifras || []).find(x => x.rotulo === r) || {}).valor || "0";
+  const renta = (((p.depas || {}).resumen || "").match(/\$[\d,]+/) || [""])[0];
+  const cuenta = ESTADOS.map(([e, n]) => [e, n, us.filter(u => u.e === e).length]).filter(x => x[2]);
+  let h = "";
+  if (us.length){
+    h += `<section class="ocupa glass"><div class="row"><span class="cap">Ocupación</span><span class="cap">${us.length} unidades</span></div>` +
+      `<div class="ocupa-num"><b class="num">${esc(cif("depas", "rentados"))}<sup>/${us.length}</sup></b><span>rentados<small>${renta ? esc(renta) + "/mes en hoja" : ""}</small></span></div>` +
+      `<div class="segmentos">${cuenta.map(([e, , n]) => `<i data-e="${e}" style="flex:${n}"></i>`).join("")}</div>` +
+      `<div class="leyenda">${cuenta.map(([e, nom, n]) => `<span><i data-e="${e}"></i>${nom} <b>${n}</b></span>`).join("")}</div></section>`;
+    h += `<section class="edificio glass"><div class="row"><span class="t">Edificio</span><span class="cap">toca un depa</span></div>` +
+      `<div class="unidades">${us.map((u, i) => { const r = rotuloUni(u.d);
+        return `<button class="uni${r.length > 3 ? " largo" : ""}${u.d === uniSel ? " sel" : ""}" data-e="${esc(u.e)}" data-uni="${esc(u.d)}" style="--n:${i}" aria-label="${esc(u.d)}">${esc(r)}</button>`; }).join("")}</div>` +
+      `<div class="uni-detalle" id="uniDetalle">${detalleUni(us.find(u => u.d === uniSel))}</div></section>`;
+  }
+  const at = (p.depas || {}).renglones || [];
+  if (at.length) h += `<div class="seccion"><h2>Atención</h2><span>${at.length} depas</span></div><div class="renglones">` +
+    at.map(r => `<div class="renglon"><div class="arriba"><b>${esc(r.texto)}</b>${r.marca ? `<span class="marca t-${esc(r.tono || "gris")}">${esc(r.marca)}</span>` : ""}</div>${r.detalle ? `<p>${esc(r.detalle)}</p>` : ""}</div>`).join("") + `</div>`;
+  h += `<button class="tira-pend glass card" data-ir="pendientes"><b class="num">${esc(cif("pendientes", "abiertos"))}</b>` +
+    `<span>pendientes abiertos<small>${esc(cif("pendientes", "alta"))} de alta · ${esc(cif("pendientes", "vencidos"))} vencidos</small></span><em>›</em></button>`;
+  $("panelCuerpo").innerHTML = h;
+  const n = parseInt(cif("pendientes", "alta"), 10) || 0;
   $("avisoPend").hidden = !n; $("avisoPend").textContent = n;
 }
+$("panelCuerpo").addEventListener("click", e => {
+  const b = e.target.closest("[data-uni]"); if (!b || !PANEL) return;
+  uniSel = uniSel === b.dataset.uni ? null : b.dataset.uni; // solo cambia la selección: no se redibuja el mapa
+  $("panelCuerpo").querySelectorAll(".uni").forEach(x => x.classList.toggle("sel", x.dataset.uni === uniSel));
+  $("uniDetalle").innerHTML = detalleUni((PANEL.unidades || []).find(u => u.d === uniSel));
+  panelPintado = JSON.stringify(PANEL) + "|" + uniSel;
+});
 function cargarPanel(c){
   return api(c, "panel", { hoy }).then(p => { pintarPanel(p); try{ localStorage.setItem(LSPANEL, JSON.stringify(p)); }catch(e){} })
     .catch(() => { if (!localStorage.getItem(LSPANEL)) $("panelCuerpo").innerHTML = '<p class="nota">No pude cargar tus pendientes. Revisa tu conexión.</p>'; });
@@ -518,6 +600,7 @@ addEventListener("resize", moverPastilla);
 function animarEntrada(v, dir){
   v.style.setProperty("--dir", dir || 1);
   v.classList.remove("entra"); void v.offsetWidth; v.classList.add("entra");
+  clearTimeout(v._entra); v._entra = setTimeout(() => v.classList.remove("entra"), 1500);
   try{
     const d = v.tagName === "IFRAME" ? v.contentDocument.documentElement : null;
     if (d){ d.classList.remove("entra"); void d.offsetWidth; d.classList.add("entra"); }
