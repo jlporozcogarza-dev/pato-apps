@@ -4,6 +4,7 @@
 <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent"><meta name="apple-mobile-web-app-title" content="JLP">
 <meta name="theme-color" content="#1C1C1C" id="themeColor">
 <link rel="apple-touch-icon" href="tracker/icon-180.png"><link rel="icon" href="tracker/icon-192.png">
+<link rel="preconnect" href="https://api.jlpog.app" crossorigin>
 <link rel="preconnect" href="https://fonts.googleapis.com"><link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;500;600&display=swap" rel="stylesheet">
 <style>
@@ -14,9 +15,7 @@
 @property --c10{syntax:"<color>";inherits:true;initial-value:#BEC23F}
 :root{color-scheme:dark;--fg:#F4F1EA;--muted:#ABA69D;--blur:blur(28px) saturate(160%);
   transition:--c60 .6s ease,--c30 .6s ease,--c10 .6s ease}
-[data-tab=inicio]{--c60:#1C1C1C;--c30:#535953;--c10:#BEC23F}   /* 墨 Sumi · 青鈍 Aonibi · 鶸 Hiwa */
-[data-tab=tracker]{--c60:#1E1512;--c30:#B54434;--c10:#F17C67}  /* 鳶 Tobi · 紅樺 Benikaba · 珊瑚朱 Sangoshu */
-[data-tab=finanzas]{--c60:#08192D;--c30:#566C73;--c10:#A8D8B9} /* 褐 Kachi · 藍鼠 Ainezumi · 白緑 Byakuroku */
+/* Los colores de cada pestaña los pone el script (PALETAS) según lo que elijas en Colores. */
 *{box-sizing:border-box;-webkit-tap-highlight-color:transparent}
 html,body{margin:0;height:100%;overflow:hidden;background:var(--c60);color:var(--fg);font:16px/1.35 Outfit,system-ui,sans-serif}
 .fondo{position:fixed;inset:0;z-index:0;pointer-events:none;
@@ -59,11 +58,53 @@ header small::first-letter{text-transform:uppercase}
 @media (hover:hover){.tile:hover,.hero:hover{transform:translateY(-2px)}.tile:hover .arrow{color:var(--c10);transform:translate(2px,-2px)}}
 nav{position:fixed;z-index:5;left:50%;bottom:max(16px,env(safe-area-inset-bottom));transform:translateX(-50%);display:flex;gap:4px;padding:6px;border-radius:24px;transition:opacity .2s,transform .25s}
 nav.oculta{opacity:0;pointer-events:none;transform:translate(-50%,24px)}
-nav button{width:58px;height:48px;border:0;border-radius:18px;display:grid;place-items:center;background:none;color:#D4D0C8;cursor:pointer;transition:background .25s,color .25s}
-nav button[aria-selected=true]{background:linear-gradient(180deg,color-mix(in srgb,var(--c10) 80%,#fff),var(--c10));color:var(--c60);box-shadow:inset 0 1px 0 rgba(255,255,255,.7),0 6px 18px -6px var(--c10)}
+nav button{position:relative;z-index:1;width:58px;height:48px;border:0;border-radius:18px;display:grid;place-items:center;background:none;color:#D4D0C8;cursor:pointer;transition:color .35s}
+nav button[aria-selected=true]{color:var(--c60)}
+nav button[aria-selected=true] svg{animation:pop .5s cubic-bezier(.34,1.6,.5,1)}
+/* la pastilla se desliza al botón activo */
+.pastilla{position:absolute;top:6px;left:6px;width:58px;height:48px;border-radius:18px;transform:translateX(calc(var(--i,0) * 62px));
+  transition:transform .55s cubic-bezier(.34,1.35,.5,1);
+  background:linear-gradient(180deg,color-mix(in srgb,var(--c10) 80%,#fff),var(--c10));box-shadow:inset 0 1px 0 rgba(255,255,255,.7),0 6px 18px -6px var(--c10)}
+@keyframes pop{0%{transform:scale(.7)}60%{transform:scale(1.15)}100%{transform:scale(1)}}
+/* la pantalla entra desde el lado de la pestaña y sus textos suben escalonados */
+@keyframes entrar{from{opacity:0;transform:translateX(calc(var(--dir,1) * 44px))}to{opacity:1;transform:none}}
+@keyframes sube{from{opacity:0;transform:translateY(16px)}to{opacity:1;transform:none}}
+.vista.entra{animation:entrar .45s cubic-bezier(.2,.8,.2,1) both}
+#v-inicio.entra :is(header,.hero,.tile){animation:sube .55s cubic-bezier(.2,.8,.2,1) both}
+#v-inicio.entra .hero{animation-delay:.06s}
+#v-inicio.entra .tile:nth-child(1){animation-delay:.12s}#v-inicio.entra .tile:nth-child(2){animation-delay:.16s}
+#v-inicio.entra .tile:nth-child(3){animation-delay:.20s}#v-inicio.entra .tile:nth-child(4){animation-delay:.24s}
+/* un número que cambia hace un pequeño destello */
+@keyframes nuevo{from{opacity:.2;filter:blur(6px);transform:translateY(6px)}to{opacity:1;filter:none;transform:none}}
+.nuevo{animation:nuevo .45s ease both}
 nav svg{width:22px;height:22px}
 :focus-visible{outline:2px solid var(--c10);outline-offset:3px}
 .conectar{margin-top:14px;width:100%;padding:14px;border-radius:18px;cursor:pointer}
+header .ajustes{margin-left:auto;width:44px;height:44px;border-radius:14px;display:grid;place-items:center;cursor:pointer;color:var(--muted)}
+header .ajustes svg{width:20px;height:20px}
+/* hoja de Colores */
+.velo{position:fixed;inset:0;z-index:8;background:rgba(0,0,0,.5);opacity:0;pointer-events:none;transition:opacity .25s}
+.velo.on{opacity:1;pointer-events:auto}
+.hoja{position:fixed;z-index:9;left:0;right:0;bottom:0;max-height:86vh;overflow-y:auto;border-radius:28px 28px 0 0;padding:10px 16px calc(24px + env(safe-area-inset-bottom));
+  transform:translateY(105%);transition:transform .32s cubic-bezier(.2,.8,.2,1);
+  background:linear-gradient(180deg,color-mix(in srgb,var(--c30) 34%,transparent),color-mix(in srgb,var(--c60) 94%,transparent)),var(--c60);
+  -webkit-backdrop-filter:var(--blur);backdrop-filter:var(--blur);border-top:1px solid color-mix(in srgb,var(--c30) 50%,transparent);box-shadow:inset 0 1px 0 rgba(255,255,255,.14)}
+.hoja.on{transform:none}
+.hoja .asa{width:40px;height:5px;border-radius:3px;background:rgba(255,255,255,.25);margin:0 auto 12px}
+.hoja h2{font-size:24px;font-weight:500;margin:0 0 4px}
+.hoja .sub{color:var(--muted);font-size:14px;margin:0 0 18px}
+.hoja h3{font-size:15px;font-weight:500;margin:18px 0 10px;display:flex;align-items:center;gap:8px}
+.hoja h3 span{color:var(--muted);font-weight:400;font-size:13px}
+.carril{display:flex;gap:10px;overflow-x:auto;padding:2px 2px 8px;scroll-snap-type:x proximity;scrollbar-width:none}
+.carril::-webkit-scrollbar{display:none}
+.pal{flex:none;scroll-snap-align:start;width:92px;padding:8px;border-radius:18px;border:1px solid rgba(255,255,255,.10);background:rgba(255,255,255,.04);cursor:pointer;text-align:left}
+.pal .mu{height:56px;border-radius:12px;overflow:hidden;display:grid;grid-template-columns:6fr 3fr 1fr}
+.pal b{display:block;font-size:13px;font-weight:500;margin-top:7px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.pal small{display:block;font-size:11px;color:var(--muted);white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.pal[aria-pressed=true]{border-color:var(--c10);box-shadow:0 0 0 2px color-mix(in srgb,var(--c10) 45%,transparent),inset 0 1px 0 rgba(255,255,255,.18);background:rgba(255,255,255,.08)}
+.hoja .fila{display:flex;gap:10px;margin-top:22px}
+.hoja .fila button{flex:1;min-height:48px;border-radius:16px;cursor:pointer;border:1px solid rgba(255,255,255,.12);background:rgba(255,255,255,.06)}
+.hoja .fila .listo{background:var(--c10);color:var(--c60);border-color:transparent;font-weight:500}
 @media (prefers-reduced-motion:reduce){*{transition:none!important}}
 </style></head>
 <body>
@@ -73,6 +114,7 @@ nav svg{width:22px;height:22px}
 <header>
   <div class="logo glass" aria-hidden="true">JLP</div>
   <div><p>Hola, Pato</p><small id="fecha">Hoy</small></div>
+  <button class="ajustes glass" id="abrirColores" aria-label="Cambiar colores"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><circle cx="12" cy="12" r="9"/><circle cx="8.5" cy="9.5" r="1.4" fill="currentColor"/><circle cx="12.5" cy="7.5" r="1.4" fill="currentColor"/><circle cx="16" cy="10.5" r="1.4" fill="currentColor"/><path d="M12 21a2.5 2.5 0 0 1 0-5h2a3 3 0 0 0 3-3"/></svg></button>
 </header>
 <button class="hero glass" data-ir="tracker" aria-label="Abrir Tracker">
   <div class="row"><span class="t">Recovery</span><span class="p">Últimos 7 días</span></div>
@@ -89,7 +131,17 @@ nav svg{width:22px;height:22px}
 <button class="conectar glass" id="conectar" hidden>Conectar mis datos</button>
 </main></div>
 
+<div class="velo" id="velo"></div>
+<section class="hoja" id="hoja" role="dialog" aria-modal="true" aria-labelledby="hojaTitulo" aria-hidden="true">
+  <div class="asa"></div>
+  <h2 id="hojaTitulo">Colores</h2>
+  <p class="sub">Paletas del diccionario de colores japonés. Fondo 60 · vidrio 30 · acento 10.</p>
+  <div id="carriles"></div>
+  <div class="fila"><button id="restablecer">Restablecer</button><button class="listo" id="cerrarColores">Listo</button></div>
+</section>
+
 <nav class="glass" role="tablist" aria-label="Secciones">
+  <span class="pastilla" id="pastilla" aria-hidden="true"></span>
   <button role="tab" data-ir="inicio" aria-selected="true" aria-label="Inicio"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M4 10.5 12 4l8 6.5V20H4z"/><path d="M10 20v-5h4v5"/></svg></button>
   <button role="tab" data-ir="tracker" aria-selected="false" aria-label="Tracker"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M3 12h4l2-6 4 12 2-6h6"/></svg></button>
   <button role="tab" data-ir="finanzas" aria-selected="false" aria-label="Finanzas"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><rect x="3" y="6" width="18" height="13" rx="3"/><path d="M3 10h18M16 15h2"/></svg></button>
@@ -99,8 +151,62 @@ nav svg{width:22px;height:22px}
 /* Misma configuración que tracker y finanzas (mismo sitio, misma llave "pato-puente"). */
 const LS = "pato-puente", API = "https://api.jlpog.app/";
 const TRACKER = "1L90iaeKk-U3Y7siZ4h7pFOfguUrEbK4IVvqk1YEuFFM", FIN = "1Wj1YoOCuqjQB-4rtikdTKAhFRCSRloNsWJeLMez4vic";
-const C60 = { inicio:"#1C1C1C", tracker:"#1E1512", finanzas:"#08192D" };
 const $ = id => document.getElementById(id);
+
+/* ---------- paletas: colores tradicionales japoneses (nippon iro), regla 60-30-10 ----------
+   c60 = fondo (versión oscura del color base), c30 = vidrio, c10 = acento. */
+const PALETAS = [
+  { id:"hiwa",       n:"Hiwa",       k:"墨 · 青鈍 · 鶸",       c60:"#1C1C1C", c30:"#535953", c10:"#BEC23F" },
+  { id:"sangoshu",   n:"Sangoshu",   k:"鳶 · 紅樺 · 珊瑚朱",   c60:"#1E1512", c30:"#B54434", c10:"#F17C67" },
+  { id:"byakuroku",  n:"Byakuroku",  k:"褐 · 藍鼠 · 白緑",     c60:"#08192D", c30:"#566C73", c10:"#A8D8B9" },
+  { id:"wasurenagusa", n:"Wasurenagusa", k:"紺 · 群青 · 勿忘草", c60:"#0B1A2E", c30:"#51A8DD", c10:"#7DB9DE" },
+  { id:"yamabuki",   n:"Yamabuki",   k:"消炭 · 利休鼠 · 山吹", c60:"#1A1A1A", c30:"#656765", c10:"#FFB11B" },
+  { id:"kamenozoki", n:"Kamenozoki", k:"黒橡 · 青磁 · 瓶覗",   c60:"#0B1013", c30:"#69B0AC", c10:"#A5DEE4" },
+  { id:"moegi",      n:"Moegi",      k:"深緑 · 千歳緑 · 萌黄", c60:"#0E1712", c30:"#36563C", c10:"#90B44B" },
+  { id:"kuchiba",    n:"Kikuchiba",  k:"焦茶 · 弁柄 · 黄朽葉", c60:"#1A130E", c30:"#9A5034", c10:"#D9AB42" },
+  { id:"nadeshiko",  n:"Nadeshiko",  k:"黒紅 · 蘇芳 · 撫子",   c60:"#1A0E10", c30:"#8E354A", c10:"#DC9FB4" },
+  { id:"kariyasu",   n:"Kariyasu",   k:"藍 · 錆青磁 · 刈安",   c60:"#071A1E", c30:"#86A697", c10:"#E9CD4C" },
+  { id:"shu",        n:"Shu",        k:"鉛 · 銀鼠 · 朱",       c60:"#121212", c30:"#91989F", c10:"#ED784A" },
+  { id:"anzu",       n:"Anzu",       k:"柿渋 · 胡桃 · 杏",     c60:"#1C120E", c30:"#A35E47", c10:"#E9A368" },
+  { id:"sora",       n:"Sora",       k:"鉄紺 · 縹 · 空",       c60:"#0B1420", c30:"#006284", c10:"#58B2DC" },
+  { id:"nanohana",   n:"Nanohana",   k:"苔 · 海松 · 菜の花",   c60:"#14150C", c30:"#838A2D", c10:"#F7D94C" },
+  { id:"arazome",    n:"Arazome",    k:"墨 · 胡桃 · 退紅",     c60:"#1B1717", c30:"#947A6D", c10:"#F596AA" },
+];
+const ORDEN = ["inicio", "tracker", "finanzas"], NOMBRE = { inicio:"Inicio", tracker:"Tracker", finanzas:"Finanzas" };
+const DEF = { inicio:"hiwa", tracker:"sangoshu", finanzas:"byakuroku" }, LSP = "jlp-paletas";
+let elegidas = (() => { try{ return Object.assign({}, DEF, JSON.parse(localStorage.getItem(LSP) || "{}")); }catch(e){ return { ...DEF }; } })();
+const pal = tab => PALETAS.find(p => p.id === elegidas[tab]) || PALETAS.find(p => p.id === DEF[tab]);
+function pintar(){
+  const p = pal(actual), r = document.documentElement.style;
+  r.setProperty("--c60", p.c60); r.setProperty("--c30", p.c30); r.setProperty("--c10", p.c10);
+  $("themeColor").content = p.c60;
+  ORDEN.forEach(pintarApp);
+}
+function pintarApp(tab){ // las apps leen --j60/--j30/--j10 (tema de build.py)
+  const f = vistas[tab]; if (!f || f.tagName !== "IFRAME") return;
+  try{ const p = pal(tab), s = f.contentDocument.documentElement.style; s.setProperty("--j60", p.c60); s.setProperty("--j30", p.c30); s.setProperty("--j10", p.c10); }catch(e){}
+}
+function elegir(tab, id){
+  elegidas[tab] = id;
+  try{ localStorage.setItem(LSP, JSON.stringify(elegidas)); }catch(e){}
+  pintar(); dibujarCarriles();
+}
+function dibujarCarriles(){
+  $("carriles").innerHTML = ORDEN.map(t => `<h3>${NOMBRE[t]} <span>· ${pal(t).n}</span></h3><div class="carril" role="group" aria-label="Paleta de ${NOMBRE[t]}">` +
+    PALETAS.map(p => `<button class="pal" data-tab-pal="${t}" data-pal="${p.id}" aria-pressed="${p.id === pal(t).id}" aria-label="${p.n} para ${NOMBRE[t]}">` +
+      `<span class="mu"><i style="background:${p.c60}"></i><i style="background:${p.c30}"></i><i style="background:${p.c10}"></i></span><b>${p.n}</b><small>${p.k}</small></button>`).join("") + `</div>`).join("");
+}
+function hojaColores(abrir){
+  $("hoja").classList.toggle("on", abrir); $("velo").classList.toggle("on", abrir);
+  $("hoja").setAttribute("aria-hidden", !abrir);
+  document.querySelector("nav").classList.toggle("oculta", abrir);
+  if (abrir){ dibujarCarriles(); $("cerrarColores").focus({ preventScroll:true }); }
+}
+$("abrirColores").onclick = () => hojaColores(true);
+$("cerrarColores").onclick = $("velo").onclick = () => hojaColores(false);
+$("restablecer").onclick = () => { elegidas = { ...DEF }; try{ localStorage.removeItem(LSP); }catch(e){} pintar(); dibujarCarriles(); };
+$("carriles").addEventListener("click", e => { const b = e.target.closest("[data-pal]"); if (b) elegir(b.dataset.tabPal, b.dataset.pal); });
+addEventListener("keydown", e => { if (e.key === "Escape" && $("hoja").classList.contains("on")) hojaColores(false); });
 const hoy = new Date().toLocaleDateString("sv-SE");
 $("fecha").textContent = new Date().toLocaleDateString("es-MX", { weekday:"long", day:"numeric", month:"long" });
 
@@ -112,7 +218,7 @@ function vista(tab){
     const f = document.createElement("iframe");
     f.className = "vista"; f.id = "v-" + tab; f.title = tab; f.src = tab + "/";
     f.setAttribute("role", "tabpanel");
-    f.addEventListener("load", () => vigilarHojas(f));
+    f.addEventListener("load", () => { pintarApp(tab); vigilarHojas(f); if (actual === tab) animarEntrada(f, 1); });
     document.body.insertBefore(f, document.querySelector("nav"));
     vistas[tab] = f;
   }
@@ -122,16 +228,28 @@ function ir(tab, push){
   if (!vistas[tab] && !["tracker","finanzas","inicio"].includes(tab)) tab = "inicio";
   const anterior = actual; actual = tab;
   document.documentElement.dataset.tab = tab;
-  $("themeColor").content = C60[tab];
+  pintar();
   document.querySelectorAll("nav [role=tab]").forEach(b => b.setAttribute("aria-selected", b.dataset.ir === tab));
+  $("pastilla").style.setProperty("--i", ORDEN.indexOf(tab));
   const v = vista(tab);
   Object.values(vistas).forEach(x => x.classList.toggle("on", x === v));
+  if (anterior !== tab) animarEntrada(v, Math.sign(ORDEN.indexOf(tab) - ORDEN.indexOf(anterior)));
   document.querySelector("nav").classList.remove("oculta");
   if (push !== false && location.hash !== "#" + tab) history.pushState(null, "", tab === "inicio" ? location.pathname : "#" + tab);
   if (anterior !== tab) refrescar();
 }
 document.addEventListener("click", e => { const b = e.target.closest("[data-ir]"); if (b) ir(b.dataset.ir); });
 addEventListener("popstate", () => ir(location.hash.slice(1) || "inicio", false));
+
+/* La pantalla entra deslizándose desde el lado de la pestaña, y sus textos suben escalonados. */
+function animarEntrada(v, dir){
+  v.style.setProperty("--dir", dir || 1);
+  v.classList.remove("entra"); void v.offsetWidth; v.classList.add("entra");
+  try{
+    const d = v.tagName === "IFRAME" ? v.contentDocument.documentElement : null;
+    if (d){ d.classList.remove("entra"); void d.offsetWidth; d.classList.add("entra"); }
+  }catch(e){}
+}
 
 /* Mientras una app tiene abierta su hoja de abajo, se esconde la barra de pestañas para no taparla. */
 function vigilarHojas(f){
@@ -157,10 +275,11 @@ function cfg(){
   if (p.get("u") && p.get("k")) { const c = { u:p.get("u"), k:p.get("k") }; try{ localStorage.setItem(LS, JSON.stringify(c)); }catch(e){} history.replaceState(null, "", location.pathname + location.hash); return c; }
   try{ return JSON.parse(localStorage.getItem(LS) || "null"); }catch(e){ return null; }
 }
-async function leer(c, sheet, range){
-  const r = await fetch(API, { method:"POST", headers:{ "Content-Type":"text/plain;charset=utf-8" }, body:JSON.stringify({ k:c.k, tool:"get_values", input:{ spreadsheetId:sheet, range } }) });
-  const j = await r.json(); if (j.error) throw new Error(j.error); return j.result.values || [];
+async function api(c, tool, input){
+  const r = await fetch(API, { method:"POST", headers:{ "Content-Type":"text/plain;charset=utf-8" }, body:JSON.stringify({ k:c.k, tool, input }) });
+  const j = await r.json(); if (j.error) throw new Error(j.error); return j.result;
 }
+const leer = (c, sheet, range) => api(c, "get_values", { spreadsheetId:sheet, range }).then(r => r.values || []);
 const num = v => typeof v === "number" ? v : parseFloat(String(v||"").replace(/[^0-9.\-]/g, ""));
 const fecha = v => String(v||"").replace(/^'/, "").slice(0, 10);
 const pesos = n => "$" + Math.round(n).toLocaleString("es-MX");
@@ -173,23 +292,41 @@ function barras(serie){
 function ultimos7(){ return [...Array(7)].map((_, i) => { const d = new Date(); d.setDate(d.getDate() - 6 + i); return d.toLocaleDateString("sv-SE"); }); }
 barras(ultimos7().map(d => ({ d, v:NaN })));
 
+/* El server ya tiene el resumen listo (herramienta "resumen" de puente.py): una sola consulta chica.
+   Lo último que llegó se guarda en el teléfono y se pinta al abrir, antes de preguntar nada. */
+const LSR = "jlp-resumen";
+function poner(id, txt){
+  const el = $(id); if (el.textContent === txt) return;
+  el.textContent = txt; el.classList.remove("nuevo"); void el.offsetWidth; el.classList.add("nuevo");
+}
+function mostrar(r){ // { serie:[[fecha, recovery]], rec, recFecha, sueno, hrv, gastoHoy, gastoMes }
+  const v = Object.fromEntries(r.serie || []);
+  barras(ultimos7().map(d => ({ d, v:v[d] == null ? NaN : v[d] })));
+  poner("rec", r.rec == null ? "–" : r.rec + "%");
+  $("recNota").textContent = !r.recFecha ? "" : r.recFecha === hoy ? "hoy" : "del " + new Date(r.recFecha + "T12:00").toLocaleDateString("es-MX", { day:"numeric", month:"short" });
+  poner("sueno", r.sueno == null ? "–" : r.sueno.toFixed(1));
+  poner("hrv", r.hrv == null ? "–" : String(Math.round(r.hrv)));
+  poner("gasto", pesos(r.gastoHoy || 0));
+  poner("mes", pesos(r.gastoMes || 0));
+}
+/* Respaldo por si el server todavía no tiene "resumen": lo arma con las dos pestañas completas. */
+async function resumenLento(c){
+  const [w, m] = await Promise.all([leer(c, TRACKER, "Whoop!A:H"), leer(c, FIN, "Movimientos!A:F")]);
+  const porDia = {}; w.slice(1).forEach(r => { if (r[0]) porDia[fecha(r[0])] = r; });
+  const u = Object.keys(porDia).sort().map(k => porDia[k]).filter(r => isFinite(num(r[6]))).pop() || [];
+  const gastos = m.slice(1).filter(r => !/pago de tarjeta|transferencia/i.test(r[3] || "")).map(r => ({ d:fecha(r[0]), m:num(r[5]) })).filter(x => isFinite(x.m) && x.m < 0);
+  const ok = x => isFinite(x) ? x : null;
+  return { serie:ultimos7().map(d => [d, ok(num((porDia[d] || [])[6]))]), rec:ok(num(u[6])), recFecha:u[0] ? fecha(u[0]) : null,
+    sueno:ok(num(u[3])), hrv:ok(num(u[7])), gastoHoy:-gastos.filter(x => x.d === hoy).reduce((a, x) => a + x.m, 0),
+    gastoMes:-gastos.filter(x => x.d.slice(0, 7) === hoy.slice(0, 7)).reduce((a, x) => a + x.m, 0) };
+}
 function cargar(c){
-  leer(c, TRACKER, "Whoop!A:H").then(rows => {
-    const porDia = {}; rows.slice(1).forEach(r => { if (r[0]) porDia[fecha(r[0])] = r; });
-    barras(ultimos7().map(d => ({ d, v:num((porDia[d]||[])[6]) })));
-    const u = Object.keys(porDia).sort().map(k => porDia[k]).filter(r => isFinite(num(r[6]))).pop();
-    if (!u) return;
-    $("rec").textContent = num(u[6]) + "%";
-    $("recNota").textContent = fecha(u[0]) === hoy ? "hoy" : "del " + new Date(fecha(u[0])+"T12:00").toLocaleDateString("es-MX",{ day:"numeric", month:"short" });
-    const h = num(u[3]); if (isFinite(h)) $("sueno").textContent = h.toFixed(1);
-    const hrv = num(u[7]); if (isFinite(hrv)) $("hrv").textContent = Math.round(hrv);
-  }).catch(() => {});
-  leer(c, FIN, "Movimientos!A:F").then(rows => {
-    const gastos = rows.slice(1).filter(r => !/pago de tarjeta|transferencia/i.test(r[3] || "")).map(r => ({ d:fecha(r[0]), m:num(r[5]) })).filter(x => isFinite(x.m) && x.m < 0);
-    $("gasto").textContent = pesos(-gastos.filter(x => x.d === hoy).reduce((a, x) => a + x.m, 0));
-    $("mes").textContent = pesos(-gastos.filter(x => x.d.slice(0, 7) === hoy.slice(0, 7)).reduce((a, x) => a + x.m, 0));
+  api(c, "resumen", { hoy }).catch(() => resumenLento(c)).then(r => {
+    mostrar(r);
+    try{ localStorage.setItem(LSR, JSON.stringify(r)); }catch(e){}
   }).catch(() => {});
 }
+try{ const r = JSON.parse(localStorage.getItem(LSR) || "null"); if (r) mostrar(r); }catch(e){}
 
 const c = cfg();
 if (!c){

@@ -82,7 +82,7 @@ def icon(kind, size):
     return im.resize((size, size), Image.LANCZOS)
 
 # Tema JLP: colores tradicionales japoneses (nippon iro, diccionario de Sanzo Wada) con la regla 60-30-10:
-# 60 = fondo, 30 = tarjetas de vidrio, 10 = acento. El mismo dict vive en index.html (PALETAS); cambiar los dos.
+# 60 = fondo, 30 = tarjetas de vidrio, 10 = acento. Son solo el valor inicial: JLP (index.html, PALETAS) los cambia en vivo.
 PALETAS = {
     "tracker":  {"c60": "#1E1512", "c30": "#B54434", "c10": "#F17C67"},  # 鳶 Tobi oscurecido · 紅樺 Benikaba · 珊瑚朱 Sangoshu
     "finanzas": {"c60": "#08192D", "c30": "#566C73", "c10": "#A8D8B9"},  # 褐 Kachi · 藍鼠 Ainezumi · 白緑 Byakuroku
@@ -92,24 +92,27 @@ VIDRIO = {  # clases que son tarjetas en cada app
     "finanzas": ".banner,.buds,.chart,.hero,.iconbtn,.mc,.saldos,.tot,.txs,.wd",
 }
 
-def rgba(h, a):
-    return "rgba(%d,%d,%d,%s)" % (int(h[1:3], 16), int(h[3:5], 16), int(h[5:7], 16), a)
-
 def tema(key):
+    """Los colores van en --j60/--j30/--j10: JLP (index.html) los cambia en vivo según la paleta que elijas."""
     p = PALETAS[key]
-    c60, c30, c10 = p["c60"], p["c30"], p["c10"]
+    m = lambda v, pct: f"color-mix(in srgb,var(--j{v}) {pct}%,transparent)"
     return f"""<script>if (window.top !== window) document.documentElement.classList.add("embed");</script>
 <style id="jlp-tema">
 /* JLP: oscuro con vidrio, 60-30-10 en colores japoneses. Gana sobre los temas claro/oscuro de la app. */
-html:root:root{{color-scheme:dark;--bg:{c60};--surface:{rgba(c30, .20)};--surface-2:{rgba(c30, .28)};--line:{rgba(c30, .36)};--track:{rgba(c30, .24)};
-  --fg:#F4F1EA;--muted:#B5AEA4;--faint:#7E7870;--accent:{c10};--accent-soft:{rgba(c10, .16)};--accent-line:{rgba(c10, .42)};
+html:root:root{{--j60:{p["c60"]};--j30:{p["c30"]};--j10:{p["c10"]};color-scheme:dark;--bg:var(--j60);--surface:{m(30, 20)};--surface-2:{m(30, 28)};--line:{m(30, 36)};--track:{m(30, 24)};
+  --fg:#F4F1EA;--muted:#B5AEA4;--faint:#7E7870;--accent:var(--j10);--accent-soft:{m(10, 16)};--accent-line:{m(10, 42)};
   --scrim:rgba(0,0,0,.55);--card-shadow:0 18px 40px -22px rgba(0,0,0,.75)}}
-html{{background:{c60}}} html.embed,html.embed body,body{{background:transparent!important}}
-html:not(.embed) body{{background:radial-gradient(60% 40% at 90% 0%,{rgba(c10, .16)},transparent 70%),radial-gradient(60% 40% at 0% 60%,{rgba(c30, .22)},transparent 70%),{c60}!important;background-attachment:fixed!important}}
+html{{background:var(--j60)}} html.embed,html.embed body,body{{background:transparent!important}}
+html:not(.embed) body{{background:radial-gradient(60% 40% at 90% 0%,{m(10, 16)},transparent 70%),radial-gradient(60% 40% at 0% 60%,{m(30, 22)},transparent 70%),var(--j60)!important;background-attachment:fixed!important}}
 html.embed body{{padding-bottom:calc(104px + env(safe-area-inset-bottom))!important}}
-{VIDRIO[key]}{{-webkit-backdrop-filter:blur(24px) saturate(160%);backdrop-filter:blur(24px) saturate(160%);border-color:{rgba(c30, .36)}!important;
+{VIDRIO[key]}{{-webkit-backdrop-filter:blur(24px) saturate(160%);backdrop-filter:blur(24px) saturate(160%);border-color:{m(30, 36)}!important;
   box-shadow:inset 0 1px 0 rgba(255,255,255,.14),var(--card-shadow)!important}}
-.sheet{{background:linear-gradient(180deg,{rgba(c30, .30)},{rgba(c60, .92)}),{c60}!important;-webkit-backdrop-filter:blur(30px);backdrop-filter:blur(30px);border-top:1px solid {rgba(c30, .45)}}}
+.sheet{{background:linear-gradient(180deg,{m(30, 30)},color-mix(in srgb,var(--j60) 92%,transparent)),var(--j60)!important;-webkit-backdrop-filter:blur(30px);backdrop-filter:blur(30px);border-top:1px solid {m(30, 45)}}}
+/* Al entrar a la pestaña (JLP pone html.entra) los bloques suben uno tras otro */
+@keyframes jlpSube{{from{{opacity:0;transform:translateY(16px)}}to{{opacity:1;transform:none}}}}
+html.entra #app>*{{animation:jlpSube .55s cubic-bezier(.2,.8,.2,1) both}}
+{"".join(f"html.entra #app>:nth-child({i}){{animation-delay:{(i - 1) * 0.05:.2f}s}}" for i in range(1, 10))}
+@media (prefers-reduced-motion:reduce){{html.entra #app>*{{animation:none}}}}
 </style>
 """
 
