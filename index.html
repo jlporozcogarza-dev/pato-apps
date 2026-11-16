@@ -21,25 +21,29 @@
 /* Tipografía: Instrument Serif para números y títulos, Geist para el texto, Shippori Mincho para los kanji */
 :root{--serif:"Instrument Serif",ui-serif,Georgia,serif;--sans:Geist,system-ui,-apple-system,sans-serif;--kanji:"Shippori Mincho",serif}
 html,body{margin:0;height:100%;overflow:hidden;background:var(--c60);color:var(--fg);font:16px/1.4 var(--sans);-webkit-font-smoothing:antialiased}
-/* iOS deja una franja abajo de la app (pantalla de inicio) donde no deja dibujar; solo se ve el fondo del html.
-   Se pinta del color de la barra de pestañas para que barra y franja se vean como una sola, pegada al borde. */
-html{background:color-mix(in srgb,var(--c30) 24%,var(--c60))}
-.fondo{position:fixed;inset:0;bottom:0;z-index:0;pointer-events:none;
-  background:radial-gradient(48% 32% at 90% 4%,color-mix(in srgb,var(--c10) 26%,transparent),transparent 70%),
-             radial-gradient(56% 36% at 0% 46%,color-mix(in srgb,var(--c30) 34%,transparent),transparent 70%),
-             radial-gradient(50% 30% at 96% 92%,color-mix(in srgb,var(--c30) 22%,transparent),transparent 70%),var(--c60)}
+/* El fondo sigue de largo hasta abajo, sin brillos junto al borde: la franja que iOS deja abajo en las apps de
+   pantalla de inicio queda del mismo color y no se nota. La barra de pestañas flota arriba de ella. */
+.fondo{position:fixed;inset:0;z-index:0;pointer-events:none;
+  background:radial-gradient(62% 34% at 88% 0%,color-mix(in srgb,var(--c10) 30%,transparent),transparent 70%),
+             radial-gradient(70% 40% at 0% 36%,color-mix(in srgb,var(--c30) 38%,transparent),transparent 70%),
+             radial-gradient(48% 24% at 100% 60%,color-mix(in srgb,var(--c10) 12%,transparent),transparent 70%),var(--c60)}
 .vista{position:fixed;inset:0;z-index:1;border:0;width:100%;height:100%;background:transparent;display:none}
 .vista.on{display:block}
 /* las apps ya respetan la muesca del iPhone por su cuenta: el iframe va a pantalla completa */
-#v-inicio,#v-condotec,#v-pendientes{overflow-y:auto;-webkit-overflow-scrolling:touch;padding:max(14px,env(safe-area-inset-top)) 16px calc(76px + env(safe-area-inset-bottom))}
+#v-inicio,#v-condotec,#v-pendientes{overflow-y:auto;-webkit-overflow-scrolling:touch;padding:max(14px,env(safe-area-inset-top)) 16px calc(84px + max(10px,env(safe-area-inset-bottom)))}
 /* el Inicio cabe en una pantalla: la gráfica toma lo que sobre (si un teléfono es muy chico, se puede deslizar) */
 #v-inicio main{display:flex;flex-direction:column;min-height:100%;gap:10px}
 #v-inicio main>*{flex:none}
 main{max-width:460px;margin:0 auto}
 button{font:inherit;color:inherit}
-.glass{background:linear-gradient(180deg,color-mix(in srgb,var(--c30) 30%,transparent),color-mix(in srgb,var(--c30) 16%,transparent));
-  -webkit-backdrop-filter:var(--blur);backdrop-filter:var(--blur);border:1px solid color-mix(in srgb,var(--c30) 45%,transparent);
-  box-shadow:inset 0 1px 0 rgba(255,255,255,.16),0 18px 40px -20px rgba(0,0,0,.75)}
+/* Vidrio estilo Apple: luz en el borde de arriba, brillo interior y sombra profunda */
+.glass{background:linear-gradient(150deg,rgba(255,255,255,.10),rgba(255,255,255,.03) 38%,color-mix(in srgb,var(--c30) 14%,transparent));
+  -webkit-backdrop-filter:var(--blur);backdrop-filter:var(--blur);border:1px solid rgba(255,255,255,.10);
+  box-shadow:inset 0 1px 0 rgba(255,255,255,.22),inset 1px 0 0 rgba(255,255,255,.06),inset 0 -1px 0 rgba(0,0,0,.35),
+    inset 0 0 26px color-mix(in srgb,var(--c30) 10%,transparent),0 22px 44px -22px rgba(0,0,0,.85)}
+.glass.card,.anillo,.cal-nav,.dia,.acceso{transition:transform .25s cubic-bezier(.34,1.4,.5,1),filter .2s,box-shadow .25s}
+.glass.card:active,.acceso:active{transform:scale(.97);filter:brightness(1.15)}
+.anillo:active .aro{filter:brightness(1.2)}
 header{display:flex;align-items:center;gap:12px;margin:4px 0 2px}
 .logo{width:62px;height:62px;border-radius:20px;color:var(--c10);display:grid;place-items:center;font:400 24px/1 var(--serif);letter-spacing:.01em}
 header p{margin:0;font:400 34px/1 var(--serif);letter-spacing:-.01em}
@@ -92,7 +96,7 @@ button.card:active{transform:scale(.98)}
 .aro svg{position:absolute;inset:0;width:100%;height:100%;transform:rotate(-90deg);overflow:visible}
 .aro .pista{fill:none;stroke:rgba(255,255,255,.09);stroke-width:9}
 .aro .arco{fill:none;stroke:var(--col);stroke-width:9;stroke-linecap:round;stroke-dasharray:0 100;
-  transition:stroke-dasharray 1.3s cubic-bezier(.2,.8,.2,1);filter:drop-shadow(0 0 6px color-mix(in srgb,var(--col) 55%,transparent))}
+  transition:stroke-dasharray 1.3s cubic-bezier(.2,.8,.2,1);filter:drop-shadow(0 0 8px color-mix(in srgb,var(--col) 70%,transparent))}
 .aro .num{position:relative;font-size:clamp(28px,8.5vw,34px)}
 .anillo .lbl{font:600 11px/1 var(--sans);letter-spacing:.14em;text-transform:uppercase;color:var(--fg);white-space:nowrap}
 .anillo .lbl i{font-style:normal;color:var(--muted);margin-left:3px}
@@ -148,28 +152,33 @@ button.card:active{transform:scale(.98)}
 /* página Condotec */
 .titulo-pagina{margin:4px 0 16px}.titulo-pagina small{color:var(--muted);font-size:13px}
 .titulo-pagina h1{margin:4px 0 0;font:400 52px/1 var(--serif);letter-spacing:-.01em}
-/* barra de pestañas pegada abajo a todo lo ancho, como en una app normal */
-nav{position:fixed;z-index:5;left:0;right:0;bottom:0;display:flex;padding:6px 12px max(4px,calc(4px + env(safe-area-inset-bottom) - var(--franja,0px)));
-  background:color-mix(in srgb,var(--c30) 24%,var(--c60))!important;
-  border-radius:0!important;border-width:1px 0 0!important;transition:opacity .2s,transform .3s cubic-bezier(.2,.8,.2,1)}
-nav.oculta{opacity:0;pointer-events:none;transform:translateY(100%)}
-nav button{position:relative;z-index:1;flex:1;height:54px;border:0;border-radius:16px;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:3px;
-  background:none;color:#D4D0C8;cursor:pointer;transition:color .35s;font:500 11px/1 var(--sans);letter-spacing:.01em}
+/* barra de pestañas: cápsula de vidrio flotante (como iOS 26 y la referencia) */
+nav{position:fixed;z-index:5;left:12px;right:12px;bottom:max(10px,env(safe-area-inset-bottom));max-width:520px;margin:0 auto;display:flex;padding:6px;
+  border-radius:30px!important;border:1px solid rgba(255,255,255,.12)!important;
+  background:linear-gradient(150deg,rgba(255,255,255,.13),rgba(255,255,255,.04) 45%,color-mix(in srgb,var(--c30) 18%,transparent)),color-mix(in srgb,var(--c60) 60%,transparent)!important;
+  box-shadow:inset 0 1px 0 rgba(255,255,255,.26),inset 0 -1px 0 rgba(0,0,0,.4),0 20px 44px -12px rgba(0,0,0,.95)!important;
+  transition:opacity .25s,transform .4s cubic-bezier(.2,.8,.2,1)}
+nav.oculta{opacity:0;pointer-events:none;transform:translateY(150%)}
+nav button{position:relative;z-index:1;flex:1;height:54px;border:0;border-radius:24px;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:3px;
+  background:none;color:rgba(244,241,234,.62);cursor:pointer;transition:color .35s;font:500 10.5px/1 var(--sans);letter-spacing:.01em}
+nav button svg{transition:transform .2s}
+nav button:active svg{transform:scale(.85)}
 nav button[aria-selected=true]{color:var(--c60)}
 nav button[aria-selected=true] svg{animation:pop .5s cubic-bezier(.34,1.6,.5,1)}
-/* la pastilla se desliza al botón activo */
-.pastilla{position:absolute;top:6px;left:0;width:0;height:54px;border-radius:16px;
-  transition:transform .55s cubic-bezier(.34,1.35,.5,1),width .4s ease;
-  background:linear-gradient(180deg,color-mix(in srgb,var(--c10) 80%,#fff),var(--c10));box-shadow:inset 0 1px 0 rgba(255,255,255,.7),0 6px 18px -6px var(--c10)}
+/* la pastilla se desliza al botón activo y resplandece con el acento */
+.pastilla{position:absolute;top:6px;left:0;width:0;height:54px;border-radius:24px;
+  transition:transform .6s cubic-bezier(.34,1.4,.5,1),width .45s ease;
+  background:linear-gradient(180deg,color-mix(in srgb,var(--c10) 68%,#fff),var(--c10) 58%,color-mix(in srgb,var(--c10) 82%,#000));
+  box-shadow:inset 0 1px 0 rgba(255,255,255,.75),inset 0 -2px 5px rgba(0,0,0,.2),0 0 24px color-mix(in srgb,var(--c10) 65%,transparent),0 8px 20px -6px var(--c10)}
 @keyframes pop{0%{transform:scale(.7)}60%{transform:scale(1.15)}100%{transform:scale(1)}}
 /* la pantalla entra desde el lado de la pestaña y sus textos suben escalonados */
 /* cambio de pestaña: la nueva entra y la anterior sale a la vez (solo opacidad y movimiento: lo más fluido en iPhone) */
-@keyframes entrar{from{opacity:0;transform:translateX(calc(var(--dir,1) * 28px)) scale(.985)}to{opacity:1;transform:none}}
-@keyframes salir{from{opacity:1;transform:none}to{opacity:0;transform:translateX(calc(var(--dir,1) * -28px)) scale(.985)}}
-.vista.sale{display:block;z-index:0;pointer-events:none;animation:salir .38s cubic-bezier(.4,0,.2,1) both}
+@keyframes entrar{from{opacity:0;transform:translateX(calc(var(--dir,1) * 22px)) scale(.97)}to{opacity:1;transform:none}}
+@keyframes salir{from{opacity:1;transform:none}to{opacity:0;transform:translateX(calc(var(--dir,1) * -22px)) scale(.97)}}
+.vista.sale{display:block;z-index:0;pointer-events:none;animation:salir .34s cubic-bezier(.4,0,.6,1) both}
 .vista.on{z-index:1}
 @keyframes sube{from{opacity:0;transform:translateY(16px)}to{opacity:1;transform:none}}
-.vista.entra{animation:entrar .55s cubic-bezier(.22,1,.36,1) both;will-change:transform,opacity}
+.vista.entra{animation:entrar .62s cubic-bezier(.16,1,.3,1) both;will-change:transform,opacity}
 #v-inicio.entra :is(header,.whoop,.stat,.grafica){animation:sube .55s cubic-bezier(.2,.8,.2,1) both}
 #v-inicio.entra .whoop{animation-delay:.05s}#v-inicio.entra .stat:nth-child(1){animation-delay:.1s}#v-inicio.entra .stat:nth-child(2){animation-delay:.14s}
 #v-inicio.entra .stat:nth-child(3){animation-delay:.18s}#v-inicio.entra .stat:nth-child(4){animation-delay:.22s}
@@ -317,6 +326,7 @@ const $ = id => document.getElementById(id);
 /* ---------- paletas: colores tradicionales japoneses (nippon iro), regla 60-30-10 ----------
    c60 = fondo (versión oscura del color base), c30 = vidrio, c10 = acento. */
 const PALETAS = [
+  { id:"kikyo",      n:"Kikyō",      k:"紫黒 · 桔梗 · 藤",       c60:"#0C0A12", c30:"#6A4C9C", c10:"#B597F2" },
   { id:"hiwa",       n:"Hiwa",       k:"墨 · 青鈍 · 鶸",       c60:"#1C1C1C", c30:"#535953", c10:"#BEC23F" },
   { id:"sangoshu",   n:"Sangoshu",   k:"鳶 · 紅樺 · 珊瑚朱",   c60:"#1E1512", c30:"#B54434", c10:"#F17C67" },
   { id:"byakuroku",  n:"Byakuroku",  k:"褐 · 藍鼠 · 白緑",     c60:"#08192D", c30:"#566C73", c10:"#A8D8B9" },
@@ -334,7 +344,7 @@ const PALETAS = [
   { id:"arazome",    n:"Arazome",    k:"墨 · 胡桃 · 退紅",     c60:"#1B1717", c30:"#947A6D", c10:"#F596AA" },
 ];
 const ORDEN = ["inicio", "tracker", "finanzas", "condotec", "pendientes"], NOMBRE = { inicio:"Inicio", tracker:"Tracker", finanzas:"Finanzas", condotec:"Condotec", pendientes:"Pendientes" };
-const DEF = { inicio:"hiwa", tracker:"sangoshu", finanzas:"byakuroku", condotec:"kuchiba", pendientes:"sora" }, LSP = "jlp-paletas";
+const DEF = { inicio:"kikyo", tracker:"sangoshu", finanzas:"byakuroku", condotec:"kuchiba", pendientes:"sora" }, LSP = "jlp-paletas";
 let elegidas = (() => { try{ return Object.assign({}, DEF, JSON.parse(localStorage.getItem(LSP) || "{}")); }catch(e){ return { ...DEF }; } })();
 const pal = tab => PALETAS.find(p => p.id === elegidas[tab]) || PALETAS.find(p => p.id === DEF[tab]);
 function pintar(){
@@ -497,13 +507,6 @@ document.addEventListener("click", e => {
 addEventListener("popstate", () => ir(location.hash.slice(1) || "inicio", false));
 
 /* La pastilla mide y se mueve al botón activo (los botones se reparten el ancho de la pantalla). */
-/* Mide la franja de iOS (pantalla menos alto de la página, solo en la app de pantalla de inicio): si existe, ahí ya va
-   la rayita de inicio, así que la barra no necesita su margen de abajo. */
-function medirFranja(){
-  const f = navigator.standalone ? Math.max(0, Math.min(120, screen.height - innerHeight)) : 0;
-  document.documentElement.style.setProperty("--franja", f + "px");
-}
-medirFranja(); addEventListener("resize", medirFranja);
 
 function moverPastilla(){
   const b = document.querySelector(`nav [data-ir="${actual}"]`), p = $("pastilla");

@@ -25,6 +25,7 @@ SHIM = """<script>
     if (c){ save(c); return c; }
     try{ c = JSON.parse(localStorage.getItem(LS) || "null"); }catch(e){ c = null; }
     if (c) return c;
+    if (window.top !== window) return null; // dentro de JLP: la clave se pide una sola vez, en el Inicio
     var s = window.prompt("Pega el link de configuración que te mandó Claude");
     try{ c = s ? fromParams(new URL(s.trim()).searchParams) : null; }catch(e){ c = null; }
     if (c) save(c);
@@ -109,8 +110,9 @@ h1{{font-size:52px!important}}
 html{{background:var(--j60)}} html.embed,html.embed body,body{{background:transparent!important}}
 html:not(.embed) body{{background:radial-gradient(60% 40% at 90% 0%,{m(10, 16)},transparent 70%),radial-gradient(60% 40% at 0% 60%,{m(30, 22)},transparent 70%),var(--j60)!important;background-attachment:fixed!important}}
 html.embed body{{padding-bottom:calc(104px + env(safe-area-inset-bottom))!important}}
-{VIDRIO[key]}{{-webkit-backdrop-filter:blur(24px) saturate(160%);backdrop-filter:blur(24px) saturate(160%);border-color:{m(30, 36)}!important;
-  box-shadow:inset 0 1px 0 rgba(255,255,255,.14),var(--card-shadow)!important}}
+{VIDRIO[key]}{{-webkit-backdrop-filter:blur(24px) saturate(160%);backdrop-filter:blur(24px) saturate(160%);border-color:rgba(255,255,255,.10)!important;
+  background-image:linear-gradient(150deg,rgba(255,255,255,.08),rgba(255,255,255,.02) 40%,transparent)!important;
+  box-shadow:inset 0 1px 0 rgba(255,255,255,.22),inset 1px 0 0 rgba(255,255,255,.06),inset 0 -1px 0 rgba(0,0,0,.35),var(--card-shadow)!important}}
 .sheet{{background:linear-gradient(180deg,{m(30, 30)},color-mix(in srgb,var(--j60) 92%,transparent)),var(--j60)!important;-webkit-backdrop-filter:blur(30px);backdrop-filter:blur(30px);border-top:1px solid {m(30, 45)}}}
 /* Al entrar a la pestaña (JLP pone html.entra) los bloques suben uno tras otro */
 @keyframes jlpSube{{from{{opacity:0;transform:translateY(16px)}}to{{opacity:1;transform:none}}}}
