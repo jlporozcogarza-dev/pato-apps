@@ -312,6 +312,39 @@ header .ajustes svg{width:20px;height:20px}
 .hoja .fila{display:flex;gap:10px;margin-top:22px}
 .hoja .fila button{flex:1;min-height:48px;border-radius:16px;cursor:pointer;border:1px solid rgba(255,255,255,.12);background:rgba(255,255,255,.06)}
 .hoja .fila .listo{background:var(--c10);color:var(--c60);border-color:transparent;font-weight:500}
+/* pestaña Pendientes: Tareas, de la más fácil a la más pesada. Al palomear una se va a Hechas (se puede regresar). */
+.tar-prog{border-radius:26px;padding:14px 16px 16px}
+.tar-prog .fila{display:flex;align-items:flex-end;justify-content:space-between;gap:12px;margin-bottom:12px}
+.tar-prog .num{font-size:44px}
+.tar-prog .num sup{color:var(--muted);font-size:.38em}
+.tar-prog .hechas-n{display:flex;align-items:baseline;gap:8px;flex:none}
+.tar-prog .hechas-n small{color:var(--muted);font-size:14px}
+.tar-prog .sig{flex:1;min-width:0;text-align:right;color:var(--muted);font-size:12.5px;line-height:1.3}
+.tar-prog .sig b{display:block;color:var(--fg);font-weight:500;font-size:14px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.tar-grupo{display:flex;justify-content:space-between;margin:20px 6px 9px;font:600 11px/1 var(--sans);letter-spacing:.14em;text-transform:uppercase;color:var(--muted)}
+.tar-grupo span{letter-spacing:.04em;text-transform:none;font-weight:500}
+.tarea{display:flex;align-items:center;gap:12px;padding:11px 14px 11px 11px;border-radius:20px;overflow:hidden;
+  background:linear-gradient(150deg,rgba(255,255,255,.07),rgba(255,255,255,.02));border:1px solid rgba(255,255,255,.08);box-shadow:inset 0 1px 0 rgba(255,255,255,.10)}
+.tarea .chk{flex:none;width:44px;height:44px;margin:-7px -4px -7px -7px;padding:0;border:0;background:none;display:grid;place-items:center;cursor:pointer}
+.tarea .chk i{width:28px;height:28px;border-radius:50%;display:grid;place-items:center;border:2px solid color-mix(in srgb,var(--fg) 42%,transparent);
+  transition:background .25s,border-color .25s,box-shadow .25s,transform .3s cubic-bezier(.34,1.6,.5,1)}
+.tarea .chk:active i{transform:scale(.85)}
+.tarea .chk svg{width:15px;height:15px;fill:none;stroke:var(--c60);stroke-width:3.2;stroke-linecap:round;stroke-linejoin:round;stroke-dasharray:24;stroke-dashoffset:24;transition:stroke-dashoffset .3s ease .08s}
+.tarea.lista .chk i{background:var(--c10);border-color:var(--c10);box-shadow:0 0 16px color-mix(in srgb,var(--c10) 55%,transparent);transform:scale(1.08)}
+.tarea.lista .chk svg{stroke-dashoffset:0}
+.tarea .txt{flex:1;min-width:0}
+.tarea .txt b{display:block;font-weight:500;font-size:14.5px;line-height:1.3;transition:color .3s}
+.tarea .txt small{display:block;margin-top:3px;color:var(--muted);font-size:12px;line-height:1.35}
+.tarea .tiempo{flex:none;font:600 11px/1.3 var(--sans);padding:4px 9px;border-radius:99px;background:rgba(255,255,255,.08);color:var(--fg);white-space:nowrap}
+.tarea.lista .txt b,.tarea.hecha .txt b{color:var(--muted);text-decoration:line-through;text-decoration-color:color-mix(in srgb,var(--fg) 40%,transparent)}
+.tarea.hecha{background:rgba(255,255,255,.03);box-shadow:none}
+.tarea.hecha .chk{cursor:default}
+.tarea.hecha .chk i{width:22px;height:22px;background:color-mix(in srgb,var(--c10) 70%,var(--c60));border-color:transparent}
+.tarea.hecha .chk svg{width:12px;height:12px;stroke-dashoffset:0}
+.tarea .regresar{flex:none;height:32px;padding:0 11px;border-radius:11px;border:1px solid rgba(255,255,255,.10);background:rgba(255,255,255,.05);color:var(--muted);font-size:12px;cursor:pointer}
+.tarea .regresar:active{transform:scale(.94)}
+.mas-hechas{display:block;width:100%;margin-top:8px;padding:12px;border-radius:16px;border:1px solid rgba(255,255,255,.08);background:rgba(255,255,255,.03);color:var(--muted);font-size:13px;cursor:pointer}
+#v-pendientes.entra :is(.tar-prog,.tar-grupo,#tarLista){animation:sube .55s cubic-bezier(.2,.8,.2,1) .08s both}
 @media (prefers-reduced-motion:reduce){*{transition:none!important}}
 </style></head>
 <body>
@@ -359,6 +392,16 @@ header .ajustes svg{width:20px;height:20px}
 
 <div class="vista" id="v-pendientes" role="tabpanel" aria-label="Pendientes"><main>
 <header class="titulo-pagina"><div><small>Agenda</small><h1>Pendientes</h1></div></header>
+<section class="tar-prog glass" aria-label="Avance de tus tareas">
+  <div class="fila"><span class="hechas-n"><b class="num" id="tarNum">–</b><small>hechas</small></span><span class="sig" id="tarSig"></span></div>
+  <span class="medidor"><i id="tarBarra"></i></span>
+</section>
+<div id="tarLista"><p class="nota">Cargando tus tareas…</p></div>
+<div id="tarHechasCaja" hidden>
+  <div class="seccion"><h2>Hechas</h2><span id="tarHechasCuenta"></span></div>
+  <div class="renglones" id="tarHechas"></div>
+</div>
+<div class="seccion"><h2>Calendario</h2></div>
 <section class="calendario glass" aria-label="Calendario">
   <div class="cal-top"><button class="cal-nav" id="mesAnt" aria-label="Mes anterior">‹</button><b id="calMes"></b><button class="cal-nav" id="mesSig" aria-label="Mes siguiente">›</button></div>
   <div class="cal-sem" aria-hidden="true"><span>L</span><span>M</span><span>M</span><span>J</span><span>V</span><span>S</span><span>D</span></div>
@@ -366,7 +409,7 @@ header .ajustes svg{width:20px;height:20px}
 </section>
 <div class="seccion"><h2 id="agTitulo">Hoy</h2><span id="agFecha"></span></div>
 <div class="renglones" id="agDia"><p class="nota">Cargando…</p></div>
-<div class="seccion"><h2>Pendientes</h2><span id="pendCuenta"></span></div>
+<div class="seccion"><h2>De Condotec</h2><span id="pendCuenta"></span></div>
 <div class="renglones" id="agPend"></div>
 </main></div>
 
@@ -518,6 +561,115 @@ $("calDias").addEventListener("click", e => {
 const moverMes = n => { if (!agMes) return; const d = new Date(agMes + "-01T12:00"); d.setMonth(d.getMonth() + n); agMes = d.toLocaleDateString("sv-SE").slice(0, 7); pintarCal(); };
 $("mesAnt").onclick = () => moverMes(-1); $("mesSig").onclick = () => moverMes(1);
 
+/* ---------- Tareas: pestaña "Tareas" del Sheet del Tracker (A ID · B Tarea · C Detalle · D Nivel 1-5 · E Tiempo · F Orden · G Estado · H Hecha · I Agregada).
+   Van de la más fácil a la más pesada (Orden). Al palomear una se marca "hecha" con fecha y pasa a Hechas; desde ahí se puede regresar.
+   El cambio se ve al instante; si no hay conexión se queda en una cola en el teléfono y se manda en la siguiente actualización. */
+const LST = "jlp-tareas", LSTC = "jlp-tareas-cola", HOJA_T = "Tareas";
+const GRUPOS = [[1, 2, "Para calentar motores"], [3, 3, "Ya en ritmo"], [4, 5, "Las pesadas"]];
+const lsLeer = (k, d) => { try{ return JSON.parse(localStorage.getItem(k) || "null") ?? d; }catch(e){ return d; } };
+const lsPoner = (k, v) => { try{ localStorage.setItem(k, JSON.stringify(v)); }catch(e){} };
+let TAR = lsLeer(LST, null), colaT = lsLeer(LSTC, []), tarPintado = "", tarOcupado = 0, verTodasHechas = false, enviando = false;
+const sinApostrofo = v => String(v ?? "").replace(/^'/, "").trim();
+const ahoraTxt = () => new Date().toLocaleString("sv-SE", { hour12:false }).slice(0, 16); // "2026-11-16 11:40"
+/* Mismo puente que el resto de JLP; si el server no contesta y el link trae el id de Apps Script, va directo a Apps Script. */
+async function apiT(c, tool, input){
+  try{ return await api(c, tool, input); }
+  catch(e){
+    if (!/^[\w-]{25,}$/.test(c.u || "")) throw e;
+    const r = await fetch("https://script.google.com/macros/s/" + encodeURIComponent(c.u) + "/exec", { method:"POST", headers:{ "Content-Type":"text/plain;charset=utf-8" }, body:JSON.stringify({ k:c.k, tool, input }) });
+    const j = await r.json(); if (j.error) throw new Error(j.error); return j.result;
+  }
+}
+function leerTareas(filas){
+  return filas.slice(1).map(r => ({ id:sinApostrofo(r[0]), t:sinApostrofo(r[1]), det:sinApostrofo(r[2]), nv:Math.min(5, Math.max(1, Math.round(num(r[3])) || 3)),
+    tiempo:sinApostrofo(r[4]), orden:num(r[5]), estado:sinApostrofo(r[6]).toLowerCase() === "hecha" ? "hecha" : "pendiente", hecha:sinApostrofo(r[7]) }))
+    .filter(x => x.id && x.t);
+}
+const conCola = lista => (lista || []).map(x => { const op = colaT.find(o => o.id === x.id); return op ? { ...x, estado:op.estado, hecha:op.hecha } : x; });
+function cuandoHecha(s){
+  if (!s) return "";
+  const d = s.slice(0, 10), h = s.slice(11, 16);
+  const dia = d === hoy ? "hoy" : d === sumaDias(hoy, -1) ? "ayer" : corto(d);
+  return h ? dia + " " + h : dia;
+}
+function pintarTareas(forzar){
+  if (!TAR){ return; }
+  const lista = conCola(TAR), firma = JSON.stringify(lista) + "|" + verTodasHechas;
+  if (!forzar && (tarOcupado || firma === tarPintado)) return; // sin cambios o a media animación: no se redibuja
+  tarPintado = firma;
+  const pend = lista.filter(x => x.estado !== "hecha").sort((a, b) => (isFinite(a.orden) ? a.orden : 999) - (isFinite(b.orden) ? b.orden : 999) || a.nv - b.nv);
+  const hechas = lista.filter(x => x.estado === "hecha").sort((a, b) => (b.hecha || "").localeCompare(a.hecha || ""));
+  const total = lista.length;
+  const num0 = $("tarNum"), txtNum = `${hechas.length}<sup>/${total}</sup>`;
+  if (num0.innerHTML !== txtNum){ num0.innerHTML = txtNum; num0.classList.remove("nuevo"); void num0.offsetWidth; num0.classList.add("nuevo"); }
+  $("tarBarra").parentElement.style.setProperty("--p", total ? Math.max(hechas.length ? 3 : 0, hechas.length / total * 100) : 0);
+  $("tarSig").innerHTML = !total ? "Sin tareas todavía."
+    : pend.length ? `Sigue<b>${esc(pend[0].t)}</b>` : "<b>Todo listo</b>No queda ninguna pendiente.";
+  const fila = x => `<div class="tarea" data-tarea="${esc(x.id)}">` +
+    `<button class="chk" data-palomear="${esc(x.id)}" aria-label="Marcar como hecha: ${esc(x.t)}"><i><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M5 12.5l4.5 4.5L19 7.5"/></svg></i></button>` +
+    `<span class="txt"><b>${esc(x.t)}</b><small>Nivel ${x.nv}${x.det ? " · " + esc(x.det) : ""}</small></span>` +
+    (x.tiempo ? `<span class="tiempo">${esc(x.tiempo)}</span>` : "") + `</div>`;
+  $("tarLista").innerHTML = pend.length ? GRUPOS.map(([de, a, nombre]) => {
+    const g = pend.filter(x => x.nv >= de && x.nv <= a);
+    return g.length ? `<div class="tar-grupo">${nombre}<span>${g.length}</span></div><div class="renglones">${g.map(fila).join("")}</div>` : "";
+  }).join("") : (total ? "" : '<p class="nota">Agrega tareas en la pestaña Tareas del Sheet del Tracker.</p>');
+  $("tarHechasCaja").hidden = !hechas.length;
+  $("tarHechasCuenta").textContent = hechas.length ? hechas.length + (hechas.length === 1 ? " hecha" : " hechas") : "";
+  const vis = verTodasHechas ? hechas : hechas.slice(0, 5);
+  $("tarHechas").innerHTML = vis.map(x => `<div class="tarea hecha" data-tarea="${esc(x.id)}">` +
+    `<span class="chk" aria-hidden="true"><i><svg viewBox="0 0 24 24"><path d="M5 12.5l4.5 4.5L19 7.5"/></svg></i></span>` +
+    `<span class="txt"><b>${esc(x.t)}</b><small>${esc(cuandoHecha(x.hecha) ? "Hecha " + cuandoHecha(x.hecha) : "Hecha")}</small></span>` +
+    `<button class="regresar" data-regresar="${esc(x.id)}" aria-label="Regresar a pendientes: ${esc(x.t)}">Regresar</button></div>`).join("") +
+    (hechas.length > 5 ? `<button class="mas-hechas" data-ver-hechas>${verTodasHechas ? "Ver menos" : "Ver las " + hechas.length}</button>` : "");
+}
+function sinConexionT(msg){ if (!TAR) $("tarLista").innerHTML = `<p class="nota">${msg}</p>`; }
+function cargarTareas(c){
+  return apiT(c, "get_values", { spreadsheetId:TRACKER, range:HOJA_T + "!A:I" })
+    .then(r => { TAR = leerTareas(r.values || []); lsPoner(LST, TAR); pintarTareas(); return enviarCola(c); })
+    .catch(() => sinConexionT("No pude cargar tus tareas. Revisa tu conexión."));
+}
+/* Manda los cambios pendientes uno por uno. Cada vez busca la fila por ID, por si alguien movió renglones en el Sheet. */
+async function enviarCola(c){
+  if (enviando || !colaT.length || !c) return;
+  enviando = true;
+  try{
+    while (colaT.length){
+      const op = colaT[0];
+      const ids = ((await apiT(c, "get_values", { spreadsheetId:TRACKER, range:HOJA_T + "!A:A" })).values || []).map(r => sinApostrofo(r[0]));
+      const i = ids.indexOf(op.id);
+      if (i > 0) await apiT(c, "update_values", { spreadsheetId:TRACKER, range:`${HOJA_T}!G${i + 1}:H${i + 1}`, values:[[op.estado, op.hecha || ""]] });
+      if (colaT[0] === op) colaT.shift(); // si la borraron del Sheet, el cambio ya no aplica
+      lsPoner(LSTC, colaT);
+      const x = (TAR || []).find(t => t.id === op.id); if (x){ x.estado = op.estado; x.hecha = op.hecha; lsPoner(LST, TAR); }
+    }
+  }catch(e){ /* sin conexión: se queda en la cola y se reintenta en la siguiente actualización */ }
+  enviando = false;
+}
+function cambiarTarea(id, estado){
+  const op = { id, estado, hecha:estado === "hecha" ? ahoraTxt() : "" };
+  colaT = colaT.filter(o => o.id !== id).concat(op); lsPoner(LSTC, colaT);
+  const c = cfg(); if (c) enviarCola(c);
+}
+$("tarLista").addEventListener("click", e => {
+  const b = e.target.closest("[data-palomear]"); if (!b) return;
+  const row = b.closest(".tarea"); if (row.classList.contains("lista")) return;
+  row.classList.add("lista"); tarOcupado++;
+  if (navigator.vibrate) navigator.vibrate(12);
+  cambiarTarea(b.dataset.palomear, "hecha");
+  const quieto = matchMedia("(prefers-reduced-motion: reduce)").matches;
+  setTimeout(() => {
+    const fin = () => { tarOcupado = Math.max(0, tarOcupado - 1); pintarTareas(true); };
+    if (quieto || !row.animate) return fin();
+    row.animate([{ height:row.offsetHeight + "px", opacity:1, transform:"none" }, { height:"0px", paddingTop:"0px", paddingBottom:"0px", marginTop:"-8px", borderWidth:"0px", opacity:0, transform:"translateX(28px)" }],
+      { duration:320, easing:"cubic-bezier(.4,0,.2,1)", fill:"forwards" }).onfinish = fin;
+  }, quieto ? 150 : 520);
+});
+$("tarHechasCaja").addEventListener("click", e => {
+  if (e.target.closest("[data-ver-hechas]")){ verTodasHechas = !verTodasHechas; pintarTareas(true); return; }
+  const b = e.target.closest("[data-regresar]"); if (!b) return;
+  cambiarTarea(b.dataset.regresar, "pendiente"); pintarTareas(true);
+});
+
 /* ---------- Tu día: Pendientes y Depas de Condotec (mismas cuentas que el panel de Fede, las hace el server) ---------- */
 const LSPANEL = "jlp-panel";
 const esc = s => String(s ?? "").replace(/[&<>"]/g, ch => ({ "&":"&amp;", "<":"&lt;", ">":"&gt;", '"':"&quot;" })[ch]);
@@ -666,7 +818,7 @@ function refrescar(){
   if (document.hidden) return;
   if (actual === "inicio") { const c = cfg(); if (c) cargar(c); return; }
   if (actual === "condotec") { const c = cfg(); if (c) cargarPanel(c); return; }
-  if (actual === "pendientes") { const c = cfg(); if (c) cargarAgenda(c); return; }
+  if (actual === "pendientes") { const c = cfg(); if (c){ cargarAgenda(c); cargarTareas(c); } return; }
   try{ const d = vistas[actual].contentDocument; if (d && d.readyState === "complete") d.dispatchEvent(new Event("visibilitychange")); }catch(e){}
 }
 document.addEventListener("visibilitychange", refrescar);
@@ -836,6 +988,8 @@ ir(location.hash.slice(1) || "inicio", false);
 if (c) cargar(c);
 intro();
 try{ AG = JSON.parse(localStorage.getItem(LSAG) || "null"); pintarAgenda(); }catch(e){} // agenda guardada: se ve al instante
+pintarTareas(); if (!c) sinConexionT("Conecta tus datos en Inicio para ver tus tareas."); // tareas guardadas: se ven al instante
+if (c) setTimeout(() => cargarTareas(c), 1500);
 if (c) setTimeout(() => cargarPanel(c), 1200); // el aviso del logo se actualiza sin estorbar la carga del Inicio
 /* Las otras pestañas se preparan por detrás en cuanto el Inicio ya se ve, para que al tocarlas abran al instante. */
 if (c) (window.requestIdleCallback || (f => setTimeout(f, 600)))(() => ORDEN.forEach(vista), { timeout:1500 });
