@@ -21,6 +21,9 @@
 /* Tipografía: Instrument Serif para números y títulos, Geist para el texto, Shippori Mincho para los kanji */
 :root{--serif:"Instrument Serif",ui-serif,Georgia,serif;--sans:Geist,system-ui,-apple-system,sans-serif;--kanji:"Shippori Mincho",serif}
 html,body{margin:0;height:100%;overflow:hidden;background:var(--c60);color:var(--fg);font:16px/1.4 var(--sans);-webkit-font-smoothing:antialiased}
+/* iOS deja una franja abajo de la app (pantalla de inicio) donde no deja dibujar; solo se ve el fondo del html.
+   Se pinta del color de la barra de pestañas para que barra y franja se vean como una sola, pegada al borde. */
+html{background:color-mix(in srgb,var(--c30) 24%,var(--c60))}
 .fondo{position:fixed;inset:0;bottom:0;z-index:0;pointer-events:none;
   background:radial-gradient(48% 32% at 90% 4%,color-mix(in srgb,var(--c10) 26%,transparent),transparent 70%),
              radial-gradient(56% 36% at 0% 46%,color-mix(in srgb,var(--c30) 34%,transparent),transparent 70%),
@@ -126,7 +129,8 @@ button.card:active{transform:scale(.98)}
 .titulo-pagina{margin:4px 0 16px}.titulo-pagina small{color:var(--muted);font-size:13px}
 .titulo-pagina h1{margin:4px 0 0;font:400 52px/1 var(--serif);letter-spacing:-.01em}
 /* barra de pestañas pegada abajo a todo lo ancho, como en una app normal */
-nav{position:fixed;z-index:5;left:0;right:0;bottom:0;display:flex;padding:6px 12px calc(4px + env(safe-area-inset-bottom));
+nav{position:fixed;z-index:5;left:0;right:0;bottom:0;display:flex;padding:6px 12px max(4px,calc(4px + env(safe-area-inset-bottom) - var(--franja,0px)));
+  background:color-mix(in srgb,var(--c30) 24%,var(--c60))!important;
   border-radius:0!important;border-width:1px 0 0!important;transition:opacity .2s,transform .3s cubic-bezier(.2,.8,.2,1)}
 nav.oculta{opacity:0;pointer-events:none;transform:translateY(100%)}
 nav button{position:relative;z-index:1;flex:1;height:54px;border:0;border-radius:16px;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:3px;
@@ -180,7 +184,7 @@ nav button[aria-selected=true] svg{animation:pop .5s cubic-bezier(.34,1.6,.5,1)}
 .nuevo{animation:nuevo .45s ease both}
 nav svg{width:23px;height:23px}
 :focus-visible{outline:2px solid var(--c10);outline-offset:3px}
-.conectar{margin-top:14px;width:100%;padding:14px;border-radius:18px;cursor:pointer}
+.conectar{width:100%;padding:16px;border-radius:18px;cursor:pointer;font-weight:500;color:var(--c60)!important;background:var(--c10)!important}
 header .ajustes{margin-left:auto;width:44px;height:44px;border-radius:14px;display:grid;place-items:center;cursor:pointer;color:var(--muted)}
 header .ajustes svg{width:20px;height:20px}
 /* hoja de Colores */
@@ -220,6 +224,7 @@ header .ajustes svg{width:20px;height:20px}
   </button>
   <button class="ajustes glass" id="abrirColores" aria-label="Cambiar colores"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><circle cx="12" cy="12" r="9"/><circle cx="8.5" cy="9.5" r="1.4" fill="currentColor"/><circle cx="12.5" cy="7.5" r="1.4" fill="currentColor"/><circle cx="16" cy="10.5" r="1.4" fill="currentColor"/><path d="M12 21a2.5 2.5 0 0 1 0-5h2a3 3 0 0 0 3-3"/></svg></button>
 </header>
+<button class="conectar glass" id="conectar" hidden>Conectar mis datos · pega tu link de WhatsApp</button>
 <section class="whoop glass" aria-label="WHOOP">
   <div class="marca-whoop">WHOOP</div>
   <div class="anillos">
@@ -240,7 +245,6 @@ header .ajustes svg{width:20px;height:20px}
   <div class="barras" id="bars"></div>
   <div class="dias" id="dias"></div>
 </button>
-<button class="conectar glass" id="conectar" hidden>Conectar mis datos</button>
 </main></div>
 
 <div class="vista" id="v-condotec" role="tabpanel" aria-label="Condotec"><main>
@@ -402,6 +406,14 @@ document.addEventListener("click", e => {
 addEventListener("popstate", () => ir(location.hash.slice(1) || "inicio", false));
 
 /* La pastilla mide y se mueve al botón activo (los botones se reparten el ancho de la pantalla). */
+/* Mide la franja de iOS (pantalla menos alto de la página, solo en la app de pantalla de inicio): si existe, ahí ya va
+   la rayita de inicio, así que la barra no necesita su margen de abajo. */
+function medirFranja(){
+  const f = navigator.standalone ? Math.max(0, Math.min(120, screen.height - innerHeight)) : 0;
+  document.documentElement.style.setProperty("--franja", f + "px");
+}
+medirFranja(); addEventListener("resize", medirFranja);
+
 function moverPastilla(){
   const b = document.querySelector(`nav [data-ir="${actual}"]`), p = $("pastilla");
   p.style.width = b.offsetWidth + "px"; p.style.transform = `translateX(${b.offsetLeft}px)`;
