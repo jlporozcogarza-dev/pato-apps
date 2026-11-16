@@ -32,7 +32,7 @@ html,body{margin:0;height:100%;overflow:hidden;background:var(--c60);color:var(-
 .vista{position:fixed;inset:0;z-index:1;border:0;width:100%;height:100%;background:transparent;display:none}
 .vista.on{display:block}
 /* las apps ya respetan la muesca del iPhone por su cuenta: el iframe va a pantalla completa */
-#v-inicio,#v-condotec,#v-pendientes{overflow-y:auto;-webkit-overflow-scrolling:touch;padding:max(14px,env(safe-area-inset-top)) 16px calc(78px + max(4px,calc(env(safe-area-inset-bottom) - var(--franja,0px) - 12px)))}
+#v-inicio,#v-condotec,#v-pendientes,#v-camara{overflow-y:auto;-webkit-overflow-scrolling:touch;padding:max(14px,env(safe-area-inset-top)) 16px calc(78px + max(4px,calc(env(safe-area-inset-bottom) - var(--franja,0px) - 12px)))}
 /* el Inicio cabe en una pantalla: la gráfica toma lo que sobre (si un teléfono es muy chico, se puede deslizar) */
 #v-inicio main{display:flex;flex-direction:column;min-height:100%;gap:10px}
 #v-inicio main>*{flex:none}
@@ -223,6 +223,24 @@ button.card:active{transform:scale(.98)}
 /* página Condotec */
 .titulo-pagina{margin:4px 0 16px}.titulo-pagina small{color:var(--muted);font-size:13px}
 .titulo-pagina h1{margin:4px 0 0;font:700 38px/1 var(--display);letter-spacing:-.02em}
+/* pestaña Cámara: abre Captura de fotos en Claude (ahí Claude ve la foto) con el mismo estilo de JLP */
+.cam-abrir{display:grid;justify-items:center;gap:6px;padding:26px 18px 22px;border-radius:30px;text-align:center;color:inherit;text-decoration:none}
+.cam-ic{width:74px;height:74px;border-radius:24px;display:grid;place-items:center;margin-bottom:8px;color:var(--c60);
+  background:linear-gradient(180deg,color-mix(in srgb,var(--c10) 68%,#fff),var(--c10) 58%,color-mix(in srgb,var(--c10) 82%,#000));
+  box-shadow:inset 0 1px 0 rgba(255,255,255,.7),0 0 30px color-mix(in srgb,var(--c10) 55%,transparent)}
+.cam-ic svg{width:36px;height:36px}
+.cam-abrir b{font:700 26px/1.1 var(--display);letter-spacing:-.01em}
+.cam-abrir small{color:var(--muted);font-size:13.5px;line-height:1.35;max-width:260px}
+.cam-dos{display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-top:10px}
+.cam-op{display:grid;align-content:start;gap:4px;padding:14px;border-radius:24px;color:inherit;text-decoration:none}
+.cam-op .ic{width:34px;height:34px;border-radius:11px;display:grid;place-items:center;margin-bottom:6px;color:var(--c10);background:color-mix(in srgb,var(--c10) 18%,transparent)}
+.cam-op .ic svg{width:19px;height:19px}
+.cam-op b{font:700 17px/1.15 var(--display)}
+.cam-op small{color:var(--muted);font-size:12.5px;line-height:1.3}
+#v-camara.entra :is(.titulo-pagina,.cam-abrir,.cam-dos,.seccion,.renglones){animation:sube .55s cubic-bezier(.2,.8,.2,1) both}
+#v-camara.entra .cam-abrir{animation-delay:.06s}#v-camara.entra .cam-dos{animation-delay:.12s}#v-camara.entra :is(.seccion,.renglones){animation-delay:.18s}
+#v-camara.entra .cam-ic{animation:logoIn .7s cubic-bezier(.2,.9,.3,1.2) .15s both}
+@media (prefers-reduced-motion:reduce){#v-camara.entra *{animation:none!important}}
 /* Condotec · Entradas y salidas: calendario de cuadritos con el número de cada depa (rojo = sale, verde = entra) y el plan de cada salida */
 .es-cifras{grid-template-columns:repeat(4,1fr);margin-bottom:12px}
 .es-cal{display:grid;grid-template-columns:repeat(7,1fr);gap:1px;border-radius:16px;overflow:hidden;background:rgba(255,255,255,.10);border:1px solid rgba(255,255,255,.10)}
@@ -477,6 +495,25 @@ header .ajustes svg{width:20px;height:20px}
 <div class="renglones" id="agPend"></div>
 </main></div>
 
+<div class="vista" id="v-camara" role="tabpanel" aria-label="Cámara"><main>
+<header class="titulo-pagina"><div><small>Comida y tickets</small><h1>Cámara</h1></div></header>
+<a class="cam-abrir glass card" href="https://claude.ai/artifact/Ryy7u2wnbBq11h1n1Hrn5i" target="_blank" rel="noopener">
+  <span class="cam-ic" aria-hidden="true"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M4 8h3l2-3h6l2 3h3v11H4z"/><circle cx="12" cy="13" r="3.5"/></svg></span>
+  <b>Abrir cámara</b>
+  <small>Toma una foto o súbela de tu galería. Claude la analiza, la revisas y se guarda.</small>
+</a>
+<div class="cam-dos">
+  <a class="cam-op glass card" href="https://claude.ai/artifact/Ryy7u2wnbBq11h1n1Hrn5i" target="_blank" rel="noopener"><span class="ic" aria-hidden="true"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M12 3c1 3 4.5 5 4.5 9.5a4.5 4.5 0 0 1-9 0c0-2 1-3.2 2-4.2.2 2 1 3 2 3 .2-3-1-5 .5-8.3z"/></svg></span><b>Comida</b><small>Calorías y proteína. Se guarda en Comidas del Tracker.</small></a>
+  <a class="cam-op glass card" href="https://claude.ai/artifact/Ryy7u2wnbBq11h1n1Hrn5i" target="_blank" rel="noopener"><span class="ic" aria-hidden="true"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M6 3h12v18l-3-2-3 2-3-2-3 2z"/><path d="M9 8h6M9 12h6"/></svg></span><b>Ticket</b><small>Concepto, monto y forma de pago. Se guarda en Movimientos de Finanzas.</small></a>
+</div>
+<div class="seccion"><h2>También puedes</h2></div>
+<div class="renglones">
+  <div class="renglon"><b>Escribir lo que comiste</b><p>Sin foto: Claude separa cada alimento y calcula kcal y proteína.</p></div>
+  <div class="renglon"><b>Anotar un ingreso o egreso a mano</b><p>Con concepto y forma de pago, sin ticket.</p></div>
+</div>
+<p class="nota">Se abre en Claude porque ahí es donde Claude puede ver la foto.</p>
+</main></div>
+
 <div class="velo" id="velo"></div>
 <section class="hoja" id="hoja" role="dialog" aria-modal="true" aria-labelledby="hojaTitulo" aria-hidden="true">
   <div class="asa"></div>
@@ -494,6 +531,7 @@ header .ajustes svg{width:20px;height:20px}
   <button role="tab" data-ir="finanzas" aria-selected="false" aria-label="Finanzas"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><rect x="3" y="6" width="18" height="13" rx="3"/><path d="M3 10h18M16 15h2"/></svg><span>Finanzas</span></button>
   <button role="tab" data-ir="condotec" aria-selected="false" aria-label="Condotec"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M4 20V8l8-4 8 4v12"/><path d="M9 20v-5h6v5M9 10h.01M15 10h.01"/></svg><span>Condotec</span></button>
   <button role="tab" data-ir="pendientes" aria-selected="false" aria-label="Pendientes"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><rect x="3" y="5" width="18" height="16" rx="3"/><path d="M3 10h18M8 3v4M16 3v4M8 15l2 2 4-4"/></svg><span>Pendientes</span></button>
+  <button role="tab" data-ir="camara" aria-selected="false" aria-label="Cámara"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M4 8h3l2-3h6l2 3h3v11H4z"/><circle cx="12" cy="13" r="3.5"/></svg><span>Cámara</span></button>
 </nav>
 
 <script>
@@ -528,8 +566,8 @@ const PALETAS = [
   { id:"nanohana",   n:"Nanohana",   k:"苔 · 海松 · 菜の花",   c60:"#14150C", c30:"#838A2D", c10:"#F7D94C" },
   { id:"arazome",    n:"Arazome",    k:"墨 · 胡桃 · 退紅",     c60:"#1B1717", c30:"#947A6D", c10:"#F596AA" },
 ];
-const ORDEN = ["inicio", "tracker", "finanzas", "condotec", "pendientes"], NOMBRE = { inicio:"Inicio", tracker:"Tracker", finanzas:"Finanzas", condotec:"Condotec", pendientes:"Pendientes" };
-const DEF = { inicio:"daidai", tracker:"torinoko", finanzas:"kanzo", condotec:"neri", pendientes:"kaki" }, LSP = "jlp-paletas";
+const ORDEN = ["inicio", "tracker", "finanzas", "condotec", "pendientes", "camara"], NOMBRE = { inicio:"Inicio", tracker:"Tracker", finanzas:"Finanzas", condotec:"Condotec", pendientes:"Pendientes", camara:"Cámara" };
+const DEF = { inicio:"daidai", tracker:"torinoko", finanzas:"kanzo", condotec:"neri", pendientes:"kaki", camara:"shu" }, LSP = "jlp-paletas";
 let elegidas = (() => { try{ return Object.assign({}, DEF, JSON.parse(localStorage.getItem(LSP) || "{}")); }catch(e){ return { ...DEF }; } })();
 const pal = tab => PALETAS.find(p => p.id === elegidas[tab]) || PALETAS.find(p => p.id === DEF[tab]);
 function pintar(){
@@ -998,7 +1036,7 @@ $("esLista").addEventListener("toggle", e => { const d = e.target.closest("detai
 pintarSalidas(); // lo guardado en el teléfono se ve al instante
 
 /* ---------- pestañas: cada app vive en su iframe, se crea la primera vez y se queda viva ---------- */
-const vistas = { inicio:$("v-inicio"), condotec:$("v-condotec"), pendientes:$("v-pendientes") };
+const vistas = { inicio:$("v-inicio"), condotec:$("v-condotec"), pendientes:$("v-pendientes"), camara:$("v-camara") };
 let actual = "inicio";
 function vista(tab){
   if (!vistas[tab]){
