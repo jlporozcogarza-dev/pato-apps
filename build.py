@@ -3,7 +3,7 @@ src/ es el mismo HTML que se publica como artefacto en Claude; aquí solo se le 
 el icono, el modo pantalla completa y un puente a Google Sheets para cuando no corre dentro de Claude.
 Uso: python build.py"""
 import json, pathlib
-from PIL import Image, ImageDraw
+from PIL import Image, ImageDraw, ImageFilter, ImageFont
 
 ROOT = pathlib.Path(__file__).parent
 APPS = {
@@ -178,3 +178,30 @@ for key, a in APPS.items():
         "icons": [{"src": f"icon-{s}.png", "sizes": f"{s}x{s}", "type": "image/png"} for s in (192, 512)],
     }, ensure_ascii=False, indent=2), encoding="utf-8")
     print(key, "ok")
+
+# ---------- JLP (index.html): la app que se instala en el cel, con su icono y accesos rápidos ----------
+def icono_jlp(size, maskable=False):
+    S = 1024
+    im = Image.new("RGB", (S, S), (20, 20, 20))
+    brillo = Image.new("L", (S, S), 0)  # resplandor Hiwa arriba a la derecha, como el fondo de la app
+    ImageDraw.Draw(brillo).ellipse((420, -260, 1240, 520), fill=150)
+    im.paste(Image.new("RGB", (S, S), (190, 194, 63)), (0, 0), brillo.filter(ImageFilter.GaussianBlur(170)))
+    d = ImageDraw.Draw(im)
+    f = ImageFont.truetype("C:/Windows/Fonts/georgia.ttf", 330 if maskable else 400)  # serif parecida a Instrument Serif
+    d.text((S / 2, S / 2 + 20), "JLP", font=f, fill=(244, 241, 234), anchor="mm")
+    return im.resize((size, size), Image.LANCZOS)
+
+for s in (180, 192, 512):
+    icono_jlp(s).save(ROOT / f"jlp-{s}.png", optimize=True)
+icono_jlp(512, maskable=True).save(ROOT / "jlp-maskable-512.png", optimize=True)
+(ROOT / "manifest.webmanifest").write_text(json.dumps({
+    "name": "JLP", "short_name": "JLP", "id": "/", "start_url": "./", "scope": "./",
+    "display": "standalone", "orientation": "portrait",
+    "background_color": "#1C1C1C", "theme_color": "#1C1C1C",
+    "icons": [{"src": "jlp-192.png", "sizes": "192x192", "type": "image/png"},
+              {"src": "jlp-512.png", "sizes": "512x512", "type": "image/png"},
+              {"src": "jlp-maskable-512.png", "sizes": "512x512", "type": "image/png", "purpose": "maskable"}],
+    "shortcuts": [{"name": "Tracker", "url": "./#tracker", "icons": [{"src": "tracker/icon-192.png", "sizes": "192x192"}]},
+                  {"name": "Finanzas", "url": "./#finanzas", "icons": [{"src": "finanzas/icon-192.png", "sizes": "192x192"}]}],
+}, ensure_ascii=False, indent=2), encoding="utf-8")
+print("jlp ok")

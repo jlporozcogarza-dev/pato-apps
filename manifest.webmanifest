@@ -1,0 +1,51 @@
+{
+  "name": "JLP",
+  "short_name": "JLP",
+  "id": "/",
+  "start_url": "./",
+  "scope": "./",
+  "display": "standalone",
+  "orientation": "portrait",
+  "background_color": "#1C1C1C",
+  "theme_color": "#1C1C1C",
+  "icons": [
+    {
+      "src": "jlp-192.png",
+      "sizes": "192x192",
+      "type": "image/png"
+    },
+    {
+      "src": "jlp-512.png",
+      "sizes": "512x512",
+      "type": "image/png"
+    },
+    {
+      "src": "jlp-maskable-512.png",
+      "sizes": "512x512",
+      "type": "image/png",
+      "purpose": "maskable"
+    }
+  ],
+  "shortcuts": [
+    {
+      "name": "Tracker",
+      "url": "./#tracker",
+      "icons": [
+        {
+          "src": "tracker/icon-192.png",
+          "sizes": "192x192"
+        }
+      ]
+    },
+    {
+      "name": "Finanzas",
+      "url": "./#finanzas",
+      "icons": [
+        {
+          "src": "finanzas/icon-192.png",
+          "sizes": "192x192"
+        }
+      ]
+    }
+  ]
+}
