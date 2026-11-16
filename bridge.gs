@@ -14,7 +14,7 @@ function doPost(e) {
     const req = JSON.parse(e.postData.contents);
     if (!igual(String(req.k || ''), CLAVE)) throw new Error('Clave incorrecta');
     const x = req.input || {};
-    if (HOJAS.indexOf(x.spreadsheetId) < 0) throw new Error('Hoja no permitida');
+    if (req.tool !== 'eventos' && HOJAS.indexOf(x.spreadsheetId) < 0) throw new Error('Hoja no permitida');
     out = { result: correr(req.tool, x) };
   } catch (err) {
     out = { error: String((err && err.message) || err) };
@@ -34,6 +34,7 @@ function igual(a, b) {
 }
 
 function correr(tool, x) {
+  if (tool === 'eventos') return eventos(x);
   const ss = SpreadsheetApp.openById(x.spreadsheetId);
   if (tool === 'get_values') return { values: leer(rango(ss, x.range)) };
   const lock = LockService.getScriptLock();
@@ -105,4 +106,18 @@ function escribir(r, values) {
   values.forEach(function (f, i) {
     f.forEach(function (c, j) { if (c !== null) r.getCell(i + 1, j + 1).setValue(c); });
   });
+}
+
+// Solo lectura: eventos de todos tus calendarios entre x.desde y x.hasta (AAAA-MM-DD), en hora de Monterrey.
+function eventos(x) {
+  const desde = new Date(x.desde + 'T00:00:00-06:00'), hasta = new Date(x.hasta + 'T00:00:00-06:00');
+  const z = 'America/Monterrey', f = function (d) { return Utilities.formatDate(d, z, "yyyy-MM-dd'T'HH:mm"); };
+  const out = [];
+  CalendarApp.getAllCalendars().forEach(function (cal) {
+    cal.getEvents(desde, hasta).forEach(function (ev) {
+      out.push({ t: ev.getTitle(), i: f(ev.getStartTime()), f: f(ev.getEndTime()), dia: ev.isAllDayEvent(),
+                 l: ev.getLocation() || '', c: cal.getName().trim(), col: cal.getColor() });
+    });
+  });
+  return { eventos: out };
 }
