@@ -36,7 +36,7 @@ button{font:inherit;color:inherit}
   -webkit-backdrop-filter:var(--blur);backdrop-filter:var(--blur);border:1px solid color-mix(in srgb,var(--c30) 45%,transparent);
   box-shadow:inset 0 1px 0 rgba(255,255,255,.16),0 18px 40px -20px rgba(0,0,0,.75)}
 header{display:flex;align-items:center;gap:12px;margin:6px 0 18px}
-.logo{width:46px;height:46px;border-radius:15px;color:var(--c10);display:grid;place-items:center;font-weight:600;font-size:15px;letter-spacing:.03em}
+.logo{width:62px;height:62px;border-radius:20px;color:var(--c10);display:grid;place-items:center;font:400 24px/1 var(--serif);letter-spacing:.01em}
 header p{margin:0;font:400 34px/1 var(--serif);letter-spacing:-.01em}
 header p em{color:var(--c10)}
 header small{display:block;color:var(--muted);font-size:13px;margin-bottom:6px}
@@ -68,28 +68,47 @@ header small{display:block;color:var(--muted);font-size:13px;margin-bottom:6px}
 .seccion h2{margin:0;font:italic 400 26px/1 var(--serif);letter-spacing:-.01em}
 .seccion span{color:var(--muted);font-size:12px}
 header small::first-letter{text-transform:uppercase}
-.hero{position:relative;display:block;width:100%;text-align:left;overflow:hidden;border-radius:28px;padding:18px 18px 16px;margin-bottom:12px;cursor:pointer}
-.hero::after{content:"";position:absolute;inset:0;border-radius:inherit;pointer-events:none;background:linear-gradient(115deg,rgba(255,255,255,.12) 0%,transparent 30%)}
+/* Inicio: proporciones de las referencias (tarjetas grandes, números enormes, barras con su valor, progresos), en vidrio */
 .row{display:flex;justify-content:space-between;align-items:center}
-.hero .t{font-size:13px;font-weight:500;letter-spacing:.06em;text-transform:uppercase;color:var(--muted)}
-.hero .p{font-size:13px;color:var(--muted)}
-.big{font:400 88px/.9 var(--serif);letter-spacing:-.02em;margin:16px 0 2px;display:flex;align-items:baseline;gap:10px;color:var(--c10)}
-.big small{font-family:var(--sans)}
-.big small{font-size:13px;font-weight:400;color:var(--muted);letter-spacing:0}
-.bars{display:grid;grid-template-columns:repeat(7,1fr);gap:8px;align-items:end;height:130px;margin-top:14px}
-.bars i{display:block;border-radius:14px;min-height:10px;transition:height .6s cubic-bezier(.2,.8,.2,1);
-  background:linear-gradient(180deg,color-mix(in srgb,var(--c30) 75%,#fff 10%),color-mix(in srgb,var(--c30) 40%,transparent));box-shadow:inset 0 1px 0 rgba(255,255,255,.25)}
-.bars i.hoy{background:linear-gradient(180deg,var(--c10),color-mix(in srgb,var(--c10) 55%,transparent));box-shadow:inset 0 1px 0 rgba(255,255,255,.55),0 8px 22px -8px var(--c10)}
-.dias{display:grid;grid-template-columns:repeat(7,1fr);gap:8px;margin-top:8px;font-size:12px;text-align:center;color:var(--muted)}
-.grid{display:grid;grid-template-columns:1fr 1fr;gap:12px}
-.tile{position:relative;border-radius:24px;padding:16px;min-height:136px;display:flex;flex-direction:column;justify-content:space-between;text-align:left;cursor:pointer}
-.tile .n{font:400 clamp(40px,12vw,52px)/.95 var(--serif);padding-right:20px;white-space:nowrap;letter-spacing:-.01em}
-.tile .l{font-size:13px;color:var(--muted);line-height:1.3}
-.arrow{position:absolute;top:14px;right:14px;width:18px;height:18px;color:var(--muted);transition:transform .2s ease,color .2s ease}
-.hero,.tile{-webkit-user-select:none;user-select:none;transition:transform .2s ease}
-.tile[hidden]{display:none}
-.hero:active,.tile:active{transform:scale(.98)}
-@media (hover:hover){.tile:hover,.hero:hover{transform:translateY(-2px)}.tile:hover .arrow{color:var(--c10);transform:translate(2px,-2px)}}
+.cap{font-size:12px;font-weight:500;letter-spacing:.06em;text-transform:uppercase;color:var(--muted)}
+.num{font-family:var(--serif);font-weight:400;letter-spacing:-.02em;line-height:.9;white-space:nowrap}
+.num sup{font-size:.42em;vertical-align:top;position:relative;top:.1em;margin-left:2px;letter-spacing:0}
+button.card{width:100%;text-align:left;cursor:pointer;color:inherit;font:inherit;-webkit-user-select:none;user-select:none;transition:transform .2s ease}
+button.card:active{transform:scale(.98)}
+@media (hover:hover){button.card:hover{transform:translateY(-2px)}}
+.duo{display:grid;grid-template-columns:1fr 1fr;border-radius:30px;overflow:hidden;padding:0;margin-bottom:12px}
+.duo .mitad{display:flex;align-items:flex-end;gap:8px;padding:18px 16px 20px;min-height:128px}
+.duo .mitad b{font-size:clamp(54px,17vw,70px)}
+.duo .mitad>span{font-size:15px;line-height:1.15;padding-bottom:6px}
+.duo .mitad small{display:block;color:var(--muted);font-size:12px;margin-top:3px}
+.duo .acento{border-radius:30px;color:var(--c60);background:linear-gradient(160deg,color-mix(in srgb,var(--c10) 94%,#fff),color-mix(in srgb,var(--c10) 72%,var(--c60)));
+  box-shadow:inset 0 1px 0 rgba(255,255,255,.6),0 12px 30px -14px var(--c10)}
+.duo .acento small{color:color-mix(in srgb,var(--c60) 70%,transparent)}
+.grafica{display:block;border-radius:30px;padding:18px 16px 14px}
+.grafica .t{font-size:20px;font-weight:500}
+.barras{display:grid;grid-template-columns:repeat(7,1fr);gap:7px;align-items:end;height:190px;margin-top:16px}
+.col{display:flex;flex-direction:column;justify-content:flex-end;height:100%;gap:6px}
+.col .chip{align-self:center;min-width:32px;padding:5px 6px;border-radius:10px;text-align:center;font:500 12px/1 var(--sans);background:color-mix(in srgb,var(--c30) 45%,rgba(0,0,0,.35))}
+.col i{display:block;border-radius:12px;min-height:8px;transform-origin:bottom;transition:height .6s cubic-bezier(.2,.8,.2,1);
+  background:linear-gradient(180deg,color-mix(in srgb,var(--c30) 70%,#fff 8%),color-mix(in srgb,var(--c30) 35%,transparent));box-shadow:inset 0 1px 0 rgba(255,255,255,.22)}
+.col.max i{background:linear-gradient(180deg,var(--c10),color-mix(in srgb,var(--c10) 60%,transparent));box-shadow:inset 0 1px 0 rgba(255,255,255,.5),0 10px 24px -10px var(--c10)}
+.col.max .chip{background:var(--c10);color:var(--c60)}
+.col.vacio .chip{visibility:hidden}
+.dias{display:grid;grid-template-columns:repeat(7,1fr);gap:7px;margin-top:8px;font-size:12px;text-align:center;color:var(--muted)}
+.progresos{display:grid;gap:10px}
+.prog{position:relative;overflow:hidden;border-radius:26px;padding:16px 18px;min-height:96px;display:flex;align-items:flex-end;justify-content:space-between}
+.prog[hidden]{display:none}
+.prog .relleno{position:absolute;inset:0;width:calc(var(--p,0) * 1%);border-radius:inherit;transition:width .9s cubic-bezier(.2,.8,.2,1);
+  background:linear-gradient(160deg,color-mix(in srgb,var(--c10) 40%,transparent),color-mix(in srgb,var(--c10) 16%,transparent));box-shadow:inset 0 1px 0 rgba(255,255,255,.2)}
+.prog .nom{position:relative;align-self:flex-start;font-size:18px;font-weight:500}
+.prog .nom small{display:block;font-size:12px;font-weight:400;color:var(--muted);margin-top:3px}
+.prog .val{position:relative;font-size:clamp(42px,13vw,54px)}
+.tira{display:grid;grid-template-columns:1fr 1fr;border-radius:28px;padding:18px}
+.tira div+div{border-left:1px solid color-mix(in srgb,var(--c30) 45%,transparent);padding-left:18px}
+.tira .num{font-size:clamp(34px,10vw,44px)}
+.tira small{display:block;color:var(--muted);font-size:12px;margin-top:6px}
+.pills{display:flex;gap:8px;margin:16px 0 4px}
+.pill{flex:1;white-space:nowrap;text-align:center;padding:14px 10px;border-radius:999px;font:500 14px/1 var(--sans);color:var(--fg);text-decoration:none;cursor:pointer}
 /* barra de pestañas pegada abajo a todo lo ancho, como en una app normal */
 nav{position:fixed;z-index:5;left:0;right:0;bottom:calc(-1 * var(--hueco, 0px));display:flex;padding:6px 12px calc(4px + env(safe-area-inset-bottom));
   border-radius:0!important;border-width:1px 0 0!important;transition:opacity .2s,transform .3s cubic-bezier(.2,.8,.2,1)}
@@ -111,13 +130,11 @@ nav button[aria-selected=true] svg{animation:pop .5s cubic-bezier(.34,1.6,.5,1)}
 .vista.on{z-index:1}
 @keyframes sube{from{opacity:0;transform:translateY(16px)}to{opacity:1;transform:none}}
 .vista.entra{animation:entrar .55s cubic-bezier(.22,1,.36,1) both;will-change:transform,opacity}
-#v-inicio.entra :is(header,.hero,.tile,.seccion){animation:sube .55s cubic-bezier(.2,.8,.2,1) both}
-#v-inicio.entra .seccion{animation-delay:.1s}
-#v-inicio.entra .hero{animation-delay:.06s}
-#v-inicio.entra .tile:nth-child(1){animation-delay:.12s}#v-inicio.entra .tile:nth-child(2){animation-delay:.16s}
-#v-inicio.entra .tile:nth-child(3){animation-delay:.20s}#v-inicio.entra .tile:nth-child(4){animation-delay:.24s}
-#v-inicio.entra .tile:nth-child(5){animation-delay:.28s}#v-inicio.entra .tile:nth-child(6){animation-delay:.32s}#v-inicio.entra .tile:nth-child(7){animation-delay:.36s}
-.tile.ancha{grid-column:1/-1;min-height:104px}
+#v-inicio.entra :is(header,.duo,.grafica,.seccion,.prog,.tira,.pills){animation:sube .55s cubic-bezier(.2,.8,.2,1) both}
+#v-inicio.entra .duo{animation-delay:.05s}#v-inicio.entra .grafica{animation-delay:.1s}#v-inicio.entra .seccion{animation-delay:.12s}
+#v-inicio.entra .prog:nth-child(1){animation-delay:.14s}#v-inicio.entra .prog:nth-child(2){animation-delay:.18s}
+#v-inicio.entra .prog:nth-child(3){animation-delay:.22s}#v-inicio.entra .prog:nth-child(4){animation-delay:.26s}
+#v-inicio.entra .tira{animation-delay:.3s}#v-inicio.entra .pills{animation-delay:.34s}
 /* Entrada al abrir la app (o al volver después de un rato): todo aparece por partes */
 @keyframes fondoIn{from{opacity:0}to{opacity:1}}
 @keyframes logoIn{from{opacity:0;transform:scale(.6) rotate(-8deg);filter:blur(8px)}to{opacity:1;transform:none;filter:none}}
@@ -129,19 +146,19 @@ nav button[aria-selected=true] svg{animation:pop .5s cubic-bezier(.34,1.6,.5,1)}
 #v-inicio.intro .logo{animation:logoIn .7s cubic-bezier(.2,.9,.3,1.2) .1s both}
 #v-inicio.intro .quien div{animation:subeBlur .7s cubic-bezier(.2,.8,.2,1) .2s both}
 #v-inicio.intro .ajustes{animation:logoIn .6s ease .3s both}
-#v-inicio.intro .hero{animation:subeBlur .8s cubic-bezier(.2,.8,.2,1) .3s both}
-#v-inicio.intro .bars i{transform-origin:bottom;animation:crece .7s cubic-bezier(.2,.9,.3,1.1) both}
-#v-inicio.intro .bars i:nth-child(1){animation-delay:.55s}#v-inicio.intro .bars i:nth-child(2){animation-delay:.6s}
-#v-inicio.intro .bars i:nth-child(3){animation-delay:.65s}#v-inicio.intro .bars i:nth-child(4){animation-delay:.7s}
-#v-inicio.intro .bars i:nth-child(5){animation-delay:.75s}#v-inicio.intro .bars i:nth-child(6){animation-delay:.8s}
-#v-inicio.intro .bars i:nth-child(7){animation-delay:.85s}
-#v-inicio.intro .seccion{animation:subeBlur .7s cubic-bezier(.2,.8,.2,1) .6s both}
-#v-inicio.intro .tile{animation:subeBlur .7s cubic-bezier(.2,.8,.2,1) both}
-#v-inicio.intro .grid .tile:nth-child(1){animation-delay:.7s}#v-inicio.intro .grid .tile:nth-child(2){animation-delay:.78s}
-#v-inicio.intro .grid .tile:nth-child(3){animation-delay:.86s}#v-inicio.intro .grid .tile:nth-child(4){animation-delay:.94s}
-#v-inicio.intro .grid .tile:nth-child(5){animation-delay:1.02s}
-#v-inicio.intro .grid+.seccion{animation-delay:1s}#v-inicio.intro .grid+.seccion+.grid .tile:nth-child(1){animation-delay:1.08s}
-#v-inicio.intro .grid+.seccion+.grid .tile:nth-child(2){animation-delay:1.16s}
+#v-inicio.intro .duo{animation:subeBlur .8s cubic-bezier(.2,.8,.2,1) .3s both}
+#v-inicio.intro .grafica{animation:subeBlur .8s cubic-bezier(.2,.8,.2,1) .42s both}
+#v-inicio.intro .col i{animation:crece .7s cubic-bezier(.2,.9,.3,1.1) both}
+#v-inicio.intro .col .chip{animation:subeBlur .5s ease both}
+#v-inicio.intro .col:nth-child(1) i{animation-delay:0.60s}#v-inicio.intro .col:nth-child(1) .chip{animation-delay:0.80s}#v-inicio.intro .col:nth-child(2) i{animation-delay:0.65s}#v-inicio.intro .col:nth-child(2) .chip{animation-delay:0.85s}#v-inicio.intro .col:nth-child(3) i{animation-delay:0.70s}#v-inicio.intro .col:nth-child(3) .chip{animation-delay:0.90s}#v-inicio.intro .col:nth-child(4) i{animation-delay:0.75s}#v-inicio.intro .col:nth-child(4) .chip{animation-delay:0.95s}#v-inicio.intro .col:nth-child(5) i{animation-delay:0.80s}#v-inicio.intro .col:nth-child(5) .chip{animation-delay:1.00s}#v-inicio.intro .col:nth-child(6) i{animation-delay:0.85s}#v-inicio.intro .col:nth-child(6) .chip{animation-delay:1.05s}#v-inicio.intro .col:nth-child(7) i{animation-delay:0.90s}#v-inicio.intro .col:nth-child(7) .chip{animation-delay:1.10s}
+#v-inicio.intro .seccion{animation:subeBlur .7s cubic-bezier(.2,.8,.2,1) .8s both}
+@keyframes llena{from{width:0}}
+#v-inicio.intro .prog{animation:subeBlur .7s cubic-bezier(.2,.8,.2,1) both}
+#v-inicio.intro .prog .relleno{animation:llena 1.1s cubic-bezier(.2,.8,.2,1) both}
+#v-inicio.intro .prog:nth-child(1){animation-delay:0.90s}#v-inicio.intro .prog:nth-child(1) .relleno{animation-delay:1.08s}#v-inicio.intro .prog:nth-child(2){animation-delay:0.98s}#v-inicio.intro .prog:nth-child(2) .relleno{animation-delay:1.16s}#v-inicio.intro .prog:nth-child(3){animation-delay:1.06s}#v-inicio.intro .prog:nth-child(3) .relleno{animation-delay:1.24s}#v-inicio.intro .prog:nth-child(4){animation-delay:1.14s}#v-inicio.intro .prog:nth-child(4) .relleno{animation-delay:1.32s}
+#v-inicio.intro .seccion~.seccion{animation-delay:1.15s}
+#v-inicio.intro .tira{animation:subeBlur .7s cubic-bezier(.2,.8,.2,1) 1.22s both}
+#v-inicio.intro .pills{animation:subeBlur .7s cubic-bezier(.2,.8,.2,1) 1.3s both}
 @media (prefers-reduced-motion:reduce){#v-inicio.intro *,.intro-on .fondo,.intro-on nav{animation:none!important}}
 /* un número que cambia hace un pequeño destello */
 @keyframes nuevo{from{opacity:.2;filter:blur(6px);transform:translateY(6px)}to{opacity:1;filter:none;transform:none}}
@@ -188,25 +205,29 @@ header .ajustes svg{width:20px;height:20px}
   </button>
   <button class="ajustes glass" id="abrirColores" aria-label="Cambiar colores"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><circle cx="12" cy="12" r="9"/><circle cx="8.5" cy="9.5" r="1.4" fill="currentColor"/><circle cx="12.5" cy="7.5" r="1.4" fill="currentColor"/><circle cx="16" cy="10.5" r="1.4" fill="currentColor"/><path d="M12 21a2.5 2.5 0 0 1 0-5h2a3 3 0 0 0 3-3"/></svg></button>
 </header>
-<button class="hero glass" data-ir="tracker" aria-label="Abrir Tracker">
-  <div class="row"><span class="t">Recovery</span><span class="p">Últimos 7 días</span></div>
-  <div class="big"><span id="rec">–</span><small id="recNota"></small></div>
-  <div class="bars" id="bars"></div>
+<button class="duo glass card" data-ir="tracker" aria-label="Abrir Tracker">
+  <div class="mitad"><b class="num"><span id="rec">–</span><sup>%</sup></b><span>Recovery<small id="recNota"></small></span></div>
+  <div class="mitad acento"><b class="num" id="hrv">–</b><span>HRV<small>ms</small></span></div>
+</button>
+<button class="grafica glass card" data-ir="tracker" aria-label="Recovery de los últimos 7 días">
+  <div class="row"><span class="t">Recovery por día</span><span class="cap">7 días</span></div>
+  <div class="barras" id="bars"></div>
   <div class="dias" id="dias"></div>
 </button>
 <div class="seccion"><h2>Cuerpo</h2><span>WHOOP</span></div>
-<section class="grid">
-  <button class="tile glass" data-ir="tracker"><svg class="arrow" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M7 17 17 7M8 7h9v9"/></svg><span class="n" id="suenoPct">–</span><span class="l">calificación<br>de sueño</span></button>
-  <button class="tile glass" data-ir="tracker"><svg class="arrow" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M7 17 17 7M8 7h9v9"/></svg><span class="n" id="sueno">–</span><span class="l">horas<br>dormidas</span></button>
-  <button class="tile glass" data-ir="tracker"><svg class="arrow" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M7 17 17 7M8 7h9v9"/></svg><span class="n" id="kcal">–</span><span class="l">calorías<br>quemadas</span></button>
-  <button class="tile glass" data-ir="tracker"><svg class="arrow" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M7 17 17 7M8 7h9v9"/></svg><span class="n" id="pasos">–</span><span class="l">pasos</span></button>
-  <button class="tile glass" data-ir="tracker"><svg class="arrow" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M7 17 17 7M8 7h9v9"/></svg><span class="n" id="hrv">–</span><span class="l">HRV ahora<br>(ms)</span></button>
-</section>
+<div class="progresos">
+  <button class="prog glass card" data-ir="tracker"><span class="relleno"></span><span class="nom">Sueño<small>calificación</small></span><b class="val num"><span id="suenoPct">–</span><sup>%</sup></b></button>
+  <button class="prog glass card" data-ir="tracker"><span class="relleno"></span><span class="nom">Horas dormidas<small>de 8 h</small></span><b class="val num" id="sueno">–</b></button>
+  <button class="prog glass card" data-ir="tracker"><span class="relleno"></span><span class="nom">Calorías<small>quemadas</small></span><b class="val num" id="kcal">–</b></button>
+  <button class="prog glass card" data-ir="tracker"><span class="relleno"></span><span class="nom">Pasos<small>de 10,000</small></span><b class="val num" id="pasos">–</b></button>
+</div>
 <div class="seccion"><h2>Dinero</h2><span>Finanzas</span></div>
-<section class="grid">
-  <button class="tile glass" data-ir="finanzas"><svg class="arrow" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M7 17 17 7M8 7h9v9"/></svg><span class="n" id="gasto">–</span><span class="l">gastado<br>hoy</span></button>
-  <button class="tile glass" data-ir="finanzas"><svg class="arrow" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M7 17 17 7M8 7h9v9"/></svg><span class="n" id="mes">–</span><span class="l">gastado<br>este mes</span></button>
-</section>
+<button class="tira glass card" data-ir="finanzas"><div><b class="num" id="gasto">–</b><small>gastado hoy</small></div><div><b class="num" id="mes">–</b><small>gastado este mes</small></div></button>
+<div class="pills">
+  <button class="pill glass" data-accion="panel">Tu día</button>
+  <a class="pill glass" href="https://condotecmty.com" target="_blank" rel="noopener">Condotec</a>
+  <button class="pill glass" data-accion="colores">Colores</button>
+</div>
 <button class="conectar glass" id="conectar" hidden>Conectar mis datos</button>
 </main></div>
 
@@ -366,7 +387,12 @@ function ir(tab, push){
   if (push !== false && location.hash !== "#" + tab) history.pushState(null, "", tab === "inicio" ? location.pathname : "#" + tab);
   if (anterior !== tab) refrescar();
 }
-document.addEventListener("click", e => { const b = e.target.closest("[data-ir]"); if (b) ir(b.dataset.ir); });
+document.addEventListener("click", e => {
+  const b = e.target.closest("[data-ir]"); if (b) return ir(b.dataset.ir);
+  const a = e.target.closest("[data-accion]");
+  if (a && a.dataset.accion === "panel") $("abrirPanel").click();
+  if (a && a.dataset.accion === "colores") hojaColores(true);
+});
 addEventListener("popstate", () => ir(location.hash.slice(1) || "inicio", false));
 
 /* iOS, en apps de pantalla de inicio con la barra de estado translúcida, da una página más corta que la pantalla
@@ -430,7 +456,11 @@ const pesos = n => "$" + Math.round(n).toLocaleString("es-MX");
 
 function barras(serie){
   const D = ["Do","Lu","Ma","Mi","Ju","Vi","Sá"];
-  $("bars").innerHTML = serie.map(x => `<i class="${x.d===hoy?"hoy":""}" style="height:${isFinite(x.v)?Math.max(8,x.v):8}%" title="${x.d}: ${isFinite(x.v)?x.v+"%":"sin dato"}"></i>`).join("");
+  // cada barra lleva su valor arriba; el día más alto se resalta con el acento
+  const vals = serie.map(x => x.v).filter(isFinite), mx = vals.length ? Math.max(...vals) : NaN;
+  $("bars").innerHTML = serie.map(x => { const ok = isFinite(x.v);
+    return `<div class="col${ok && x.v === mx ? " max" : ""}${ok ? "" : " vacio"}" title="${x.d}: ${ok ? Math.round(x.v) + "%" : "sin dato"}">` +
+      `<span class="chip">${ok ? Math.round(x.v) : "–"}</span><i style="height:${ok ? Math.max(6, x.v * .8) : 6}%"></i></div>`; }).join("");
   $("dias").innerHTML = serie.map(x => `<span>${D[new Date(x.d+"T12:00").getDay()]}</span>`).join("");
 }
 function ultimos7(){ return [...Array(7)].map((_, i) => { const d = new Date(); d.setDate(d.getDate() - 6 + i); return d.toLocaleDateString("sv-SE"); }); }
@@ -447,24 +477,21 @@ function poner(id, txt){
 function mostrar(r){ // { serie:[[fecha, recovery]], rec, recFecha, sueno, hrv, gastoHoy, gastoMes }
   const v = Object.fromEntries(r.serie || []);
   barras(ultimos7().map(d => ({ d, v:v[d] == null ? NaN : v[d] })));
-  poner("rec", r.rec == null ? "" : r.rec + "%");
+  poner("rec", r.rec == null ? "–" : String(Math.round(r.rec)));
   $("recNota").textContent = !r.recFecha ? "" : r.recFecha === hoy ? "hoy" : "del " + new Date(r.recFecha + "T12:00").toLocaleDateString("es-MX", { day:"numeric", month:"short" });
-  // Salud: solo WHOOP. Si un dato no viene, su tarjeta no se muestra.
+  // Salud: solo WHOOP. Si un dato no viene, su tarjeta no se muestra. La parte llena es el avance.
   const entero = x => Math.round(x).toLocaleString("es-MX");
-  const dato = (id, x, f) => { $(id).closest(".tile").hidden = x == null; if (x != null) poner(id, f(x)); };
-  dato("suenoPct", r.suenoPct, x => Math.round(x) + "%");
-  dato("sueno", r.sueno, x => x.toFixed(1));
-  dato("kcal", r.kcal, entero);
-  dato("pasos", r.pasos, entero);
-  dato("hrv", r.hrv, entero);
+  const prog = (id, x, f, pct) => {
+    const b = $(id).closest(".prog"); b.hidden = x == null;
+    if (x != null){ poner(id, f(x)); b.style.setProperty("--p", Math.max(4, Math.min(100, pct(x)))); }
+  };
+  prog("suenoPct", r.suenoPct, x => String(Math.round(x)), x => x);
+  prog("sueno", r.sueno, x => x.toFixed(1), x => x / 8 * 100);
+  prog("kcal", r.kcal, entero, x => x / 3500 * 100);
+  prog("pasos", r.pasos, entero, x => x / 10000 * 100);
+  poner("hrv", r.hrv == null ? "–" : entero(r.hrv));
   poner("gasto", pesos(r.gastoHoy || 0));
   poner("mes", pesos(r.gastoMes || 0));
-  // en cada grupo, si quedan nones, la última tarjeta ocupa todo el ancho para que no quede hueco
-  document.querySelectorAll(".grid").forEach(g => {
-    const vis = [...g.querySelectorAll(".tile")].filter(t => !t.hidden);
-    vis.forEach(t => t.classList.remove("ancha"));
-    if (vis.length % 2) vis[vis.length - 1].classList.add("ancha");
-  });
 }
 /* Respaldo por si el server todavía no tiene "resumen": lo arma con las dos pestañas completas. */
 async function resumenLento(c){
@@ -522,7 +549,9 @@ function intro(){
   v.classList.remove("intro", "entra"); raiz.classList.remove("intro-on"); void v.offsetWidth;
   v.classList.add("intro"); raiz.classList.add("intro-on");
   contar($("rec"), 400);
-  document.querySelectorAll(".grid .tile:not([hidden]) .n").forEach((n, i) => contar(n, 750 + i * 80));
+  contar($("hrv"), 450);
+  ["suenoPct", "sueno", "kcal", "pasos"].map($).filter(n => !n.closest(".prog").hidden).forEach((n, i) => contar(n, 950 + i * 80));
+  contar($("gasto"), 1250); contar($("mes"), 1300);
   clearTimeout(intro.t); intro.t = setTimeout(() => { v.classList.remove("intro"); raiz.classList.remove("intro-on"); }, 2400);
 }
 let ocultoDesde = 0;

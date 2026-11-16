@@ -6,7 +6,7 @@
  * Sin la CLAVE correcta no lee ni escribe nada, y solo toca las dos hojas de HOJAS.
  */
 const CLAVE = '__CLAVE__';
-const HOJAS = ['1L90iaeKk-U3Y7siZ4h7pFOfguUrEbK4IVvqk1YEuFFM', '1Wj1YoOCuqjQB-4rtikdTKAhFRCSRloNsWJeLMez4vic'];
+const HOJAS = ['1L90iaeKk-U3Y7siZ4h7pFOfguUrEbK4IVvqk1YEuFFM', '1Wj1YoOCuqjQB-4rtikdTKAhFRCSRloNsWJeLMez4vic', '1Slfw8A9kXoBCsWPFIQyA6bi7XKKoURifbZcyqGzf_x0'];
 
 function doPost(e) {
   let out;
