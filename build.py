@@ -101,7 +101,11 @@ def tema(key):
 /* JLP: oscuro con vidrio, 60-30-10 en colores japoneses. Gana sobre los temas claro/oscuro de la app. */
 html:root:root{{--j60:{p["c60"]};--j30:{p["c30"]};--j10:{p["c10"]};color-scheme:dark;--bg:var(--j60);--surface:{m(30, 20)};--surface-2:{m(30, 28)};--line:{m(30, 36)};--track:{m(30, 24)};
   --fg:#F4F1EA;--muted:#B5AEA4;--faint:#7E7870;--accent:var(--j10);--accent-soft:{m(10, 16)};--accent-line:{m(10, 42)};
-  --scrim:rgba(0,0,0,.55);--card-shadow:0 18px 40px -22px rgba(0,0,0,.75)}}
+  --scrim:rgba(0,0,0,.55);--card-shadow:0 18px 40px -22px rgba(0,0,0,.75);
+  --font-display:Geist,system-ui,-apple-system,sans-serif;--font-body:Geist,system-ui,-apple-system,sans-serif}}
+body{{-webkit-font-smoothing:antialiased}}
+h1,.ring-big .score{{font-family:"Instrument Serif",ui-serif,Georgia,serif!important;font-weight:400!important;letter-spacing:-.01em!important}}
+h1{{font-size:52px!important}}
 html{{background:var(--j60)}} html.embed,html.embed body,body{{background:transparent!important}}
 html:not(.embed) body{{background:radial-gradient(60% 40% at 90% 0%,{m(10, 16)},transparent 70%),radial-gradient(60% 40% at 0% 60%,{m(30, 22)},transparent 70%),var(--j60)!important;background-attachment:fixed!important}}
 html.embed body{{padding-bottom:calc(104px + env(safe-area-inset-bottom))!important}}
@@ -116,6 +120,38 @@ html.entra #app>*{{animation:jlpSube .55s cubic-bezier(.2,.8,.2,1) both}}
 </style>
 """
 
+# En jlpog.app los datos salen de la base de datos del server, no de Google Sheets: estos textos cambian
+# solo en esta versión (los artefactos de Claude siguen usando Sheets y conservan los suyos).
+TEXTOS = {
+    "tracker": [
+        ('aria-label="Actualizar datos del Sheet"', 'aria-label="Actualizar datos"'),
+        ('Tus datos viven en el Google Sheet <a id="sheetLink" target="_blank" rel="noopener">Tracker de hábitos 90 días</a>. WHOOP se sincroniza solo a las 6:47 AM y 9:47 PM; lo que registras a mano siempre manda.',
+         'Tus datos viven en tu server<a id="sheetLink" hidden></a>. WHOOP se sincroniza solo cada hora; lo que registras a mano siempre manda.'),
+        ('msg:"Vista de ejemplo con datos inventados. Abre la app desde Claude para conectar tu Google Sheet."',
+         'msg:"Vista de ejemplo. Toca Conectar mis datos en Inicio para ver los tuyos."'),
+    ],
+    "finanzas": [
+        ('aria-label="Actualizar datos de la hoja"', 'aria-label="Actualizar datos"'),
+        ('Tus datos viven en la hoja <a id="sheetLink" target="_blank" rel="noopener">Finanzas Pato</a> de Google Sheets',
+         'Tus datos viven en tu server<a id="sheetLink" hidden></a>'),
+        ('msg:"Vista de ejemplo con datos inventados. Abre la app desde Claude para conectar tu hoja de finanzas."',
+         'msg:"Vista de ejemplo. Toca Conectar mis datos en Inicio para ver los tuyos."'),
+        ("se registran en tu hoja con esa fecha", "se registran con esa fecha"),
+        ("Sin cuentas en la hoja.", "Sin cuentas todavía."),
+        ('"No encontré ese programado en la hoja."', '"No encontré ese programado."'),
+        ('"Pago guardado en tu hoja"', '"Pago guardado"'),
+    ],
+}
+COMUNES = [  # pueden salir varias veces
+    ('const SERVER = "Google Sheets";', 'const SERVER = "tu base de datos";'),
+    ('"Google Sheets respondió con un error: "', '"Tu base de datos respondió con un error: "'),
+    ('"No se pudo conectar con Google Sheets."', '"No se pudo conectar con tu base de datos."'),
+    ("Sin conexión con tu hoja.", "Sin conexión con tu base de datos."),
+    ("esto no se guarda en tu hoja.", "esto no se guarda."),
+    # misma tipografía que JLP: Geist para texto, Instrument Serif para títulos y números grandes
+    ("family=Plus+Jakarta+Sans:wght@400;500;600;700;800", "family=Geist:wght@400;500;600;700&family=Instrument+Serif:ital@0;1"),
+]
+
 def sub(t, old, new):
     assert t.count(old) == 1, old
     return t.replace(old, new)
@@ -128,6 +164,11 @@ for key, a in APPS.items():
     t = sub(t, title, title + "\n" + head(a["short"]))
     t = sub(t, "<script>\n(function(){", SHIM + "<script>\n(function(){")
     t = sub(t, "</head>", tema(key) + "</head>")
+    for old, new in TEXTOS[key]:
+        t = sub(t, old, new)
+    for old, new in COMUNES:
+        assert old in t or key == "tracker", old  # finanzas tiene todos; tracker solo algunos
+        t = t.replace(old, new)
     (out / "index.html").write_text(t, encoding="utf-8", newline="")
     for s in (180, 192, 512):
         icon(key, s).save(out / f"icon-{s}.png", optimize=True)

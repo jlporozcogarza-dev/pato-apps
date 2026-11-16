@@ -6,7 +6,7 @@
 <link rel="apple-touch-icon" href="tracker/icon-180.png"><link rel="icon" href="tracker/icon-192.png">
 <link rel="preconnect" href="https://api.jlpog.app" crossorigin>
 <link rel="preconnect" href="https://fonts.googleapis.com"><link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-<link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;500;600&display=swap" rel="stylesheet">
+<link href="https://fonts.googleapis.com/css2?family=Geist:wght@400;500;600&family=Instrument+Serif:ital@0;1&family=Shippori+Mincho:wght@500&display=swap" rel="stylesheet">
 <style>
 /* JLP: una sola app con pestañas. Colores tradicionales japoneses (nippon iro) con la regla 60-30-10:
    60 = fondo, 30 = tarjetas de vidrio, 10 = acento. Tracker y Finanzas usan las mismas paletas (build.py, PALETAS). */
@@ -17,7 +17,9 @@
   transition:--c60 .6s ease,--c30 .6s ease,--c10 .6s ease}
 /* Los colores de cada pestaña los pone el script (PALETAS) según lo que elijas en Colores. */
 *{box-sizing:border-box;-webkit-tap-highlight-color:transparent}
-html,body{margin:0;height:100%;overflow:hidden;background:var(--c60);color:var(--fg);font:16px/1.35 Outfit,system-ui,sans-serif}
+/* Tipografía: Instrument Serif para números y títulos, Geist para el texto, Shippori Mincho para los kanji */
+:root{--serif:"Instrument Serif",ui-serif,Georgia,serif;--sans:Geist,system-ui,-apple-system,sans-serif;--kanji:"Shippori Mincho",serif}
+html,body{margin:0;height:100%;overflow:hidden;background:var(--c60);color:var(--fg);font:16px/1.4 var(--sans);-webkit-font-smoothing:antialiased}
 .fondo{position:fixed;inset:0;z-index:0;pointer-events:none;
   background:radial-gradient(48% 32% at 90% 4%,color-mix(in srgb,var(--c10) 26%,transparent),transparent 70%),
              radial-gradient(56% 36% at 0% 46%,color-mix(in srgb,var(--c30) 34%,transparent),transparent 70%),
@@ -33,15 +35,20 @@ button{font:inherit;color:inherit}
   box-shadow:inset 0 1px 0 rgba(255,255,255,.16),0 18px 40px -20px rgba(0,0,0,.75)}
 header{display:flex;align-items:center;gap:12px;margin:6px 0 18px}
 .logo{width:46px;height:46px;border-radius:15px;color:var(--c10);display:grid;place-items:center;font-weight:600;font-size:15px;letter-spacing:.03em}
-header p{margin:0;font-weight:500;font-size:18px}
-header small{color:var(--muted);font-size:13px}
+header p{margin:0;font:400 34px/1 var(--serif);letter-spacing:-.01em}
+header p em{color:var(--c10)}
+header small{display:block;color:var(--muted);font-size:13px;margin-bottom:6px}
+.seccion{display:flex;align-items:baseline;justify-content:space-between;margin:26px 4px 12px}
+.seccion h2{margin:0;font:italic 400 26px/1 var(--serif);letter-spacing:-.01em}
+.seccion span{color:var(--muted);font-size:12px}
 header small::first-letter{text-transform:uppercase}
 .hero{position:relative;display:block;width:100%;text-align:left;overflow:hidden;border-radius:28px;padding:18px 18px 16px;margin-bottom:12px;cursor:pointer}
 .hero::after{content:"";position:absolute;inset:0;border-radius:inherit;pointer-events:none;background:linear-gradient(115deg,rgba(255,255,255,.12) 0%,transparent 30%)}
 .row{display:flex;justify-content:space-between;align-items:center}
-.hero .t{font-size:17px;font-weight:500}
+.hero .t{font-size:13px;font-weight:500;letter-spacing:.06em;text-transform:uppercase;color:var(--muted)}
 .hero .p{font-size:13px;color:var(--muted)}
-.big{font-size:60px;font-weight:300;letter-spacing:-.035em;line-height:1;margin:14px 0 4px;display:flex;align-items:baseline;gap:10px;color:var(--c10)}
+.big{font:400 88px/.9 var(--serif);letter-spacing:-.02em;margin:16px 0 2px;display:flex;align-items:baseline;gap:10px;color:var(--c10)}
+.big small{font-family:var(--sans)}
 .big small{font-size:13px;font-weight:400;color:var(--muted);letter-spacing:0}
 .bars{display:grid;grid-template-columns:repeat(7,1fr);gap:8px;align-items:end;height:130px;margin-top:14px}
 .bars i{display:block;border-radius:14px;min-height:10px;transition:height .6s cubic-bezier(.2,.8,.2,1);
@@ -50,10 +57,11 @@ header small::first-letter{text-transform:uppercase}
 .dias{display:grid;grid-template-columns:repeat(7,1fr);gap:8px;margin-top:8px;font-size:12px;text-align:center;color:var(--muted)}
 .grid{display:grid;grid-template-columns:1fr 1fr;gap:12px}
 .tile{position:relative;border-radius:24px;padding:16px;min-height:136px;display:flex;flex-direction:column;justify-content:space-between;text-align:left;cursor:pointer}
-.tile .n{font-size:clamp(30px,9vw,40px);padding-right:20px;white-space:nowrap;font-weight:300;letter-spacing:-.02em;line-height:1;font-variant-numeric:tabular-nums}
-.tile .l{font-size:14px;color:var(--muted);line-height:1.25}
+.tile .n{font:400 clamp(40px,12vw,52px)/.95 var(--serif);padding-right:20px;white-space:nowrap;letter-spacing:-.01em}
+.tile .l{font-size:13px;color:var(--muted);line-height:1.3}
 .arrow{position:absolute;top:14px;right:14px;width:18px;height:18px;color:var(--muted);transition:transform .2s ease,color .2s ease}
 .hero,.tile{-webkit-user-select:none;user-select:none;transition:transform .2s ease}
+.tile[hidden]{display:none}
 .hero:active,.tile:active{transform:scale(.98)}
 @media (hover:hover){.tile:hover,.hero:hover{transform:translateY(-2px)}.tile:hover .arrow{color:var(--c10);transform:translate(2px,-2px)}}
 nav{position:fixed;z-index:5;left:50%;bottom:max(16px,env(safe-area-inset-bottom));transform:translateX(-50%);display:flex;gap:4px;padding:6px;border-radius:24px;transition:opacity .2s,transform .25s}
@@ -70,7 +78,8 @@ nav button[aria-selected=true] svg{animation:pop .5s cubic-bezier(.34,1.6,.5,1)}
 @keyframes entrar{from{opacity:0;transform:translateX(calc(var(--dir,1) * 44px))}to{opacity:1;transform:none}}
 @keyframes sube{from{opacity:0;transform:translateY(16px)}to{opacity:1;transform:none}}
 .vista.entra{animation:entrar .45s cubic-bezier(.2,.8,.2,1) both}
-#v-inicio.entra :is(header,.hero,.tile){animation:sube .55s cubic-bezier(.2,.8,.2,1) both}
+#v-inicio.entra :is(header,.hero,.tile,.seccion){animation:sube .55s cubic-bezier(.2,.8,.2,1) both}
+#v-inicio.entra .seccion{animation-delay:.1s}
 #v-inicio.entra .hero{animation-delay:.06s}
 #v-inicio.entra .tile:nth-child(1){animation-delay:.12s}#v-inicio.entra .tile:nth-child(2){animation-delay:.16s}
 #v-inicio.entra .tile:nth-child(3){animation-delay:.20s}#v-inicio.entra .tile:nth-child(4){animation-delay:.24s}
@@ -102,7 +111,8 @@ header .ajustes svg{width:20px;height:20px}
 .pal{flex:none;scroll-snap-align:start;width:92px;padding:8px;border-radius:18px;border:1px solid rgba(255,255,255,.10);background:rgba(255,255,255,.04);cursor:pointer;text-align:left}
 .pal .mu{height:56px;border-radius:12px;overflow:hidden;display:grid;grid-template-columns:6fr 3fr 1fr}
 .pal b{display:block;font-size:13px;font-weight:500;margin-top:7px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
-.pal small{display:block;font-size:11px;color:var(--muted);white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.pal small{display:block;font:500 11px/1.4 var(--kanji);color:var(--muted);white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.hoja h2{font:400 34px/1 var(--serif)!important}
 .pal[aria-pressed=true]{border-color:var(--c10);box-shadow:0 0 0 2px color-mix(in srgb,var(--c10) 45%,transparent),inset 0 1px 0 rgba(255,255,255,.18);background:rgba(255,255,255,.08)}
 .hoja .fila{display:flex;gap:10px;margin-top:22px}
 .hoja .fila button{flex:1;min-height:48px;border-radius:16px;cursor:pointer;border:1px solid rgba(255,255,255,.12);background:rgba(255,255,255,.06)}
@@ -115,7 +125,7 @@ header .ajustes svg{width:20px;height:20px}
 <div class="vista on" id="v-inicio" role="tabpanel" aria-label="Inicio"><main>
 <header>
   <div class="logo glass" aria-hidden="true">JLP</div>
-  <div><p>Hola, Pato</p><small id="fecha">Hoy</small></div>
+  <div><small id="fecha">Hoy</small><p>Hola, <em>Pato</em></p></div>
   <button class="ajustes glass" id="abrirColores" aria-label="Cambiar colores"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><circle cx="12" cy="12" r="9"/><circle cx="8.5" cy="9.5" r="1.4" fill="currentColor"/><circle cx="12.5" cy="7.5" r="1.4" fill="currentColor"/><circle cx="16" cy="10.5" r="1.4" fill="currentColor"/><path d="M12 21a2.5 2.5 0 0 1 0-5h2a3 3 0 0 0 3-3"/></svg></button>
 </header>
 <button class="hero glass" data-ir="tracker" aria-label="Abrir Tracker">
@@ -124,14 +134,18 @@ header .ajustes svg{width:20px;height:20px}
   <div class="bars" id="bars"></div>
   <div class="dias" id="dias"></div>
 </button>
+<div class="seccion"><h2>Cuerpo</h2><span>WHOOP</span></div>
 <section class="grid">
   <button class="tile glass" data-ir="tracker"><svg class="arrow" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M7 17 17 7M8 7h9v9"/></svg><span class="n" id="suenoPct">–</span><span class="l">calificación<br>de sueño</span></button>
   <button class="tile glass" data-ir="tracker"><svg class="arrow" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M7 17 17 7M8 7h9v9"/></svg><span class="n" id="sueno">–</span><span class="l">horas<br>dormidas</span></button>
   <button class="tile glass" data-ir="tracker"><svg class="arrow" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M7 17 17 7M8 7h9v9"/></svg><span class="n" id="kcal">–</span><span class="l">calorías<br>quemadas</span></button>
   <button class="tile glass" data-ir="tracker"><svg class="arrow" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M7 17 17 7M8 7h9v9"/></svg><span class="n" id="pasos">–</span><span class="l">pasos</span></button>
   <button class="tile glass" data-ir="tracker"><svg class="arrow" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M7 17 17 7M8 7h9v9"/></svg><span class="n" id="hrv">–</span><span class="l">HRV ahora<br>(ms)</span></button>
+</section>
+<div class="seccion"><h2>Dinero</h2><span>Finanzas</span></div>
+<section class="grid">
   <button class="tile glass" data-ir="finanzas"><svg class="arrow" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M7 17 17 7M8 7h9v9"/></svg><span class="n" id="gasto">–</span><span class="l">gastado<br>hoy</span></button>
-  <button class="tile glass ancha" data-ir="finanzas"><svg class="arrow" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M7 17 17 7M8 7h9v9"/></svg><span class="n" id="mes">–</span><span class="l">gastado este mes</span></button>
+  <button class="tile glass" data-ir="finanzas"><svg class="arrow" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M7 17 17 7M8 7h9v9"/></svg><span class="n" id="mes">–</span><span class="l">gastado<br>este mes</span></button>
 </section>
 <button class="conectar glass" id="conectar" hidden>Conectar mis datos</button>
 </main></div>
@@ -307,16 +321,24 @@ function poner(id, txt){
 function mostrar(r){ // { serie:[[fecha, recovery]], rec, recFecha, sueno, hrv, gastoHoy, gastoMes }
   const v = Object.fromEntries(r.serie || []);
   barras(ultimos7().map(d => ({ d, v:v[d] == null ? NaN : v[d] })));
-  poner("rec", r.rec == null ? "–" : r.rec + "%");
+  poner("rec", r.rec == null ? "" : r.rec + "%");
   $("recNota").textContent = !r.recFecha ? "" : r.recFecha === hoy ? "hoy" : "del " + new Date(r.recFecha + "T12:00").toLocaleDateString("es-MX", { day:"numeric", month:"short" });
-  const entero = x => x == null ? "–" : Math.round(x).toLocaleString("es-MX");
-  poner("suenoPct", r.suenoPct == null ? "–" : Math.round(r.suenoPct) + "%");
-  poner("sueno", r.sueno == null ? "–" : r.sueno.toFixed(1));
-  poner("kcal", entero(r.kcal));
-  poner("pasos", entero(r.pasos));
-  poner("hrv", entero(r.hrv));
+  // Salud: solo WHOOP. Si un dato no viene, su tarjeta no se muestra.
+  const entero = x => Math.round(x).toLocaleString("es-MX");
+  const dato = (id, x, f) => { $(id).closest(".tile").hidden = x == null; if (x != null) poner(id, f(x)); };
+  dato("suenoPct", r.suenoPct, x => Math.round(x) + "%");
+  dato("sueno", r.sueno, x => x.toFixed(1));
+  dato("kcal", r.kcal, entero);
+  dato("pasos", r.pasos, entero);
+  dato("hrv", r.hrv, entero);
   poner("gasto", pesos(r.gastoHoy || 0));
   poner("mes", pesos(r.gastoMes || 0));
+  // en cada grupo, si quedan nones, la última tarjeta ocupa todo el ancho para que no quede hueco
+  document.querySelectorAll(".grid").forEach(g => {
+    const vis = [...g.querySelectorAll(".tile")].filter(t => !t.hidden);
+    vis.forEach(t => t.classList.remove("ancha"));
+    if (vis.length % 2) vis[vis.length - 1].classList.add("ancha");
+  });
 }
 /* Respaldo por si el server todavía no tiene "resumen": lo arma con las dos pestañas completas. */
 async function resumenLento(c){
@@ -344,11 +366,17 @@ const c = cfg();
 if (!c){
   $("conectar").hidden = false;
   $("conectar").onclick = () => {
-    const s = prompt("Pega el link de configuración que te mandó Claude");
-    try{ const u = new URL(s.trim()).searchParams; if (u.get("u") && u.get("k")) { localStorage.setItem(LS, JSON.stringify({ u:u.get("u"), k:u.get("k") })); location.reload(); } }catch(e){}
+    const s = (prompt("Pega tu link de configuración o tu clave") || "").trim();
+    if (!s) return;
+    let k = s; // vale el link completo (?u=...&k=...) o solo la clave
+    try{ k = new URL(s).searchParams.get("k") || s; }catch(e){}
+    try{ localStorage.setItem(LS, JSON.stringify({ u:"jlpog", k })); }catch(e){}
+    location.reload();
   };
 }
 ir(location.hash.slice(1) || "inicio", false);
 if (c) cargar(c);
+/* Las otras pestañas se preparan por detrás en cuanto el Inicio ya se ve, para que al tocarlas abran al instante. */
+if (c) (window.requestIdleCallback || (f => setTimeout(f, 600)))(() => ORDEN.forEach(vista), { timeout:1500 });
 </script>
 </body></html>

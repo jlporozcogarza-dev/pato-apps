@@ -3,7 +3,11 @@
 /* JLP: oscuro con vidrio, 60-30-10 en colores japoneses. Gana sobre los temas claro/oscuro de la app. */
 html:root:root{--j60:#1E1512;--j30:#B54434;--j10:#F17C67;color-scheme:dark;--bg:var(--j60);--surface:color-mix(in srgb,var(--j30) 20%,transparent);--surface-2:color-mix(in srgb,var(--j30) 28%,transparent);--line:color-mix(in srgb,var(--j30) 36%,transparent);--track:color-mix(in srgb,var(--j30) 24%,transparent);
   --fg:#F4F1EA;--muted:#B5AEA4;--faint:#7E7870;--accent:var(--j10);--accent-soft:color-mix(in srgb,var(--j10) 16%,transparent);--accent-line:color-mix(in srgb,var(--j10) 42%,transparent);
-  --scrim:rgba(0,0,0,.55);--card-shadow:0 18px 40px -22px rgba(0,0,0,.75)}
+  --scrim:rgba(0,0,0,.55);--card-shadow:0 18px 40px -22px rgba(0,0,0,.75);
+  --font-display:Geist,system-ui,-apple-system,sans-serif;--font-body:Geist,system-ui,-apple-system,sans-serif}
+body{-webkit-font-smoothing:antialiased}
+h1,.ring-big .score{font-family:"Instrument Serif",ui-serif,Georgia,serif!important;font-weight:400!important;letter-spacing:-.01em!important}
+h1{font-size:52px!important}
 html{background:var(--j60)} html.embed,html.embed body,body{background:transparent!important}
 html:not(.embed) body{background:radial-gradient(60% 40% at 90% 0%,color-mix(in srgb,var(--j10) 16%,transparent),transparent 70%),radial-gradient(60% 40% at 0% 60%,color-mix(in srgb,var(--j30) 22%,transparent),transparent 70%),var(--j60)!important;background-attachment:fixed!important}
 html.embed body{padding-bottom:calc(104px + env(safe-area-inset-bottom))!important}
@@ -32,7 +36,7 @@ html.entra #app>:nth-child(1){animation-delay:0.00s}html.entra #app>:nth-child(2
 <meta name="claude:viewport-fit-sides" content="cover">
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Geist:wght@400;500;600;700&family=Instrument+Serif:ital@0;1&display=swap">
 <style>
 /* Layout: una columna, tema coral y blanco. Semana → anillo del día con comida, quemadas y balance → registro → esta semana → mes → resto de WHOOP. */
 :root{
@@ -405,7 +409,7 @@ h1{font-weight:700;letter-spacing:-.035em}
     <div class="sync">
       <span class="dot" id="syncDot"></span>
       <span id="syncText">Conectando…</span>
-      <button class="iconbtn" id="refreshBtn" aria-label="Actualizar datos del Sheet">
+      <button class="iconbtn" id="refreshBtn" aria-label="Actualizar datos">
         <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M20 12a8 8 0 1 1-2.34-5.66"/><path d="M20 4v5h-5"/></svg>
       </button>
     </div>
@@ -448,7 +452,7 @@ h1{font-weight:700;letter-spacing:-.035em}
 
   <section class="wcard" id="whoopCard" aria-label="Datos de WHOOP del día" hidden></section>
 
-  <footer class="foot">Tus datos viven en el Google Sheet <a id="sheetLink" target="_blank" rel="noopener">Tracker de hábitos 90 días</a>. WHOOP se sincroniza solo a las 6:47 AM y 9:47 PM; lo que registras a mano siempre manda.</footer>
+  <footer class="foot">Tus datos viven en tu server<a id="sheetLink" hidden></a>. WHOOP se sincroniza solo cada hora; lo que registras a mano siempre manda.</footer>
 </div>
 
 <div class="scrim" id="scrim" hidden></div>
@@ -503,7 +507,7 @@ h1{font-weight:700;letter-spacing:-.035em}
 /* ---------- Configuración ---------- */
 const SHEET_ID = "1L90iaeKk-U3Y7siZ4h7pFOfguUrEbK4IVvqk1YEuFFM";
 const SHEET_URL = "https://docs.google.com/spreadsheets/d/" + SHEET_ID + "/edit";
-const SERVER = "Google Sheets";
+const SERVER = "tu base de datos";
 const COMIDAS_GID = 1;
 
 const RULES = {
@@ -792,8 +796,8 @@ const ERR = {
 function errInfo(e){
   const code = e && e.code;
   if (ERR[code]) return ERR[code];
-  if (code==="tool_error") return { t:"err", msg:"Google Sheets respondió con un error: "+String(e.message||"").slice(0,140), btn:"Reintentar" };
-  return { t:"err", msg:"No se pudo conectar con Google Sheets.", btn:"Reintentar" };
+  if (code==="tool_error") return { t:"err", msg:"Tu base de datos respondió con un error: "+String(e.message||"").slice(0,140), btn:"Reintentar" };
+  return { t:"err", msg:"No se pudo conectar con tu base de datos.", btn:"Reintentar" };
 }
 
 let loading = null;
@@ -1608,7 +1612,7 @@ render();
   try{ mcp = (window.claude && typeof window.claude.use==="function") ? await window.claude.use("mcp") : null; }catch(e){ mcp = null; }
   if (!mcp){
     S.mode = "example"; loadExample();
-    S.banner = { t:"warn", msg:"Vista de ejemplo con datos inventados. Abre la app desde Claude para conectar tu Google Sheet." };
+    S.banner = { t:"warn", msg:"Vista de ejemplo. Toca Conectar mis datos en Inicio para ver los tuyos." };
     render(); return;
   }
   S.mcp = mcp;
