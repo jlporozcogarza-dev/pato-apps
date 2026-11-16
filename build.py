@@ -85,8 +85,8 @@ def icon(kind, size):
 # Tema JLP: colores tradicionales japoneses (nippon iro, diccionario de Sanzo Wada) con la regla 60-30-10:
 # 60 = fondo, 30 = tarjetas de vidrio, 10 = acento. Son solo el valor inicial: JLP (index.html, PALETAS) los cambia en vivo.
 PALETAS = {
-    "tracker":  {"c60": "#1E1512", "c30": "#B54434", "c10": "#F17C67"},  # 鳶 Tobi oscurecido · 紅樺 Benikaba · 珊瑚朱 Sangoshu
-    "finanzas": {"c60": "#08192D", "c30": "#566C73", "c10": "#A8D8B9"},  # 褐 Kachi · 藍鼠 Ainezumi · 白緑 Byakuroku
+    "tracker":  {"c60": "#0D0D0D", "c30": "#9A4D00", "c10": "#E3D3C5"},  # Torinoko: 漆黒 · 琥珀 · 鳥の子
+    "finanzas": {"c60": "#0D0D0D", "c30": "#9C8E82", "c10": "#FFA64D"},  # Kanzō: 漆黒 · 白茶 · 萱草
 }
 VIDRIO = {  # clases que son tarjetas en cada app
     "tracker": ".banner,.hero,.iconbtn,.mday,.rows,.wcard",
@@ -105,7 +105,8 @@ html:root:root{{--j60:{p["c60"]};--j30:{p["c30"]};--j10:{p["c10"]};color-scheme:
   --scrim:rgba(0,0,0,.55);--card-shadow:0 18px 40px -22px rgba(0,0,0,.75);
   --font-display:ui-rounded,"SF Pro Rounded",Nunito,system-ui,sans-serif;--font-body:-apple-system,BlinkMacSystemFont,"SF Pro Text",Geist,system-ui,sans-serif}}
 body{{-webkit-font-smoothing:antialiased}}
-h1{{font-size:38px!important;font-weight:700!important;letter-spacing:-.02em!important}}
+h1{{font-size:38px!important;font-weight:800!important;letter-spacing:-.02em!important;padding-bottom:.12em;
+  background:linear-gradient(180deg,var(--fg) 38%,color-mix(in srgb,var(--fg) 46%,var(--j60)));-webkit-background-clip:text;background-clip:text;-webkit-text-fill-color:transparent}}
 h2,h3,.sec-head .lbl{{font-weight:700!important}}
 /* mismas formas que JLP: tarjetas más redondas, botones de vidrio y acentos que resplandecen */
 .hero,.wcard,.rows,.saldos,.txs,.chart,.buds{{border-radius:28px!important}}

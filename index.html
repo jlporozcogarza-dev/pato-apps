@@ -24,10 +24,11 @@
 html,body{margin:0;height:100%;overflow:hidden;background:var(--c60);color:var(--fg);font:16px/1.4 var(--sans);-webkit-font-smoothing:antialiased}
 /* El fondo sigue de largo hasta abajo, sin brillos junto al borde: la franja que iOS deja abajo en las apps de
    pantalla de inicio queda del mismo color y no se nota. La barra de pestañas flota arriba de ella. */
-.fondo{position:fixed;inset:0;z-index:0;pointer-events:none;
+.fondo{position:fixed;inset:0;z-index:0;pointer-events:none;background:var(--c60)}
+.fondo::before{content:"";position:absolute;inset:0;opacity:var(--halo,1);transition:opacity .6s ease;
   background:radial-gradient(62% 34% at 88% 0%,color-mix(in srgb,var(--c10) 30%,transparent),transparent 70%),
              radial-gradient(70% 40% at 0% 36%,color-mix(in srgb,var(--c30) 38%,transparent),transparent 70%),
-             radial-gradient(48% 24% at 100% 60%,color-mix(in srgb,var(--c10) 12%,transparent),transparent 70%),var(--c60)}
+             radial-gradient(48% 24% at 100% 60%,color-mix(in srgb,var(--c10) 12%,transparent),transparent 70%)}
 .vista{position:fixed;inset:0;z-index:1;border:0;width:100%;height:100%;background:transparent;display:none}
 .vista.on{display:block}
 /* las apps ya respetan la muesca del iPhone por su cuenta: el iframe va a pantalla completa */
@@ -47,8 +48,12 @@ button{font:inherit;color:inherit}
 .anillo:active .aro{filter:brightness(1.2)}
 header{display:flex;align-items:center;gap:12px;margin:4px 0 2px}
 .logo{width:62px;height:62px;border-radius:20px;color:var(--c10);display:grid;place-items:center;font:700 19px/1 var(--display);letter-spacing:.02em}
-header p{margin:0;font:700 28px/1.05 var(--display);letter-spacing:-.02em}
+header p{margin:0;font:800 28px/1.05 var(--display);letter-spacing:-.02em}
 header p em{font-style:normal;color:var(--c10)}
+/* "Tonos": los títulos bajan de un tono al más oscuro del mismo color */
+header p,.titulo-pagina h1,.hoja>h2{padding-bottom:.1em;background:linear-gradient(180deg,var(--fg) 38%,color-mix(in srgb,var(--fg) 46%,var(--c60)));
+  -webkit-background-clip:text;background-clip:text;-webkit-text-fill-color:transparent}
+header p em{background:linear-gradient(180deg,var(--c10) 38%,color-mix(in srgb,var(--c10) 58%,var(--c60)));-webkit-background-clip:text;background-clip:text}
 header small{display:block;color:var(--muted);font-size:13px;margin-bottom:6px}
 .quien{display:flex;align-items:center;gap:12px;background:none;border:0;padding:0;margin:0;text-align:left;cursor:pointer;color:inherit;transition:transform .2s}
 .quien:active{transform:scale(.97)}
@@ -124,8 +129,8 @@ button.card:active{transform:scale(.98)}
 .col{display:flex;flex-direction:column;justify-content:flex-end;height:100%;gap:6px}
 .col .chip{align-self:center;min-width:32px;padding:5px 6px;border-radius:10px;text-align:center;font:700 12px/1 var(--display);background:color-mix(in srgb,var(--c30) 45%,rgba(0,0,0,.35))}
 .col i{display:block;border-radius:12px;min-height:8px;transform-origin:bottom;transition:height .6s cubic-bezier(.2,.8,.2,1);
-  background:linear-gradient(180deg,color-mix(in srgb,var(--c30) 70%,#fff 8%),color-mix(in srgb,var(--c30) 35%,transparent));box-shadow:inset 0 1px 0 rgba(255,255,255,.22)}
-.col.max i{background:linear-gradient(180deg,var(--c10),color-mix(in srgb,var(--c10) 60%,transparent));box-shadow:inset 0 1px 0 rgba(255,255,255,.5),0 10px 24px -10px var(--c10)}
+  background:linear-gradient(180deg,color-mix(in srgb,var(--c30) 70%,#fff 8%),color-mix(in srgb,var(--c30) 35%,transparent));box-shadow:inset 0 1px 0 rgba(255,255,255,.22),0 0 18px color-mix(in srgb,var(--c30) 30%,transparent)}
+.col.max i{background:linear-gradient(180deg,var(--c10),color-mix(in srgb,var(--c10) 60%,transparent));box-shadow:inset 0 1px 0 rgba(255,255,255,.5),0 0 26px color-mix(in srgb,var(--c10) 60%,transparent)}
 .col.max .chip{background:var(--c10);color:var(--c60)}
 .col.vacio .chip{visibility:hidden}
 .dias{display:grid;grid-template-columns:repeat(7,1fr);gap:7px;margin-top:8px;font-size:12px;text-align:center;color:var(--muted)}
@@ -378,6 +383,12 @@ const $ = id => document.getElementById(id);
 /* ---------- paletas: colores tradicionales japoneses (nippon iro), regla 60-30-10 ----------
    c60 = fondo (versión oscura del color base), c30 = vidrio, c10 = acento. */
 const PALETAS = [
+  // Tonos (referencia "Explore shades"): un tono más claro o más oscuro de un color junto al segundo color
+  { id:"daidai",     n:"Daidai",     k:"漆黒 · 鳥の子 · 橙",     c60:"#0D0D0D", c30:"#E3D3C5", c10:"#FF8000", halo:.42 },
+  { id:"torinoko",   n:"Torinoko",   k:"漆黒 · 琥珀 · 鳥の子",   c60:"#0D0D0D", c30:"#9A4D00", c10:"#E3D3C5", halo:.7 },
+  { id:"kanzo",      n:"Kanzō",      k:"漆黒 · 白茶 · 萱草",     c60:"#0D0D0D", c30:"#9C8E82", c10:"#FFA64D", halo:.5 },
+  { id:"neri",       n:"Neri",       k:"漆黒 · 焦茶 · 練色",     c60:"#0D0D0D", c30:"#6B3600", c10:"#F2E8DF", halo:.8 },
+  { id:"kaki",       n:"Kaki",       k:"漆黒 · 煤竹 · 柿",       c60:"#0D0D0D", c30:"#5F5750", c10:"#E66A00", halo:.7 },
   { id:"kikyo",      n:"Kikyō",      k:"紫黒 · 桔梗 · 藤",       c60:"#0C0A12", c30:"#6A4C9C", c10:"#B597F2" },
   { id:"hiwa",       n:"Hiwa",       k:"墨 · 青鈍 · 鶸",       c60:"#1C1C1C", c30:"#535953", c10:"#BEC23F" },
   { id:"sangoshu",   n:"Sangoshu",   k:"鳶 · 紅樺 · 珊瑚朱",   c60:"#1E1512", c30:"#B54434", c10:"#F17C67" },
@@ -396,12 +407,13 @@ const PALETAS = [
   { id:"arazome",    n:"Arazome",    k:"墨 · 胡桃 · 退紅",     c60:"#1B1717", c30:"#947A6D", c10:"#F596AA" },
 ];
 const ORDEN = ["inicio", "tracker", "finanzas", "condotec", "pendientes"], NOMBRE = { inicio:"Inicio", tracker:"Tracker", finanzas:"Finanzas", condotec:"Condotec", pendientes:"Pendientes" };
-const DEF = { inicio:"kikyo", tracker:"sangoshu", finanzas:"byakuroku", condotec:"moegi", pendientes:"sora" }, LSP = "jlp-paletas";
+const DEF = { inicio:"daidai", tracker:"torinoko", finanzas:"kanzo", condotec:"neri", pendientes:"kaki" }, LSP = "jlp-paletas";
 let elegidas = (() => { try{ return Object.assign({}, DEF, JSON.parse(localStorage.getItem(LSP) || "{}")); }catch(e){ return { ...DEF }; } })();
 const pal = tab => PALETAS.find(p => p.id === elegidas[tab]) || PALETAS.find(p => p.id === DEF[tab]);
 function pintar(){
   const p = pal(actual), r = document.documentElement.style;
   r.setProperty("--c60", p.c60); r.setProperty("--c30", p.c30); r.setProperty("--c10", p.c10);
+  r.setProperty("--halo", p.halo == null ? 1 : p.halo);
   $("themeColor").content = p.c60;
   ORDEN.forEach(pintarApp);
 }
