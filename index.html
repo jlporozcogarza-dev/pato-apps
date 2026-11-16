@@ -75,9 +75,13 @@ nav button[aria-selected=true] svg{animation:pop .5s cubic-bezier(.34,1.6,.5,1)}
   background:linear-gradient(180deg,color-mix(in srgb,var(--c10) 80%,#fff),var(--c10));box-shadow:inset 0 1px 0 rgba(255,255,255,.7),0 6px 18px -6px var(--c10)}
 @keyframes pop{0%{transform:scale(.7)}60%{transform:scale(1.15)}100%{transform:scale(1)}}
 /* la pantalla entra desde el lado de la pestaña y sus textos suben escalonados */
-@keyframes entrar{from{opacity:0;transform:translateX(calc(var(--dir,1) * 44px))}to{opacity:1;transform:none}}
+/* cambio de pestaña: la nueva entra y la anterior sale a la vez (solo opacidad y movimiento: lo más fluido en iPhone) */
+@keyframes entrar{from{opacity:0;transform:translateX(calc(var(--dir,1) * 28px)) scale(.985)}to{opacity:1;transform:none}}
+@keyframes salir{from{opacity:1;transform:none}to{opacity:0;transform:translateX(calc(var(--dir,1) * -28px)) scale(.985)}}
+.vista.sale{display:block;z-index:0;pointer-events:none;animation:salir .38s cubic-bezier(.4,0,.2,1) both}
+.vista.on{z-index:1}
 @keyframes sube{from{opacity:0;transform:translateY(16px)}to{opacity:1;transform:none}}
-.vista.entra{animation:entrar .45s cubic-bezier(.2,.8,.2,1) both}
+.vista.entra{animation:entrar .55s cubic-bezier(.22,1,.36,1) both;will-change:transform,opacity}
 #v-inicio.entra :is(header,.hero,.tile,.seccion){animation:sube .55s cubic-bezier(.2,.8,.2,1) both}
 #v-inicio.entra .seccion{animation-delay:.1s}
 #v-inicio.entra .hero{animation-delay:.06s}
@@ -85,6 +89,31 @@ nav button[aria-selected=true] svg{animation:pop .5s cubic-bezier(.34,1.6,.5,1)}
 #v-inicio.entra .tile:nth-child(3){animation-delay:.20s}#v-inicio.entra .tile:nth-child(4){animation-delay:.24s}
 #v-inicio.entra .tile:nth-child(5){animation-delay:.28s}#v-inicio.entra .tile:nth-child(6){animation-delay:.32s}#v-inicio.entra .tile:nth-child(7){animation-delay:.36s}
 .tile.ancha{grid-column:1/-1;min-height:104px}
+/* Entrada al abrir la app (o al volver después de un rato): todo aparece por partes */
+@keyframes fondoIn{from{opacity:0}to{opacity:1}}
+@keyframes logoIn{from{opacity:0;transform:scale(.6) rotate(-8deg);filter:blur(8px)}to{opacity:1;transform:none;filter:none}}
+@keyframes subeBlur{from{opacity:0;transform:translateY(22px) scale(.98);filter:blur(10px)}to{opacity:1;transform:none;filter:none}}
+@keyframes crece{from{transform:scaleY(0)}to{transform:scaleY(1)}}
+@keyframes navIn{from{opacity:0;transform:translate(-50%,48px)}to{opacity:1;transform:translateX(-50%)}}
+.intro-on .fondo{animation:fondoIn 1s ease both}
+.intro-on nav{animation:navIn .7s cubic-bezier(.2,.9,.25,1.15) .95s both}
+#v-inicio.intro .logo{animation:logoIn .7s cubic-bezier(.2,.9,.3,1.2) .1s both}
+#v-inicio.intro header>div{animation:subeBlur .7s cubic-bezier(.2,.8,.2,1) .2s both}
+#v-inicio.intro .ajustes{animation:logoIn .6s ease .3s both}
+#v-inicio.intro .hero{animation:subeBlur .8s cubic-bezier(.2,.8,.2,1) .3s both}
+#v-inicio.intro .bars i{transform-origin:bottom;animation:crece .7s cubic-bezier(.2,.9,.3,1.1) both}
+#v-inicio.intro .bars i:nth-child(1){animation-delay:.55s}#v-inicio.intro .bars i:nth-child(2){animation-delay:.6s}
+#v-inicio.intro .bars i:nth-child(3){animation-delay:.65s}#v-inicio.intro .bars i:nth-child(4){animation-delay:.7s}
+#v-inicio.intro .bars i:nth-child(5){animation-delay:.75s}#v-inicio.intro .bars i:nth-child(6){animation-delay:.8s}
+#v-inicio.intro .bars i:nth-child(7){animation-delay:.85s}
+#v-inicio.intro .seccion{animation:subeBlur .7s cubic-bezier(.2,.8,.2,1) .6s both}
+#v-inicio.intro .tile{animation:subeBlur .7s cubic-bezier(.2,.8,.2,1) both}
+#v-inicio.intro .grid .tile:nth-child(1){animation-delay:.7s}#v-inicio.intro .grid .tile:nth-child(2){animation-delay:.78s}
+#v-inicio.intro .grid .tile:nth-child(3){animation-delay:.86s}#v-inicio.intro .grid .tile:nth-child(4){animation-delay:.94s}
+#v-inicio.intro .grid .tile:nth-child(5){animation-delay:1.02s}
+#v-inicio.intro .grid+.seccion{animation-delay:1s}#v-inicio.intro .grid+.seccion+.grid .tile:nth-child(1){animation-delay:1.08s}
+#v-inicio.intro .grid+.seccion+.grid .tile:nth-child(2){animation-delay:1.16s}
+@media (prefers-reduced-motion:reduce){#v-inicio.intro *,.intro-on .fondo,.intro-on nav{animation:none!important}}
 /* un número que cambia hace un pequeño destello */
 @keyframes nuevo{from{opacity:.2;filter:blur(6px);transform:translateY(6px)}to{opacity:1;filter:none;transform:none}}
 .nuevo{animation:nuevo .45s ease both}
@@ -250,9 +279,16 @@ function ir(tab, push){
   pintar();
   document.querySelectorAll("nav [role=tab]").forEach(b => b.setAttribute("aria-selected", b.dataset.ir === tab));
   $("pastilla").style.setProperty("--i", ORDEN.indexOf(tab));
-  const v = vista(tab);
+  const v = vista(tab), dir = Math.sign(ORDEN.indexOf(tab) - ORDEN.indexOf(anterior)) || 1;
+  const vieja = anterior !== tab && vistas[anterior];
+  if (vieja && !matchMedia("(prefers-reduced-motion: reduce)").matches){ // la anterior se queda visible mientras sale
+    vieja.style.setProperty("--dir", dir);
+    vieja.classList.remove("sale", "entra"); void vieja.offsetWidth; vieja.classList.add("sale");
+    const fin = e => { if (e.target === vieja){ vieja.classList.remove("sale"); vieja.removeEventListener("animationend", fin); } };
+    vieja.addEventListener("animationend", fin);
+  }
   Object.values(vistas).forEach(x => x.classList.toggle("on", x === v));
-  if (anterior !== tab) animarEntrada(v, Math.sign(ORDEN.indexOf(tab) - ORDEN.indexOf(anterior)));
+  if (anterior !== tab) animarEntrada(v, dir);
   document.querySelector("nav").classList.remove("oculta");
   if (push !== false && location.hash !== "#" + tab) history.pushState(null, "", tab === "inicio" ? location.pathname : "#" + tab);
   if (anterior !== tab) refrescar();
@@ -315,7 +351,8 @@ barras(ultimos7().map(d => ({ d, v:NaN })));
    Lo último que llegó se guarda en el teléfono y se pinta al abrir, antes de preguntar nada. */
 const LSR = "jlp-resumen";
 function poner(id, txt){
-  const el = $(id); if (el.textContent === txt) return;
+  const el = $(id); el._cuenta = null; // si estaba contando, el dato nuevo manda
+  if (el.textContent === txt) return;
   el.textContent = txt; el.classList.remove("nuevo"); void el.offsetWidth; el.classList.add("nuevo");
 }
 function mostrar(r){ // { serie:[[fecha, recovery]], rec, recFecha, sueno, hrv, gastoHoy, gastoMes }
@@ -374,8 +411,40 @@ if (!c){
     location.reload();
   };
 }
+/* ---------- entrada con estilo: al abrir la app y al volver después de 5 min ---------- */
+function contar(el, demora){ // "$5,044" → cuenta de $0 a $5,044 conservando el formato
+  const txt = el.textContent, m = txt.match(/-?[\d,]+(\.\d+)?/);
+  if (!m) return;
+  const fin = parseFloat(m[0].replace(/,/g, "")), dec = (m[1] || "").length - (m[1] ? 1 : 0);
+  const fmt = x => x.toLocaleString("en-US", { minimumFractionDigits:dec, maximumFractionDigits:dec });
+  const yo = el._cuenta = {}, t0 = performance.now() + demora, dur = 900;
+  const paso = t => {
+    if (el._cuenta !== yo) return;
+    const p = Math.min(1, Math.max(0, (t - t0) / dur)), e = 1 - Math.pow(1 - p, 3);
+    el.textContent = txt.replace(m[0], fmt(fin * e));
+    if (p < 1) requestAnimationFrame(paso); else { el.textContent = txt; el._cuenta = null; }
+  };
+  el.textContent = txt.replace(m[0], fmt(0));
+  requestAnimationFrame(paso);
+}
+function intro(){
+  if (matchMedia("(prefers-reduced-motion: reduce)").matches || actual !== "inicio") return;
+  const v = $("v-inicio"), raiz = document.documentElement;
+  v.classList.remove("intro", "entra"); raiz.classList.remove("intro-on"); void v.offsetWidth;
+  v.classList.add("intro"); raiz.classList.add("intro-on");
+  contar($("rec"), 400);
+  document.querySelectorAll(".grid .tile:not([hidden]) .n").forEach((n, i) => contar(n, 750 + i * 80));
+  clearTimeout(intro.t); intro.t = setTimeout(() => { v.classList.remove("intro"); raiz.classList.remove("intro-on"); }, 2400);
+}
+let ocultoDesde = 0;
+document.addEventListener("visibilitychange", () => {
+  if (document.hidden) ocultoDesde = Date.now();
+  else if (ocultoDesde && Date.now() - ocultoDesde > 5 * 60000) intro();
+});
+
 ir(location.hash.slice(1) || "inicio", false);
 if (c) cargar(c);
+intro();
 /* Las otras pestañas se preparan por detrás en cuanto el Inicio ya se ve, para que al tocarlas abran al instante. */
 if (c) (window.requestIdleCallback || (f => setTimeout(f, 600)))(() => ORDEN.forEach(vista), { timeout:1500 });
 </script>
