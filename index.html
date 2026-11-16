@@ -39,6 +39,30 @@ header{display:flex;align-items:center;gap:12px;margin:6px 0 18px}
 header p{margin:0;font:400 34px/1 var(--serif);letter-spacing:-.01em}
 header p em{color:var(--c10)}
 header small{display:block;color:var(--muted);font-size:13px;margin-bottom:6px}
+.quien{display:flex;align-items:center;gap:12px;background:none;border:0;padding:0;margin:0;text-align:left;cursor:pointer;color:inherit;transition:transform .2s}
+.quien:active{transform:scale(.97)}
+.logo{position:relative}
+.aviso{position:absolute;top:-5px;right:-5px;min-width:19px;height:19px;padding:0 5px;border-radius:10px;background:var(--c10);color:var(--c60);
+  font:600 11px/19px var(--sans);font-style:normal;text-align:center;box-shadow:0 0 0 2px var(--c60)}
+/* hoja de Pendientes y Depas (como en Fede) */
+.accesos{display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-bottom:6px}
+.acceso{display:flex;align-items:center;gap:10px;padding:12px;border-radius:16px;border:1px solid rgba(255,255,255,.10);background:rgba(255,255,255,.05);color:inherit;text-decoration:none;min-height:56px}
+.acceso b{display:block;font-weight:500;font-size:14px}.acceso small{color:var(--muted);font-size:12px}
+.acceso .ic{width:32px;height:32px;border-radius:10px;display:grid;place-items:center;flex:none;background:color-mix(in srgb,var(--c10) 18%,transparent);color:var(--c10)}
+.acceso .ic svg{width:17px;height:17px}
+.cifras{display:grid;grid-template-columns:repeat(4,1fr);gap:8px;margin:0 0 10px}
+.cifra{padding:10px 8px;border-radius:14px;background:rgba(255,255,255,.05);border:1px solid rgba(255,255,255,.08);text-align:center}
+.cifra b{display:block;font:400 28px/1 var(--serif)}.cifra small{display:block;margin-top:4px;font-size:11px;color:var(--muted)}
+.renglones{display:grid;gap:8px}
+.renglon{padding:12px 14px;border-radius:16px;background:rgba(255,255,255,.04);border:1px solid rgba(255,255,255,.08)}
+.renglon .arriba{display:flex;gap:10px;align-items:flex-start;justify-content:space-between}
+.renglon b{font-weight:500;font-size:14px;line-height:1.3}
+.renglon p{margin:4px 0 0;color:var(--muted);font-size:12.5px;line-height:1.35}
+.marca{flex:none;font-size:11px;padding:3px 8px;border-radius:9px;white-space:nowrap;background:rgba(255,255,255,.08);color:var(--muted)}
+.t-rojo{color:#FF8A80;background:rgba(255,90,80,.16)}.t-ambar{color:#F6C35B;background:rgba(246,195,91,.15)}
+.t-verde{color:#86E0A6;background:rgba(80,200,120,.15)}.t-azul{color:#8EC5FF;background:rgba(80,150,255,.16)}.t-gris{color:var(--muted)}
+.cifra b.t-rojo,.cifra b.t-ambar,.cifra b.t-verde,.cifra b.t-azul{background:none}
+.hoja .nota{color:var(--muted);font-size:12px;margin:8px 2px 0}
 .seccion{display:flex;align-items:baseline;justify-content:space-between;margin:26px 4px 12px}
 .seccion h2{margin:0;font:italic 400 26px/1 var(--serif);letter-spacing:-.01em}
 .seccion span{color:var(--muted);font-size:12px}
@@ -102,7 +126,7 @@ nav button[aria-selected=true] svg{animation:pop .5s cubic-bezier(.34,1.6,.5,1)}
 .intro-on .fondo{animation:fondoIn 1s ease both}
 .intro-on nav{animation:navIn .7s cubic-bezier(.2,.9,.25,1.15) .95s both}
 #v-inicio.intro .logo{animation:logoIn .7s cubic-bezier(.2,.9,.3,1.2) .1s both}
-#v-inicio.intro header>div{animation:subeBlur .7s cubic-bezier(.2,.8,.2,1) .2s both}
+#v-inicio.intro .quien div{animation:subeBlur .7s cubic-bezier(.2,.8,.2,1) .2s both}
 #v-inicio.intro .ajustes{animation:logoIn .6s ease .3s both}
 #v-inicio.intro .hero{animation:subeBlur .8s cubic-bezier(.2,.8,.2,1) .3s both}
 #v-inicio.intro .bars i{transform-origin:bottom;animation:crece .7s cubic-bezier(.2,.9,.3,1.1) both}
@@ -145,7 +169,7 @@ header .ajustes svg{width:20px;height:20px}
 .pal .mu{height:56px;border-radius:12px;overflow:hidden;display:grid;grid-template-columns:6fr 3fr 1fr}
 .pal b{display:block;font-size:13px;font-weight:500;margin-top:7px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
 .pal small{display:block;font:500 11px/1.4 var(--kanji);color:var(--muted);white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
-.hoja h2{font:400 34px/1 var(--serif)!important}
+.hoja>h2{font:400 34px/1 var(--serif)!important}
 .pal[aria-pressed=true]{border-color:var(--c10);box-shadow:0 0 0 2px color-mix(in srgb,var(--c10) 45%,transparent),inset 0 1px 0 rgba(255,255,255,.18);background:rgba(255,255,255,.08)}
 .hoja .fila{display:flex;gap:10px;margin-top:22px}
 .hoja .fila button{flex:1;min-height:48px;border-radius:16px;cursor:pointer;border:1px solid rgba(255,255,255,.12);background:rgba(255,255,255,.06)}
@@ -157,8 +181,10 @@ header .ajustes svg{width:20px;height:20px}
 
 <div class="vista on" id="v-inicio" role="tabpanel" aria-label="Inicio"><main>
 <header>
-  <div class="logo glass" aria-hidden="true">JLP</div>
-  <div><small id="fecha">Hoy</small><p>Hola, <em>Pato</em></p></div>
+  <button class="quien" id="abrirPanel" aria-label="Ver pendientes, depas y mis páginas">
+    <span class="logo glass" aria-hidden="true">JLP<i class="aviso" id="avisoPend" hidden></i></span>
+    <div><small id="fecha">Hoy</small><p>Hola, <em>Pato</em></p></div>
+  </button>
   <button class="ajustes glass" id="abrirColores" aria-label="Cambiar colores"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><circle cx="12" cy="12" r="9"/><circle cx="8.5" cy="9.5" r="1.4" fill="currentColor"/><circle cx="12.5" cy="7.5" r="1.4" fill="currentColor"/><circle cx="16" cy="10.5" r="1.4" fill="currentColor"/><path d="M12 21a2.5 2.5 0 0 1 0-5h2a3 3 0 0 0 3-3"/></svg></button>
 </header>
 <button class="hero glass" data-ir="tracker" aria-label="Abrir Tracker">
@@ -190,6 +216,18 @@ header .ajustes svg{width:20px;height:20px}
   <p class="sub">Paletas del diccionario de colores japonés. Fondo 60 · vidrio 30 · acento 10.</p>
   <div id="carriles"></div>
   <div class="fila"><button id="restablecer">Restablecer</button><button class="listo" id="cerrarColores">Listo</button></div>
+</section>
+
+<section class="hoja" id="hojaPanel" role="dialog" aria-modal="true" aria-labelledby="panelTitulo" aria-hidden="true">
+  <div class="asa"></div>
+  <h2 id="panelTitulo">Tu día</h2>
+  <p class="sub" id="panelSub">Pendientes y depas de Condotec, y tus páginas.</p>
+  <div class="accesos">
+    <a class="acceso" href="https://condotecmty.com" target="_blank" rel="noopener"><span class="ic"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M3 10.5 12 4l9 6.5V20H3z"/><path d="M9 20v-6h6v6"/></svg></span><span><b>Condotec</b><small>Página de promo</small></span></a>
+    <a class="acceso" href="https://portal.condotecmty.com" target="_blank" rel="noopener"><span class="ic"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><rect x="3" y="4" width="18" height="16" rx="3"/><path d="M3 9h18M8 14h3M8 17h6"/></svg></span><span><b>Condotec Admin</b><small>Portal</small></span></a>
+  </div>
+  <div id="panelCuerpo"><p class="nota">Cargando…</p></div>
+  <div class="fila"><button class="listo" id="cerrarPanel">Listo</button></div>
 </section>
 
 <nav class="glass" role="tablist" aria-label="Secciones">
@@ -248,17 +286,47 @@ function dibujarCarriles(){
     PALETAS.map(p => `<button class="pal" data-tab-pal="${t}" data-pal="${p.id}" aria-pressed="${p.id === pal(t).id}" aria-label="${p.n} para ${NOMBRE[t]}">` +
       `<span class="mu"><i style="background:${p.c60}"></i><i style="background:${p.c30}"></i><i style="background:${p.c10}"></i></span><b>${p.n}</b><small>${p.k}</small></button>`).join("") + `</div>`).join("");
 }
-function hojaColores(abrir){
-  $("hoja").classList.toggle("on", abrir); $("velo").classList.toggle("on", abrir);
-  $("hoja").setAttribute("aria-hidden", !abrir);
+function hoja(el, abrir){
+  el.classList.toggle("on", abrir); $("velo").classList.toggle("on", abrir);
+  el.setAttribute("aria-hidden", !abrir);
   document.querySelector("nav").classList.toggle("oculta", abrir);
+}
+const cerrarHojas = () => document.querySelectorAll(".hoja.on").forEach(h => hoja(h, false));
+function hojaColores(abrir){
+  hoja($("hoja"), abrir);
   if (abrir){ dibujarCarriles(); $("cerrarColores").focus({ preventScroll:true }); }
 }
 $("abrirColores").onclick = () => hojaColores(true);
-$("cerrarColores").onclick = $("velo").onclick = () => hojaColores(false);
+$("cerrarColores").onclick = $("velo").onclick = cerrarHojas;
+
+/* ---------- Tu día: Pendientes y Depas de Condotec (mismas cuentas que el panel de Fede, las hace el server) ---------- */
+const LSPANEL = "jlp-panel";
+const esc = s => String(s ?? "").replace(/[&<>"]/g, ch => ({ "&":"&amp;", "<":"&lt;", ">":"&gt;", '"':"&quot;" })[ch]);
+function seccionPanel(s){
+  if (!s) return "";
+  return `<div class="seccion"><h2>${esc(s.titulo)}</h2><span>${esc(s.resumen)}</span></div>` +
+    `<div class="cifras">${(s.cifras || []).map(x => `<div class="cifra"><b class="t-${esc(x.tono)}">${esc(x.valor)}</b><small>${esc(x.rotulo)}</small></div>`).join("")}</div>` +
+    `<div class="renglones">${(s.renglones || []).map(r => `<div class="renglon"><div class="arriba"><b>${esc(r.texto)}</b>` +
+      (r.marca ? `<span class="marca t-${esc(r.tono || "gris")}">${esc(r.marca)}</span>` : "") + `</div>` +
+      (r.detalle ? `<p>${esc(r.detalle)}</p>` : "") + `</div>`).join("")}</div>` +
+    (s.nota ? `<p class="nota">${esc(s.nota)}</p>` : "");
+}
+function pintarPanel(p){
+  $("panelCuerpo").innerHTML = seccionPanel(p.pendientes) + seccionPanel(p.depas);
+  const alta = ((p.pendientes || {}).cifras || []).find(x => x.rotulo === "alta");
+  const n = alta ? parseInt(alta.valor, 10) || 0 : 0;
+  $("avisoPend").hidden = !n; $("avisoPend").textContent = n;
+}
+function cargarPanel(c){
+  return api(c, "panel", { hoy }).then(p => { pintarPanel(p); try{ localStorage.setItem(LSPANEL, JSON.stringify(p)); }catch(e){} })
+    .catch(() => { if (!localStorage.getItem(LSPANEL)) $("panelCuerpo").innerHTML = '<p class="nota">No pude cargar tus pendientes. Revisa tu conexión.</p>'; });
+}
+$("abrirPanel").onclick = () => { hoja($("hojaPanel"), true); $("cerrarPanel").focus({ preventScroll:true }); const c = cfg(); if (c) cargarPanel(c); };
+$("cerrarPanel").onclick = cerrarHojas;
+try{ const p = JSON.parse(localStorage.getItem(LSPANEL) || "null"); if (p) pintarPanel(p); }catch(e){}
 $("restablecer").onclick = () => { elegidas = { ...DEF }; try{ localStorage.removeItem(LSP); }catch(e){} pintar(); dibujarCarriles(); };
 $("carriles").addEventListener("click", e => { const b = e.target.closest("[data-pal]"); if (b) elegir(b.dataset.tabPal, b.dataset.pal); });
-addEventListener("keydown", e => { if (e.key === "Escape" && $("hoja").classList.contains("on")) hojaColores(false); });
+addEventListener("keydown", e => { if (e.key === "Escape") cerrarHojas(); });
 const hoy = new Date().toLocaleDateString("sv-SE");
 $("fecha").textContent = new Date().toLocaleDateString("es-MX", { weekday:"long", day:"numeric", month:"long" });
 
@@ -456,6 +524,7 @@ document.addEventListener("visibilitychange", () => {
 ir(location.hash.slice(1) || "inicio", false);
 if (c) cargar(c);
 intro();
+if (c) setTimeout(() => cargarPanel(c), 1200); // el aviso del logo se actualiza sin estorbar la carga del Inicio
 /* Las otras pestañas se preparan por detrás en cuanto el Inicio ya se ve, para que al tocarlas abran al instante. */
 if (c) (window.requestIdleCallback || (f => setTimeout(f, 600)))(() => ORDEN.forEach(vista), { timeout:1500 });
 </script>
