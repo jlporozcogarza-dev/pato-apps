@@ -7,7 +7,7 @@
 <link rel="apple-touch-icon" href="jlp-180.png"><link rel="icon" href="jlp-192.png">
 <link rel="preconnect" href="https://api.jlpog.app" crossorigin>
 <link rel="preconnect" href="https://fonts.googleapis.com"><link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-<link href="https://fonts.googleapis.com/css2?family=Geist:wght@400;500;600&family=Instrument+Serif:ital@0;1&family=Shippori+Mincho:wght@500&display=swap" rel="stylesheet">
+<link href="https://fonts.googleapis.com/css2?family=Geist:wght@400;500;600&family=Nunito:wght@600;700;800&family=Shippori+Mincho:wght@500&display=swap" rel="stylesheet">
 <style>
 /* JLP: una sola app con pestañas. Colores tradicionales japoneses (nippon iro) con la regla 60-30-10:
    60 = fondo, 30 = tarjetas de vidrio, 10 = acento. Tracker y Finanzas usan las mismas paletas (build.py, PALETAS). */
@@ -18,8 +18,9 @@
   transition:--c60 .6s ease,--c30 .6s ease,--c10 .6s ease}
 /* Los colores de cada pestaña los pone el script (PALETAS) según lo que elijas en Colores. */
 *{box-sizing:border-box;-webkit-tap-highlight-color:transparent}
-/* Tipografía: Instrument Serif para números y títulos, Geist para el texto, Shippori Mincho para los kanji */
-:root{--serif:"Instrument Serif",ui-serif,Georgia,serif;--sans:Geist,system-ui,-apple-system,sans-serif;--kanji:"Shippori Mincho",serif}
+/* Tipografía del sistema de Apple: SF Pro Rounded (títulos y números, como los anillos de Fitness) y SF Pro (texto).
+   En el iPhone no se descarga nada; Nunito y Geist son solo el respaldo para otros equipos. */
+:root{--display:ui-rounded,"SF Pro Rounded",Nunito,system-ui,sans-serif;--sans:-apple-system,BlinkMacSystemFont,"SF Pro Text",Geist,system-ui,sans-serif;--kanji:"Hiragino Mincho ProN","Shippori Mincho",serif}
 html,body{margin:0;height:100%;overflow:hidden;background:var(--c60);color:var(--fg);font:16px/1.4 var(--sans);-webkit-font-smoothing:antialiased}
 /* El fondo sigue de largo hasta abajo, sin brillos junto al borde: la franja que iOS deja abajo en las apps de
    pantalla de inicio queda del mismo color y no se nota. La barra de pestañas flota arriba de ella. */
@@ -45,9 +46,9 @@ button{font:inherit;color:inherit}
 .glass.card:active,.acceso:active{transform:scale(.97);filter:brightness(1.15)}
 .anillo:active .aro{filter:brightness(1.2)}
 header{display:flex;align-items:center;gap:12px;margin:4px 0 2px}
-.logo{width:62px;height:62px;border-radius:20px;color:var(--c10);display:grid;place-items:center;font:400 24px/1 var(--serif);letter-spacing:.01em}
-header p{margin:0;font:400 34px/1 var(--serif);letter-spacing:-.01em}
-header p em{color:var(--c10)}
+.logo{width:62px;height:62px;border-radius:20px;color:var(--c10);display:grid;place-items:center;font:700 19px/1 var(--display);letter-spacing:.02em}
+header p{margin:0;font:700 28px/1.05 var(--display);letter-spacing:-.02em}
+header p em{font-style:normal;color:var(--c10)}
 header small{display:block;color:var(--muted);font-size:13px;margin-bottom:6px}
 .quien{display:flex;align-items:center;gap:12px;background:none;border:0;padding:0;margin:0;text-align:left;cursor:pointer;color:inherit;transition:transform .2s}
 .quien:active{transform:scale(.97)}
@@ -56,31 +57,31 @@ header small{display:block;color:var(--muted);font-size:13px;margin-bottom:6px}
   font:600 11px/19px var(--sans);font-style:normal;text-align:center;box-shadow:0 0 0 2px var(--c60)}
 /* hoja de Pendientes y Depas (como en Fede) */
 .accesos{display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-bottom:6px}
-.acceso{display:flex;align-items:center;gap:10px;padding:12px;border-radius:16px;border:1px solid rgba(255,255,255,.10);background:rgba(255,255,255,.05);color:inherit;text-decoration:none;min-height:56px}
-.acceso b{display:block;font-weight:500;font-size:14px}.acceso small{color:var(--muted);font-size:12px}
+.acceso{display:flex;align-items:center;gap:10px;padding:12px;border-radius:22px;border:1px solid rgba(255,255,255,.10);background:rgba(255,255,255,.05);color:inherit;text-decoration:none;min-height:56px}
+.acceso b{display:block;font:700 15px/1.2 var(--display)}.acceso small{color:var(--muted);font-size:12px}
 .acceso .ic{width:32px;height:32px;border-radius:10px;display:grid;place-items:center;flex:none;background:color-mix(in srgb,var(--c10) 18%,transparent);color:var(--c10)}
 .acceso .ic svg{width:17px;height:17px}
 .cifras{display:grid;grid-template-columns:repeat(4,1fr);gap:8px;margin:0 0 10px}
 .cifra{padding:10px 8px;border-radius:14px;background:rgba(255,255,255,.05);border:1px solid rgba(255,255,255,.08);text-align:center}
-.cifra b{display:block;font:400 28px/1 var(--serif)}.cifra small{display:block;margin-top:4px;font-size:11px;color:var(--muted)}
+.cifra b{display:block;font:700 22px/1 var(--display)}.cifra small{display:block;margin-top:4px;font-size:11px;color:var(--muted)}
 .renglones{display:grid;gap:8px}
-.renglon{padding:12px 14px;border-radius:16px;background:rgba(255,255,255,.04);border:1px solid rgba(255,255,255,.08)}
+.renglon{padding:13px 15px;border-radius:20px;background:linear-gradient(150deg,rgba(255,255,255,.07),rgba(255,255,255,.02));border:1px solid rgba(255,255,255,.08);box-shadow:inset 0 1px 0 rgba(255,255,255,.10)}
 .renglon .arriba{display:flex;gap:10px;align-items:flex-start;justify-content:space-between}
 .renglon b{font-weight:500;font-size:14px;line-height:1.3}
 .renglon p{margin:4px 0 0;color:var(--muted);font-size:12.5px;line-height:1.35}
-.marca{flex:none;font-size:11px;padding:3px 8px;border-radius:9px;white-space:nowrap;background:rgba(255,255,255,.08);color:var(--muted)}
+.marca{flex:none;font:700 11px/1.3 var(--display);padding:4px 9px;border-radius:99px;white-space:nowrap;background:rgba(255,255,255,.08);color:var(--muted)}
 .t-rojo{color:#FF8A80;background:rgba(255,90,80,.16)}.t-ambar{color:#F6C35B;background:rgba(246,195,91,.15)}
 .t-verde{color:#86E0A6;background:rgba(80,200,120,.15)}.t-azul{color:#8EC5FF;background:rgba(80,150,255,.16)}.t-gris{color:var(--muted)}
 .cifra b.t-rojo,.cifra b.t-ambar,.cifra b.t-verde,.cifra b.t-azul{background:none}
 .nota{color:var(--muted);font-size:12px;margin:8px 2px 0}
 .seccion{display:flex;align-items:baseline;justify-content:space-between;margin:26px 4px 12px}
-.seccion h2{margin:0;font:italic 400 26px/1 var(--serif);letter-spacing:-.01em}
+.seccion h2{margin:0;font:700 20px/1 var(--display);letter-spacing:-.01em}
 .seccion span{color:var(--muted);font-size:12px}
 header small::first-letter{text-transform:uppercase}
 /* Inicio: proporciones de las referencias (tarjetas grandes, números enormes, barras con su valor, progresos), en vidrio */
 .row{display:flex;justify-content:space-between;align-items:center}
 .cap{font-size:12px;font-weight:500;letter-spacing:.06em;text-transform:uppercase;color:var(--muted)}
-.num{font-family:var(--serif);font-weight:400;letter-spacing:-.02em;line-height:.9;white-space:nowrap}
+.num{font-family:var(--display);font-weight:600;letter-spacing:-.03em;line-height:1;white-space:nowrap;font-variant-numeric:tabular-nums}
 .num sup{font-size:.42em;vertical-align:top;position:relative;top:.1em;margin-left:2px;letter-spacing:0}
 button.card{width:100%;text-align:left;cursor:pointer;color:inherit;font:inherit;-webkit-user-select:none;user-select:none;transition:transform .2s ease}
 button.card:active{transform:scale(.98)}
@@ -97,7 +98,7 @@ button.card:active{transform:scale(.98)}
 .aro .pista{fill:none;stroke:rgba(255,255,255,.09);stroke-width:9}
 .aro .arco{fill:none;stroke:var(--col);stroke-width:9;stroke-linecap:round;stroke-dasharray:0 100;
   transition:stroke-dasharray 1.3s cubic-bezier(.2,.8,.2,1);filter:drop-shadow(0 0 8px color-mix(in srgb,var(--col) 70%,transparent))}
-.aro .num{position:relative;font-size:clamp(28px,8.5vw,34px)}
+.aro .num{position:relative;font-size:clamp(22px,6.6vw,27px)}
 .anillo .lbl{font:600 11px/1 var(--sans);letter-spacing:.14em;text-transform:uppercase;color:var(--fg);white-space:nowrap}
 .anillo .lbl i{font-style:normal;color:var(--muted);margin-left:3px}
 .whoop-pie{display:flex;justify-content:center;gap:16px;flex-wrap:wrap;margin-top:12px;padding-top:10px;border-top:1px solid color-mix(in srgb,var(--c30) 35%,transparent);font-size:12.5px;color:var(--muted)}
@@ -108,19 +109,20 @@ button.card:active{transform:scale(.98)}
 .stat[hidden]{display:none}
 /* con 3 tarjetas (p. ej. sin pasos) van en una fila para que la gráfica tenga más alto */
 .cuatro.tres{grid-template-columns:repeat(3,1fr)}
-.cuatro.tres .stat{padding:12px;min-height:78px;border-radius:22px}
-.cuatro.tres .num{font-size:clamp(24px,7.5vw,32px)}
+.cuatro.tres .stat{padding:12px;min-height:78px;border-radius:22px;justify-content:space-between}
+.cuatro.tres .num{font-size:clamp(19px,5.6vw,24px)}
 .cuatro.tres small{font-size:11.5px;line-height:1.2}
 .stat .relleno{position:absolute;left:0;top:0;bottom:0;width:calc(var(--p,0) * 1%);transition:width .9s cubic-bezier(.2,.8,.2,1);
   background:linear-gradient(160deg,color-mix(in srgb,var(--c10) 30%,transparent),color-mix(in srgb,var(--c10) 10%,transparent))}
-.stat .num{position:relative;font-size:clamp(30px,9vw,38px)}
-.stat small{position:relative;color:var(--muted);font-size:12.5px}
+.stat .num{position:relative;font-size:clamp(24px,7vw,30px)}
+.stat small{position:relative;display:flex;align-items:flex-start;gap:5px;color:var(--muted);font-size:12.5px;line-height:1.25}
+.stat .ico{flex:none;width:14px;height:14px;margin-top:1px;color:var(--c10)}
 .grafica{display:flex!important;flex-direction:column;border-radius:28px;padding:14px 14px 10px}
 #v-inicio .grafica{flex:1 1 0;min-height:130px}
-.grafica .t{font-size:16px;font-weight:500}
+.grafica .t{font:700 16px/1 var(--display)}
 .barras{display:grid;grid-template-columns:repeat(7,1fr);gap:7px;align-items:end;flex:1;min-height:60px;margin-top:10px}
 .col{display:flex;flex-direction:column;justify-content:flex-end;height:100%;gap:6px}
-.col .chip{align-self:center;min-width:32px;padding:5px 6px;border-radius:10px;text-align:center;font:500 12px/1 var(--sans);background:color-mix(in srgb,var(--c30) 45%,rgba(0,0,0,.35))}
+.col .chip{align-self:center;min-width:32px;padding:5px 6px;border-radius:10px;text-align:center;font:700 12px/1 var(--display);background:color-mix(in srgb,var(--c30) 45%,rgba(0,0,0,.35))}
 .col i{display:block;border-radius:12px;min-height:8px;transform-origin:bottom;transition:height .6s cubic-bezier(.2,.8,.2,1);
   background:linear-gradient(180deg,color-mix(in srgb,var(--c30) 70%,#fff 8%),color-mix(in srgb,var(--c30) 35%,transparent));box-shadow:inset 0 1px 0 rgba(255,255,255,.22)}
 .col.max i{background:linear-gradient(180deg,var(--c10),color-mix(in srgb,var(--c10) 60%,transparent));box-shadow:inset 0 1px 0 rgba(255,255,255,.5),0 10px 24px -10px var(--c10)}
@@ -132,28 +134,29 @@ button.card:active{transform:scale(.98)}
 /* pestaña Pendientes: calendario + agenda del día */
 .calendario{border-radius:28px;padding:14px 12px 10px;margin-bottom:4px}
 .cal-top{display:flex;align-items:center;justify-content:space-between;margin:0 2px 8px}
-.cal-top b{font:italic 400 26px/1 var(--serif)}
+.cal-top b{font:700 19px/1 var(--display)}
 .cal-nav{width:42px;height:42px;border-radius:13px;border:1px solid rgba(255,255,255,.1);background:rgba(255,255,255,.05);color:var(--fg);font-size:22px;line-height:1;cursor:pointer}
 .cal-sem,.cal-dias{display:grid;grid-template-columns:repeat(7,1fr);gap:3px;text-align:center}
 .cal-sem span{font-size:11px;color:var(--muted);padding:2px 0 6px}
-.dia{height:46px;border:0;border-radius:13px;background:none;color:var(--fg);font:500 14px/1 var(--sans);cursor:pointer;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:5px;transition:background .2s}
+.dia{height:46px;border:0;border-radius:14px;background:none;color:var(--fg);font:600 15px/1 var(--display);cursor:pointer;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:5px;transition:background .2s}
 .dia.fuera{opacity:.28}
 .dia.hoy{box-shadow:inset 0 0 0 1.5px var(--c10)}
-.dia.sel{background:var(--c10);color:var(--c60)}
+.dia.sel{color:var(--c60);background:linear-gradient(180deg,color-mix(in srgb,var(--c10) 68%,#fff),var(--c10) 60%,color-mix(in srgb,var(--c10) 82%,#000));box-shadow:inset 0 1px 0 rgba(255,255,255,.7),0 0 18px color-mix(in srgb,var(--c10) 55%,transparent)}
 .puntos{display:flex;gap:2px;height:5px}
 .puntos i{width:5px;height:5px;border-radius:50%;background:var(--col,var(--c10))}
 .puntos i.pend{background:color-mix(in srgb,var(--c30) 60%,#fff)}.puntos i.venc{background:#FF7A6E}
 .dia.sel .puntos i{box-shadow:0 0 0 1px var(--c60)}
-.evento{display:flex;gap:12px;align-items:flex-start;padding:12px 14px;border-radius:16px;background:rgba(255,255,255,.04);border:1px solid rgba(255,255,255,.08)}
+.evento{display:flex;gap:12px;align-items:flex-start;padding:13px 15px;border-radius:20px;background:linear-gradient(150deg,rgba(255,255,255,.07),rgba(255,255,255,.02));border:1px solid rgba(255,255,255,.08);box-shadow:inset 0 1px 0 rgba(255,255,255,.10)}
+.evento .barra{box-shadow:0 0 10px var(--col,var(--c10))}
 .evento .barra{width:4px;align-self:stretch;border-radius:2px;background:var(--col,var(--c10));flex:none}
-.evento .hora{flex:none;width:56px;font:500 13px/1.3 var(--sans);color:var(--muted)}
+.evento .hora{flex:none;width:56px;font:700 13px/1.3 var(--display);color:var(--fg)}
 .evento b{display:block;font-weight:500;font-size:14px;line-height:1.3}
 .evento small{display:block;color:var(--muted);font-size:12px;margin-top:3px}
 /* página Condotec: ocupación + mapa del edificio */
 [data-e=rentado]{--e:var(--c10)}[data-e=vence]{--e:#F6C35B}[data-e=vencido]{--e:#FF7A6E}[data-e=duda]{--e:#9A9A9A}[data-e=libre]{--e:#7FD6FF}
 .ocupa{border-radius:30px;padding:16px 16px 14px;margin:10px 0}
 .ocupa-num{display:flex;align-items:flex-end;gap:12px;margin:12px 0 14px}
-.ocupa-num .num{font-size:clamp(64px,20vw,84px);color:var(--c10)}
+.ocupa-num .num{font-size:clamp(52px,16vw,68px);color:var(--c10)}
 .ocupa-num .num sup{color:var(--muted);font-size:.36em;top:.2em}
 .ocupa-num>span{font-size:16px;line-height:1.15;padding-bottom:8px}
 .ocupa-num small{display:block;color:var(--muted);font-size:12.5px;margin-top:3px}
@@ -163,7 +166,7 @@ button.card:active{transform:scale(.98)}
 .leyenda span{display:flex;align-items:center;gap:5px}.leyenda b{color:var(--fg);font-weight:500}
 .leyenda i{width:8px;height:8px;border-radius:50%;background:var(--e)}
 .edificio{border-radius:30px;padding:16px 14px 14px}
-.edificio .t{font-size:16px;font-weight:500}
+.edificio .t{font:700 16px/1 var(--display)}
 .unidades{display:grid;grid-template-columns:repeat(7,1fr);gap:6px;margin-top:12px}
 .uni{aspect-ratio:1;padding:0;border-radius:12px;border:1px solid color-mix(in srgb,var(--e) 45%,transparent);cursor:pointer;display:grid;place-items:center;
   font:500 13px/1 var(--sans);color:var(--fg);background:color-mix(in srgb,var(--e) 24%,transparent);box-shadow:inset 0 1px 0 rgba(255,255,255,.2);
@@ -178,12 +181,12 @@ button.card:active{transform:scale(.98)}
 .uni.sel{box-shadow:0 0 0 2px var(--c60),0 0 0 4px var(--e),0 0 18px color-mix(in srgb,var(--e) 60%,transparent)}
 .uni-detalle{margin-top:12px;padding:12px 14px;border-radius:16px;background:rgba(255,255,255,.05);border:1px solid rgba(255,255,255,.08);min-height:62px}
 .uni-detalle .arriba{display:flex;justify-content:space-between;align-items:center;gap:10px}
-.uni-detalle b{font:400 24px/1 var(--serif)}
+.uni-detalle b{font:700 20px/1 var(--display)}
 .uni-detalle p{margin:6px 0 0;color:var(--muted);font-size:13px;line-height:1.4}
 .uni-detalle p b{font:500 13px/1.4 var(--sans);color:var(--fg)}
 .marca[data-e]{color:var(--e);background:color-mix(in srgb,var(--e) 16%,transparent)}
 .tira-pend{display:flex;align-items:center;gap:14px;width:100%;margin-top:18px;padding:14px 16px;border-radius:24px;text-align:left}
-.tira-pend .num{font-size:44px;color:var(--c10)}
+.tira-pend .num{font-size:34px;color:var(--c10)}
 .tira-pend span{flex:1;font-size:15px;line-height:1.2}.tira-pend small{display:block;color:var(--muted);font-size:12.5px;margin-top:3px}
 .tira-pend em{font-style:normal;color:var(--muted);font-size:22px}
 /* cada pestaña entra a su manera: en Condotec los depas aparecen uno por uno; en Pendientes el calendario baja y la agenda sube */
@@ -200,7 +203,7 @@ button.card:active{transform:scale(.98)}
 @media (prefers-reduced-motion:reduce){#v-condotec.entra *,#v-pendientes.entra *{animation:none!important}}
 /* página Condotec */
 .titulo-pagina{margin:4px 0 16px}.titulo-pagina small{color:var(--muted);font-size:13px}
-.titulo-pagina h1{margin:4px 0 0;font:400 52px/1 var(--serif);letter-spacing:-.01em}
+.titulo-pagina h1{margin:4px 0 0;font:700 38px/1 var(--display);letter-spacing:-.02em}
 /* barra de pestañas: cápsula de vidrio flotante (como iOS 26 y la referencia) */
 nav{position:fixed;z-index:5;left:12px;right:12px;bottom:max(10px,env(safe-area-inset-bottom));max-width:520px;margin:0 auto;display:flex;padding:6px;
   border-radius:30px!important;border:1px solid rgba(255,255,255,.12)!important;
@@ -284,7 +287,7 @@ header .ajustes svg{width:20px;height:20px}
 .pal .mu{height:56px;border-radius:12px;overflow:hidden;display:grid;grid-template-columns:6fr 3fr 1fr}
 .pal b{display:block;font-size:13px;font-weight:500;margin-top:7px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
 .pal small{display:block;font:500 11px/1.4 var(--kanji);color:var(--muted);white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
-.hoja>h2{font:400 34px/1 var(--serif)!important}
+.hoja>h2{font:700 28px/1 var(--display)!important}
 .pal[aria-pressed=true]{border-color:var(--c10);box-shadow:0 0 0 2px color-mix(in srgb,var(--c10) 45%,transparent),inset 0 1px 0 rgba(255,255,255,.18);background:rgba(255,255,255,.08)}
 .hoja .fila{display:flex;gap:10px;margin-top:22px}
 .hoja .fila button{flex:1;min-height:48px;border-radius:16px;cursor:pointer;border:1px solid rgba(255,255,255,.12);background:rgba(255,255,255,.06)}
@@ -313,10 +316,10 @@ header .ajustes svg{width:20px;height:20px}
   <div class="whoop-pie"><span>HRV <b id="hrv">–</b> ms</span><span>Dormiste <b id="sueno">–</b> h</span><span id="recNota"></span></div>
 </section>
 <div class="cuatro">
-  <button class="stat glass card" data-ir="tracker" data-ancla="whoopCard"><span class="relleno"></span><b class="num" id="pasos">–</b><small>pasos</small></button>
-  <button class="stat glass card" data-ir="tracker" data-ancla="whoopCard"><span class="relleno"></span><b class="num" id="kcal">–</b><small>calorías quemadas</small></button>
-  <button class="stat glass card" data-ir="finanzas" data-ancla="hero"><b class="num" id="gasto">–</b><small>gastado hoy</small></button>
-  <button class="stat glass card" data-ir="finanzas" data-ancla="hero"><b class="num" id="semana">–</b><small>gastado esta semana</small></button>
+  <button class="stat glass card" data-ir="tracker" data-ancla="whoopCard"><span class="relleno"></span><b class="num" id="pasos">–</b><small><svg class="ico" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M4 20h4v-4h4v-4h4V8h4"/></svg>pasos</small></button>
+  <button class="stat glass card" data-ir="tracker" data-ancla="whoopCard"><span class="relleno"></span><b class="num" id="kcal">–</b><small><svg class="ico" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M12 3c1 3 4.5 5 4.5 9.5a4.5 4.5 0 0 1-9 0c0-2 1-3.2 2-4.2.2 2 1 3 2 3 .2-3-1-5 .5-8.3z"/></svg>calorías quemadas</small></button>
+  <button class="stat glass card" data-ir="finanzas" data-ancla="hero"><b class="num" id="gasto">–</b><small><svg class="ico" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="3" y="6" width="18" height="13" rx="3"/><path d="M3 10.5h18"/></svg>gastado hoy</small></button>
+  <button class="stat glass card" data-ir="finanzas" data-ancla="hero"><b class="num" id="semana">–</b><small><svg class="ico" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="3" y="5" width="18" height="16" rx="3"/><path d="M3 10h18M8 3v4M16 3v4"/></svg>gastado esta semana</small></button>
 </div>
 <button class="grafica glass card" data-ir="tracker" data-ancla="hero" aria-label="Recovery de los últimos 7 días">
   <div class="row"><span class="t">Recovery por día</span><span class="cap">7 días</span></div>
@@ -661,6 +664,17 @@ function barras(serie){
 function ultimos7(){ return [...Array(7)].map((_, i) => { const d = new Date(); d.setDate(d.getDate() - 6 + i); return d.toLocaleDateString("sv-SE"); }); }
 barras(ultimos7().map(d => ({ d, v:NaN })));
 
+/* Si un número no cabe en su tarjeta (p. ej. $12,345 con 3 tarjetas en fila), se achica hasta caber. */
+function ajustarNumeros(){
+  document.querySelectorAll(".cuatro .stat:not([hidden]) .num").forEach(el => {
+    el.style.fontSize = "";
+    let px = parseFloat(getComputedStyle(el).fontSize);
+    while (el.scrollWidth > el.clientWidth + 1 && px > 13){ px -= 1; el.style.fontSize = px + "px"; }
+  });
+}
+addEventListener("resize", ajustarNumeros);
+if (document.fonts && document.fonts.ready) document.fonts.ready.then(ajustarNumeros);
+
 /* El server ya tiene el resumen listo (herramienta "resumen" de puente.py): una sola consulta chica.
    Lo último que llegó se guarda en el teléfono y se pinta al abrir, antes de preguntar nada. */
 const LSR = "jlp-resumen";
@@ -692,6 +706,7 @@ function mostrar(r){ // { serie:[[fecha, recovery]], rec, recFecha, sueno, hrv, 
   stat("semana", r.gastoSemana || 0, pesos);
   const vis = [...document.querySelectorAll(".cuatro .stat")].filter(s => !s.hidden); // 3 tarjetas: en una sola fila
   $("pasos").closest(".cuatro").classList.toggle("tres", vis.length === 3);
+  ajustarNumeros();
 }
 /* Respaldo por si el server todavía no tiene "resumen": lo arma con las dos pestañas completas. */
 async function resumenLento(c){

@@ -103,10 +103,23 @@ def tema(key):
 html:root:root{{--j60:{p["c60"]};--j30:{p["c30"]};--j10:{p["c10"]};color-scheme:dark;--bg:var(--j60);--surface:{m(30, 20)};--surface-2:{m(30, 28)};--line:{m(30, 36)};--track:{m(30, 24)};
   --fg:#F4F1EA;--muted:#B5AEA4;--faint:#7E7870;--accent:var(--j10);--accent-soft:{m(10, 16)};--accent-line:{m(10, 42)};
   --scrim:rgba(0,0,0,.55);--card-shadow:0 18px 40px -22px rgba(0,0,0,.75);
-  --font-display:Geist,system-ui,-apple-system,sans-serif;--font-body:Geist,system-ui,-apple-system,sans-serif}}
+  --font-display:ui-rounded,"SF Pro Rounded",Nunito,system-ui,sans-serif;--font-body:-apple-system,BlinkMacSystemFont,"SF Pro Text",Geist,system-ui,sans-serif}}
 body{{-webkit-font-smoothing:antialiased}}
-h1,.ring-big .score{{font-family:"Instrument Serif",ui-serif,Georgia,serif!important;font-weight:400!important;letter-spacing:-.01em!important}}
-h1{{font-size:52px!important}}
+h1{{font-size:38px!important;font-weight:700!important;letter-spacing:-.02em!important}}
+h2,h3,.sec-head .lbl{{font-weight:700!important}}
+/* mismas formas que JLP: tarjetas más redondas, botones de vidrio y acentos que resplandecen */
+.hero,.wcard,.rows,.saldos,.txs,.chart,.buds{{border-radius:28px!important}}
+.banner,.tot{{border-radius:20px!important}}
+.sheet{{border-radius:30px 30px 0 0!important}}
+.iconbtn,.navbtn{{background:linear-gradient(150deg,rgba(255,255,255,.14),rgba(255,255,255,.03))!important;border:1px solid rgba(255,255,255,.12)!important;box-shadow:inset 0 1px 0 rgba(255,255,255,.25)!important}}
+.btn.primary,.addbtn{{background:linear-gradient(180deg,color-mix(in srgb,var(--j10) 68%,#fff),var(--j10) 58%,color-mix(in srgb,var(--j10) 82%,#000))!important;color:var(--j60)!important;border-color:transparent!important;
+  box-shadow:inset 0 1px 0 rgba(255,255,255,.7),0 0 22px color-mix(in srgb,var(--j10) 50%,transparent)!important}}
+.today-chip{{color:var(--j60)!important}}
+.today-chip,.chip[aria-pressed="true"],.seg button[aria-pressed="true"]{{box-shadow:inset 0 1px 0 rgba(255,255,255,.25),0 0 16px color-mix(in srgb,var(--j10) 35%,transparent)!important}}
+.bar i{{box-shadow:0 0 10px color-mix(in srgb,var(--j10) 55%,transparent)}}
+.ring-big svg{{filter:drop-shadow(0 0 9px color-mix(in srgb,var(--j10) 40%,transparent))}}
+.btn,.chip,.iconbtn,.navbtn,.addbtn{{transition:transform .25s cubic-bezier(.34,1.4,.5,1),filter .2s}}
+.btn:active,.chip:active,.addbtn:active,.iconbtn:active,.navbtn:active{{transform:scale(.94);filter:brightness(1.15)}}
 html{{background:var(--j60)}} html.embed,html.embed body,body{{background:transparent!important}}
 html:not(.embed) body{{background:radial-gradient(60% 40% at 90% 0%,{m(10, 16)},transparent 70%),radial-gradient(60% 40% at 0% 60%,{m(30, 22)},transparent 70%),var(--j60)!important;background-attachment:fixed!important}}
 html.embed body{{padding-bottom:calc(104px + env(safe-area-inset-bottom))!important}}
@@ -152,8 +165,8 @@ COMUNES = [  # pueden salir varias veces
     ('"No se pudo conectar con Google Sheets."', '"No se pudo conectar con tu base de datos."'),
     ("Sin conexión con tu hoja.", "Sin conexión con tu base de datos."),
     ("esto no se guarda en tu hoja.", "esto no se guarda."),
-    # misma tipografía que JLP: Geist para texto, Instrument Serif para títulos y números grandes
-    ("family=Plus+Jakarta+Sans:wght@400;500;600;700;800", "family=Geist:wght@400;500;600;700&family=Instrument+Serif:ital@0;1"),
+    # misma tipografía que JLP: la del sistema de Apple; Geist y Nunito son solo el respaldo fuera del iPhone
+    ("family=Plus+Jakarta+Sans:wght@400;500;600;700;800", "family=Geist:wght@400;500;600;700&family=Nunito:wght@600;700;800"),
 ]
 
 def sub(t, old, new):
