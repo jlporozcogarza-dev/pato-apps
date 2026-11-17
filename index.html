@@ -535,6 +535,15 @@ header .ajustes{visibility:hidden} /* en Inicio se usa el fijo de arriba a la de
 .cuando-opc button{flex:1 1 40%;min-height:48px;font-size:15px;border-radius:16px}
 .otro-dia{display:flex;align-items:center;justify-content:space-between;gap:10px;margin-top:10px;padding:10px 14px;border-radius:16px;border:1px solid rgba(255,255,255,.12);background:rgba(255,255,255,.05);font-size:15px}
 .otro-dia input{background:none;border:0;color:var(--fg);font:500 15px var(--sans);color-scheme:dark}
+.tar-grupo-c{margin-top:14px}
+.tar-grupo-c>summary{list-style:none;display:flex;align-items:center;gap:8px;padding:6px 6px 9px;cursor:pointer;-webkit-user-select:none;user-select:none;
+  font:600 11px/1 var(--sans);letter-spacing:.14em;text-transform:uppercase;color:var(--muted)}
+.tar-grupo-c>summary::-webkit-details-marker{display:none}
+.tar-grupo-c>summary b{font:600 11px/1 var(--sans);letter-spacing:0;padding:3px 7px;border-radius:99px;background:rgba(255,255,255,.08);color:var(--fg)}
+.tar-grupo-c>summary i{margin-left:auto;width:8px;height:8px;border-right:2px solid currentColor;border-bottom:2px solid currentColor;transform:rotate(45deg);transition:transform .2s;margin-right:4px}
+.tar-grupo-c:not([open])>summary i{transform:rotate(-45deg)}
+.tar-grupo-c.rojo>summary{color:var(--st-crit)}
+.tar-grupo-c.rojo>summary b{background:var(--st-crit);color:#fff}
 .tar-tip{margin:0 6px 10px;color:var(--muted);font-size:12px}
 .tarea{-webkit-user-select:none;user-select:none;-webkit-touch-callout:none}
 .tarea .cuando{flex:none;font:600 11px/1.3 var(--sans);padding:4px 9px;border-radius:99px;background:rgba(255,255,255,.08);color:var(--fg);white-space:nowrap}
@@ -1078,6 +1087,8 @@ function etiquetaFecha(f){
   if (f === sumaDias(hoy, 1)) return ["Mañana", ""];
   return [new Date(f + "T12:00").toLocaleDateString("es-MX", { weekday:"short", day:"numeric", month:"short" }), ""];
 }
+const LSGT = "jlp-tareas-cerradas";
+let gruposCerrados = new Set((() => { try{ return JSON.parse(localStorage.getItem(LSGT) || "[]"); }catch(e){ return []; } })());
 function pintarTareas(forzar){
   if (!TAR){ return; }
   const lista = conCola(TAR), firma = JSON.stringify(lista) + "|" + verTodasHechas + "|" + hoy;
@@ -1106,8 +1117,18 @@ function pintarTareas(forzar){
       `<span class="txt"><b>${esc(x.t)}</b><small>Nivel ${x.nv}${x.tiempo ? " · " + esc(x.tiempo) : ""}${x.det ? " · " + esc(x.det) : ""}</small></span>` +
       (et ? `<span class="cuando ${et[1]}">${vence ? "! " : ""}${esc(et[0])}</span>` : "") + `</div>`;
   };
-  $("tarLista").innerHTML = pend.length ? `<div class="renglones">${pend.map(fila).join("")}</div>`
-    : (total ? "" : '<p class="nota">Escribe arriba tu primera tarea.</p>');
+  // Grupos que se abren y se cierran (se recuerda en el teléfono); dentro de cada uno, de la más sencilla a la más pesada
+  const manana = sumaDias(hoy, 1), GRUPOS_T = [
+    ["vencidas", "Vencidas", x => x.fecha && x.fecha < hoy],
+    ["hoy", "Hoy", x => x.fecha === hoy],
+    ["manana", "Mañana", x => x.fecha === manana],
+    ["proximas", "Próximas", x => x.fecha && x.fecha > manana],
+    ["sin", "Sin fecha", x => !x.fecha]];
+  $("tarLista").innerHTML = pend.length ? GRUPOS_T.map(([k, nombre, es]) => {
+    const g = pend.filter(es); if (!g.length) return "";
+    return `<details class="tar-grupo-c${k === "vencidas" ? " rojo" : ""}" data-grupo="${k}"${gruposCerrados.has(k) ? "" : " open"}>` +
+      `<summary><span>${nombre}</span><b>${g.length}</b><i aria-hidden="true"></i></summary><div class="renglones">${g.map(fila).join("")}</div></details>`;
+  }).join("") : (total ? "" : '<p class="nota">Escribe arriba tu primera tarea.</p>');
   $("tarHechasCaja").hidden = !hechas.length;
   $("tarHechasCuenta").textContent = hechas.length ? hechas.length + (hechas.length === 1 ? " hecha" : " hechas") : "";
   const vis = verTodasHechas ? hechas : hechas.slice(0, 5);
@@ -1219,6 +1240,11 @@ $("tarLista").addEventListener("pointerdown", e => {
   const soltar = () => { clearTimeout(tocarTimer); removeEventListener("pointermove", mover); removeEventListener("pointerup", soltar); removeEventListener("pointercancel", soltar); };
   addEventListener("pointermove", mover); addEventListener("pointerup", soltar); addEventListener("pointercancel", soltar);
 });
+$("tarLista").addEventListener("toggle", e => {
+  const d = e.target.closest && e.target.closest("details[data-grupo]"); if (!d) return;
+  d.open ? gruposCerrados.delete(d.dataset.grupo) : gruposCerrados.add(d.dataset.grupo);
+  try{ localStorage.setItem(LSGT, JSON.stringify([...gruposCerrados])); }catch(err){}
+}, true);
 $("tarLista").addEventListener("contextmenu", e => { if (e.target.closest(".tarea")) e.preventDefault(); });
 $("hojaFecha").addEventListener("click", e => {
   const b = e.target.closest("[data-cuando]"); if (!b || !tareaFecha) return;
