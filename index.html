@@ -542,6 +542,7 @@ header .ajustes{visibility:hidden} /* en Inicio se usa el fijo de arriba a la de
 .tar-grupo-c>summary b{font:600 11px/1 var(--sans);letter-spacing:0;padding:3px 7px;border-radius:99px;background:rgba(255,255,255,.08);color:var(--fg)}
 .tar-grupo-c>summary i{margin-left:auto;width:8px;height:8px;border-right:2px solid currentColor;border-bottom:2px solid currentColor;transform:rotate(45deg);transition:transform .2s;margin-right:4px}
 .tar-grupo-c:not([open])>summary i{transform:rotate(-45deg)}
+.tar-grupo-c.hechas{margin-top:24px}
 .tar-grupo-c.rojo>summary{color:var(--st-crit)}
 .tar-grupo-c.rojo>summary b{background:var(--st-crit);color:#fff}
 .tar-tip{margin:0 6px 10px;color:var(--muted);font-size:12px}
@@ -641,10 +642,10 @@ header .ajustes{visibility:hidden} /* en Inicio se usa el fijo de arriba a la de
 </form>
 <p class="tar-tip">Deja picada una tarea para ponerle fecha.</p>
 <div id="tarLista"><p class="nota">Cargando tus tareas…</p></div>
-<div id="tarHechasCaja" hidden>
-  <div class="seccion"><h2>Hechas</h2><span id="tarHechasCuenta"></span></div>
+<details id="tarHechasCaja" class="tar-grupo-c hechas" data-grupo="hechas" hidden>
+  <summary><span>Hechas</span><b id="tarHechasCuenta"></b><i aria-hidden="true"></i></summary>
   <div class="renglones" id="tarHechas"></div>
-</div>
+</details>
 <div class="seccion"><h2>Calendario</h2></div>
 <section class="calendario glass" aria-label="Calendario">
   <div class="cal-top"><button class="cal-nav" id="mesAnt" aria-label="Mes anterior">‹</button><b id="calMes"></b><button class="cal-nav" id="mesSig" aria-label="Mes siguiente">›</button></div>
@@ -1088,7 +1089,7 @@ function etiquetaFecha(f){
   return [new Date(f + "T12:00").toLocaleDateString("es-MX", { weekday:"short", day:"numeric", month:"short" }), ""];
 }
 const LSGT = "jlp-tareas-cerradas";
-let gruposCerrados = new Set((() => { try{ return JSON.parse(localStorage.getItem(LSGT) || "[]"); }catch(e){ return []; } })());
+let gruposCerrados = new Set((() => { try{ return JSON.parse(localStorage.getItem(LSGT) || '["hechas"]'); }catch(e){ return ["hechas"]; } })());
 function pintarTareas(forzar){
   if (!TAR){ return; }
   const lista = conCola(TAR), firma = JSON.stringify(lista) + "|" + verTodasHechas + "|" + hoy;
@@ -1130,7 +1131,8 @@ function pintarTareas(forzar){
       `<summary><span>${nombre}</span><b>${g.length}</b><i aria-hidden="true"></i></summary><div class="renglones">${g.map(fila).join("")}</div></details>`;
   }).join("") : (total ? "" : '<p class="nota">Escribe arriba tu primera tarea.</p>');
   $("tarHechasCaja").hidden = !hechas.length;
-  $("tarHechasCuenta").textContent = hechas.length ? hechas.length + (hechas.length === 1 ? " hecha" : " hechas") : "";
+  $("tarHechasCuenta").textContent = hechas.length || "";
+  $("tarHechasCaja").open = !gruposCerrados.has("hechas");
   const vis = verTodasHechas ? hechas : hechas.slice(0, 5);
   $("tarHechas").innerHTML = vis.map(x => `<div class="tarea hecha" data-tarea="${esc(x.id)}">` +
     `<span class="chk" aria-hidden="true"><i><svg viewBox="0 0 24 24"><path d="M5 12.5l4.5 4.5L19 7.5"/></svg></i></span>` +
@@ -1266,6 +1268,10 @@ $("tarLista").addEventListener("click", e => {
     row.animate([{ height:row.offsetHeight + "px", opacity:1, transform:"none" }, { height:"0px", paddingTop:"0px", paddingBottom:"0px", marginTop:"-8px", borderWidth:"0px", opacity:0, transform:"translateX(28px)" }],
       { duration:320, easing:"cubic-bezier(.4,0,.2,1)", fill:"forwards" }).onfinish = fin;
   }, quieto ? 150 : 520);
+});
+$("tarHechasCaja").addEventListener("toggle", () => {
+  $("tarHechasCaja").open ? gruposCerrados.delete("hechas") : gruposCerrados.add("hechas");
+  try{ localStorage.setItem(LSGT, JSON.stringify([...gruposCerrados])); }catch(err){}
 });
 $("tarHechasCaja").addEventListener("click", e => {
   if (e.target.closest("[data-ver-hechas]")){ verTodasHechas = !verTodasHechas; pintarTareas(true); return; }
