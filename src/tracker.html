@@ -1386,8 +1386,10 @@ function buildExerciseSheet(sh){
 let foodDraft = { comida:"", kcal:"", prot:"" }, confirmKey = null;
 /* Mis comidas: las recetas de siempre, un toque y se agregan. Calorías y proteína aproximadas (etiquetas de los productos y tablas USDA). */
 const RECETAS = [
-  { k:"sandwich", n:"Sandwich fit", d:"1 pan de 45 kcal, 1 rebanada de panela, 1 de jamón de pavo", kcal:140, prot:11 },
-  { k:"ensalada", n:"Ensalada", d:"175 g de feta, lata de elote, lata de garbanzos, puño de espinacas", kcal:840, prot:41 },
+  // pan 45 kcal (~2 g) + panela FUD 30 g (1/10 de 300 g: ~71 kcal, 5.4 g) + jamón de pavo HCF 20 g (1/20 de 400 g; etiqueta 143 kcal y 12 g por 100 g: 29 kcal, 2.4 g)
+  { k:"sandwich", n:"Sandwich fit", d:"1 pan de 45 kcal, 1 rebanada de panela FUD, 1 de jamón de pavo HCF", kcal:145, prot:10 },
+  // feta de cabra Laclette 50 g (~132 kcal, 7 g) + elote 170 kcal (~5 g) + garbanzos 200 kcal (~11 g) + espinacas (~7 kcal, 1 g)
+  { k:"ensalada", n:"Ensalada", d:"50 g de feta, lata de elote, lata de garbanzos, puño de espinacas", kcal:510, prot:24 },
   { k:"atun", n:"Atún con elote", d:"Lata de atún Tuny doble y lata de elote", kcal:390, prot:53,
     extra:{ n:"Saladitas", u:"sobre de 3", kcal:50, prot:1 } } // 1 = un sobre de 3 galletas Saladitas (~50 kcal)
 ];
