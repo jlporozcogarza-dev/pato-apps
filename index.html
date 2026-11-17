@@ -539,6 +539,12 @@ html[data-tab=inicio] .colores-flota,html:has(nav.oculta) .colores-flota{display
 .tarea.vence{border-color:color-mix(in srgb,var(--st-crit) 60%,transparent);background:linear-gradient(150deg,color-mix(in srgb,var(--st-crit) 22%,transparent),rgba(255,255,255,.02));
   box-shadow:0 0 18px -6px color-mix(in srgb,var(--st-crit) 60%,transparent),inset 0 1px 0 rgba(255,255,255,.10)}
 .tarea.vence .chk i{border-color:color-mix(in srgb,var(--st-crit) 80%,#fff)}
+.renglon.at{display:block;width:100%;text-align:left;color:inherit;font:inherit;cursor:pointer;transition:transform .2s}
+.renglon.at:active{transform:scale(.98)}
+#atDesc{width:100%;box-sizing:border-box;padding:12px 14px;border-radius:16px;border:1px solid rgba(255,255,255,.12);background:rgba(255,255,255,.05);color:var(--fg);font:400 15px/1.4 var(--sans);resize:vertical;outline:none}
+#atDesc:focus{border-color:color-mix(in srgb,var(--c10) 60%,transparent)}
+#hojaAt .fila button:disabled{opacity:.4}
+.at-estado{margin:10px 2px 0;color:var(--muted);font-size:13px;min-height:1.2em}
 .mas-hechas{display:block;width:100%;margin-top:8px;padding:12px;border-radius:16px;border:1px solid rgba(255,255,255,.08);background:rgba(255,255,255,.03);color:var(--muted);font-size:13px;cursor:pointer}
 #v-pendientes.entra :is(.tar-prog,.tar-nueva,#tarLista){animation:sube .55s cubic-bezier(.2,.8,.2,1) .08s both}
 @media (prefers-reduced-motion:reduce){*{transition:none!important}}
@@ -705,6 +711,15 @@ html[data-tab=inicio] .colores-flota,html:has(nav.oculta) .colores-flota{display
 </div>
 <button class="colores-flota glass" id="abrirColores2" aria-label="Colores de esta pestaña"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><circle cx="12" cy="12" r="9"/><circle cx="8.5" cy="9.5" r="1.4" fill="currentColor"/><circle cx="12.5" cy="7.5" r="1.4" fill="currentColor"/><circle cx="16" cy="10.5" r="1.4" fill="currentColor"/><path d="M12 21a2.5 2.5 0 0 1 0-5h2a3 3 0 0 0 3-3"/></svg></button>
 <div class="velo" id="velo"></div>
+<section class="hoja" id="hojaAt" role="dialog" aria-modal="true" aria-labelledby="atTitulo" aria-hidden="true">
+  <div class="asa" aria-hidden="true"></div>
+  <button class="cerrar-hoja" data-cerrar-hoja aria-label="Cerrar"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round"><path d="M6 6l12 12M18 6L6 18"/></svg></button>
+  <h2 id="atTitulo"></h2>
+  <p class="sub" id="atDetalle"></p>
+  <textarea id="atDesc" rows="3" maxlength="600" placeholder="¿Qué pasó? Ej.: ya firmó la renovación, ya se arregló el AC…" aria-label="Descripción"></textarea>
+  <div class="fila"><button id="atActualizar" disabled>Actualizar estatus</button><button class="listo" id="atResuelto">Resuelto ✓</button></div>
+  <p class="at-estado" id="atEstado" role="status"></p>
+</section>
 <section class="hoja" id="hojaCC" role="dialog" aria-modal="true" aria-labelledby="ccHojaTitulo" aria-hidden="true">
   <div class="asa" aria-hidden="true"></div>
   <button class="cerrar-hoja" data-cerrar-hoja aria-label="Cerrar"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round"><path d="M6 6l12 12M18 6L6 18"/></svg></button>
@@ -1167,16 +1182,50 @@ function pintarPanel(p, forzar){
         return `<button class="uni${r.length > 3 ? " largo" : ""}${u.d === uniSel ? " sel" : ""}" data-e="${esc(u.e)}" data-uni="${esc(u.d)}" style="--n:${i}" aria-label="${esc(u.d)}">${esc(r)}</button>`; }).join("")}</div>` +
       `<div class="uni-detalle" id="uniDetalle">${detalleUni(us.find(u => u.d === uniSel))}</div></section>`;
   }
-  const at = (p.depas || {}).renglones || [];
+  const todos = (p.depas || {}).renglones || [];
+  resueltos = Object.fromEntries(Object.entries(resueltos).filter(([k]) => todos.some(r => claveAt(r) === k))); lsPoner(LSATR, resueltos); // lo que ya no sale del server se olvida
+  const at = todos.filter(r => !resueltos[claveAt(r)]);
   if (at.length) h += `<div class="seccion"><h2>Atención</h2><span>${at.length} depas</span></div><div class="renglones">` +
     at.map(r => { const tono = r.marca === "libre" ? "azul" : r.tono === "azul" ? "gris" : (r.tono || "gris"); // azul = libre; lo que vence en más de 30 días va en neutro
-      return `<div class="renglon"><div class="arriba"><b>${esc(r.texto)}</b>${r.marca ? `<span class="marca t-${esc(tono)}">${esc(r.marca)}</span>` : ""}</div>${r.detalle ? `<p>${esc(r.detalle)}</p>` : ""}</div>`; }).join("") + `</div>`;
+      return `<button class="renglon at" data-at="${esc(claveAt(r))}"><div class="arriba"><b>${esc(r.texto)}</b>${r.marca ? `<span class="marca t-${esc(tono)}">${esc(r.marca)}</span>` : ""}</div>${r.detalle ? `<p>${esc(r.detalle)}</p>` : ""}</button>`; }).join("") + `</div>`;
   h += `<button class="tira-pend glass card" data-ir="pendientes"><b class="num">${esc(cif("pendientes", "abiertos"))}</b>` +
     `<span>pendientes abiertos<small>${esc(cif("pendientes", "alta"))} de alta · ${esc(cif("pendientes", "vencidos"))} vencidos</small></span><em>›</em></button>`;
   $("panelCuerpo").innerHTML = h;
   const ed = $("panelCuerpo").querySelector(".edificio"); if (ed && window.CC_CAJA) ed.after(CC_CAJA); // el calendario va abajo del edificio
 }
+/* Atención: tocar un renglón → escribir qué pasó → "Actualizar" o "Resuelto". Lo hace Fede en la hoja Inquilinos (conector de Google Sheets).
+   "Resuelto" lo quita de la lista al momento (se recuerda en el teléfono hasta que el server deje de mandarlo). */
+const LSATR = "jlp-atencion-resueltos", claveAt = r => r.texto + "|" + (r.detalle || "");
+let resueltos = lsLeer(LSATR, {}), atSel = null;
+function abrirAt(clave){
+  atSel = ((PANEL && PANEL.depas && PANEL.depas.renglones) || []).find(r => claveAt(r) === clave); if (!atSel) return;
+  $("atTitulo").textContent = atSel.texto; $("atDetalle").textContent = atSel.detalle || "";
+  $("atDesc").value = ""; $("atEstado").textContent = ""; $("atActualizar").disabled = true;
+  hoja($("hojaAt"), true);
+}
+$("atDesc").addEventListener("input", () => { $("atActualizar").disabled = !$("atDesc").value.trim(); });
+async function mandarAt(resuelto){
+  const r = atSel, desc = $("atDesc").value.trim(), c = cfg(); if (!r || !c) return;
+  const que = `${r.texto}${r.detalle ? " (" + r.detalle + ")" : ""}`;
+  const texto = resuelto
+    ? `Condotec · ${que}: ya quedó RESUELTO${desc ? `. Lo que pasó: "${desc}"` : ""}. Actualiza la hoja Inquilinos Condotec con el conector de Google Sheets (en el server es solo lectura) ` +
+      `para que ya no salga en Atención: quita lo resuelto de "Necesidades abiertas" en Depas o marca el pendiente como Hecho, y anota en Notas lo que pasó con la fecha de hoy.`
+    : `Condotec · ${que}. Actualización de Pato: "${desc}". Actualiza la hoja Inquilinos Condotec con el conector de Google Sheets (en el server es solo lectura): ` +
+      `cambia el estado, las necesidades abiertas o las notas de ese depa (y Pendientes si aplica) según esto, con la fecha de hoy.`;
+  $("atActualizar").disabled = $("atResuelto").disabled = true; $("atEstado").textContent = "Enviando a Fede…";
+  try{
+    await api(c, "fede_orden", { texto });
+    if (resuelto){ resueltos[claveAt(r)] = Date.now(); lsPoner(LSATR, resueltos); }
+    $("atEstado").textContent = resuelto ? "Listo: Fede lo marca como resuelto en la hoja." : "Listo: Fede lo actualiza en la hoja.";
+    if (navigator.vibrate) navigator.vibrate(12);
+    setTimeout(() => { cerrarHojas(); if (resuelto && PANEL) pintarPanel(PANEL, true); }, 900);
+  }catch(err){ $("atEstado").textContent = "No llegó a Fede: " + err.message; }
+  finally{ $("atResuelto").disabled = false; $("atActualizar").disabled = !$("atDesc").value.trim(); }
+}
+$("atActualizar").onclick = () => mandarAt(false);
+$("atResuelto").onclick = () => mandarAt(true);
 $("panelCuerpo").addEventListener("click", e => {
+  const a = e.target.closest("[data-at]"); if (a) return abrirAt(a.dataset.at);
   const b = e.target.closest("[data-uni]"); if (!b || !PANEL) return;
   uniSel = uniSel === b.dataset.uni ? null : b.dataset.uni; // solo cambia la selección: no se redibuja el mapa
   $("panelCuerpo").querySelectorAll(".uni").forEach(x => x.classList.toggle("sel", x.dataset.uni === uniSel));
