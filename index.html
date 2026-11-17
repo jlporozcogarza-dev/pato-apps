@@ -546,9 +546,9 @@ html[data-tab=inicio] .colores-flota,html:has(nav.oculta) .colores-flota{display
 .tarea.vence .chk i{border-color:color-mix(in srgb,var(--st-crit) 80%,#fff)}
 .renglon.at{display:block;width:100%;text-align:left;color:inherit;font:inherit;cursor:pointer;transition:transform .2s}
 .renglon.at:active{transform:scale(.98)}
-#atDesc{width:100%;box-sizing:border-box;padding:12px 14px;border-radius:16px;border:1px solid rgba(255,255,255,.12);background:rgba(255,255,255,.05);color:var(--fg);font:400 16px/1.4 var(--sans);resize:vertical;outline:none}
-#atDesc:focus{border-color:color-mix(in srgb,var(--c10) 60%,transparent)}
-#hojaAt .fila button:disabled{opacity:.4}
+#atDesc,.caja-txt{width:100%;box-sizing:border-box;padding:12px 14px;border-radius:16px;border:1px solid rgba(255,255,255,.12);background:rgba(255,255,255,.05);color:var(--fg);font:400 16px/1.4 var(--sans);resize:vertical;outline:none}
+#atDesc:focus,.caja-txt:focus{border-color:color-mix(in srgb,var(--c10) 60%,transparent)}
+#hojaAt .fila button:disabled,#hojaPend .fila button:disabled{opacity:.4}
 .at-estado{margin:10px 2px 0;color:var(--muted);font-size:13px;min-height:1.2em}
 .mas-hechas{display:block;width:100%;margin-top:8px;padding:12px;border-radius:16px;border:1px solid rgba(255,255,255,.08);background:rgba(255,255,255,.03);color:var(--muted);font-size:13px;cursor:pointer}
 #v-pendientes.entra :is(.tar-prog,.tar-nueva,#tarLista){animation:sube .55s cubic-bezier(.2,.8,.2,1) .08s both}
@@ -717,6 +717,16 @@ html[data-tab=inicio] .colores-flota,html:has(nav.oculta) .colores-flota{display
 </div>
 <button class="colores-flota glass" id="abrirColores2" aria-label="Colores de esta pestaña"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><circle cx="12" cy="12" r="9"/><circle cx="8.5" cy="9.5" r="1.4" fill="currentColor"/><circle cx="12.5" cy="7.5" r="1.4" fill="currentColor"/><circle cx="16" cy="10.5" r="1.4" fill="currentColor"/><path d="M12 21a2.5 2.5 0 0 1 0-5h2a3 3 0 0 0 3-3"/></svg></button>
 <div class="velo" id="velo"></div>
+<section class="hoja" id="hojaPend" role="dialog" aria-modal="true" aria-labelledby="pendTitulo" aria-hidden="true">
+  <div class="asa" aria-hidden="true"></div>
+  <button class="cerrar-hoja" data-cerrar-hoja aria-label="Cerrar"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round"><path d="M6 6l12 12M18 6L6 18"/></svg></button>
+  <h2 id="pendTitulo"></h2>
+  <p class="sub" id="pendSub"></p>
+  <textarea id="pendTexto" class="caja-txt" rows="3" maxlength="400" aria-label="Pendiente"></textarea>
+  <label class="otro-dia">Fecha límite<input type="date" id="pendFecha"></label>
+  <div class="fila"><button id="pendGuardar" disabled>Guardar cambios</button><button class="listo" id="pendHecho">Hecho ✓</button></div>
+  <p class="at-estado" id="pendEstado" role="status"></p>
+</section>
 <section class="hoja" id="hojaAt" role="dialog" aria-modal="true" aria-labelledby="atTitulo" aria-hidden="true">
   <div class="asa" aria-hidden="true"></div>
   <button class="cerrar-hoja" data-cerrar-hoja aria-label="Cerrar"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round"><path d="M6 6l12 12M18 6L6 18"/></svg></button>
@@ -885,7 +895,58 @@ function eventosDe(dia){ // los de todo el día cuentan en cada día que abarcan
   return ((AG && AG.eventos) || []).filter(e => e.dia ? e.i.slice(0, 10) <= dia && dia < e.f.slice(0, 10) : e.i.slice(0, 10) === dia)
     .sort((a, b) => (a.dia ? "" : a.i).localeCompare(b.dia ? "" : b.i));
 }
-const pendDe = dia => ((AG && AG.pendientes) || []).filter(p => p.fecha === dia);
+/* Pendientes de Condotec editables: tocar uno → Hecho, cambiar el texto o la fecha. Lo hace Fede en la hoja Inquilinos (conector de Google Sheets);
+   mientras llega, el cambio se ve en el teléfono (jlp-pend-cambios) y se olvida cuando el server ya lo trae o a los 2 días. */
+const LSPE = "jlp-pend-cambios";
+let cambiosPend = (() => { try{ return JSON.parse(localStorage.getItem(LSPE) || "{}") || {}; }catch(e){ return {}; } })(), pendSel = null;
+const guardarPE = () => { try{ localStorage.setItem(LSPE, JSON.stringify(cambiosPend)); }catch(e){} };
+function pendientesAG(){
+  const base = (AG && AG.pendientes) || [], ahora = Date.now();
+  Object.entries(cambiosPend).forEach(([n, c]) => {
+    const p = base.find(x => String(x.n) === n);
+    const yaLlego = c.hecho ? !p : p && (c.texto == null || p.texto === c.texto) && (c.fecha === undefined || (p.fecha || "") === (c.fecha || ""));
+    if (yaLlego || ahora - c.t > 2 * 864e5) delete cambiosPend[n];
+  });
+  guardarPE();
+  return base.filter(p => !(cambiosPend[p.n] || {}).hecho).map(p => { const c = cambiosPend[p.n]; if (!c) return p;
+    return { ...p, texto:c.texto ?? p.texto, fecha:c.fecha === undefined ? p.fecha : c.fecha || null }; });
+}
+const pendDe = dia => pendientesAG().filter(p => p.fecha === dia);
+function abrirPend(n){
+  pendSel = pendientesAG().find(p => String(p.n) === String(n)); if (!pendSel) return;
+  $("pendTitulo").textContent = "Pendiente " + pendSel.n; $("pendSub").textContent = [pendSel.depas, pendSel.estado, pendSel.prioridad].filter(Boolean).join(" · ");
+  $("pendTexto").value = pendSel.texto; $("pendFecha").value = pendSel.fecha || ""; $("pendEstado").textContent = ""; $("pendGuardar").disabled = true;
+  hoja($("hojaPend"), true);
+}
+const pendCambio = () => $("pendTexto").value.trim() !== pendSel.texto || $("pendFecha").value !== (pendSel.fecha || "");
+$("pendTexto").addEventListener("input", () => $("pendGuardar").disabled = !pendCambio());
+$("pendFecha").addEventListener("change", () => $("pendGuardar").disabled = !pendCambio());
+const dma = f => f ? f.slice(8) + "/" + f.slice(5, 7) + "/" + f.slice(0, 4) : "";
+async function mandarPend(hecho){
+  const p = pendSel, c = cfg(); if (!p || !c) return;
+  const texto = $("pendTexto").value.trim(), fecha = $("pendFecha").value, cambios = [];
+  if (!hecho){
+    if (texto && texto !== p.texto) cambios.push(`la columna Pendiente a "${texto}"`);
+    if (fecha !== (p.fecha || "")) cambios.push(fecha ? `la Fecha límite a ${dma(fecha)}` : "deja la Fecha límite vacía");
+    if (!cambios.length) return;
+  }
+  const orden = `Condotec · en la hoja Inquilinos Condotec, pestaña Pendientes, el renglón # ${p.n} ("${p.texto}"): ` +
+    (hecho ? `márcalo como Hecho (columna Estado = Hecho) y anota en Notas que se cerró hoy desde la app.` : `cambia ${cambios.join(" y ")}.`) +
+    ` Usa el conector de Google Sheets (en el server es solo lectura). Antes de escribir, lee el renglón para no pisar otro.`;
+  $("pendGuardar").disabled = $("pendHecho").disabled = true; $("pendEstado").textContent = "Enviando a Fede…";
+  try{
+    await api(c, "fede_orden", { texto:orden });
+    cambiosPend[p.n] = hecho ? { hecho:true, t:Date.now() } : { texto:texto !== p.texto ? texto : undefined, fecha:fecha !== (p.fecha || "") ? fecha : undefined, t:Date.now() };
+    guardarPE();
+    $("pendEstado").textContent = hecho ? "Listo: Fede lo marca como hecho en la hoja." : "Listo: Fede lo cambia en la hoja.";
+    if (navigator.vibrate) navigator.vibrate(12);
+    setTimeout(() => { cerrarHojas(); pintarAgenda(); }, 900);
+  }catch(err){ $("pendEstado").textContent = "No llegó a Fede: " + err.message; }
+  finally{ $("pendHecho").disabled = false; $("pendGuardar").disabled = !pendCambio(); }
+}
+$("pendHecho").onclick = () => mandarPend(true);
+$("pendGuardar").onclick = () => mandarPend(false);
+["agPend", "agDia"].forEach(id => $(id).addEventListener("click", e => { const b = e.target.closest("[data-pend]"); if (b) abrirPend(b.dataset.pend); }));
 function pintarCal(){
   const primero = new Date(agMes + "-01T12:00"), off = (primero.getDay() + 6) % 7;
   const enMes = new Date(primero.getFullYear(), primero.getMonth() + 1, 0).getDate(), celdas = Math.ceil((off + enMes) / 7) * 7;
@@ -905,7 +966,7 @@ function pintarDia(){
   const ev = eventosDe(agSel), pe = pendDe(agSel);
   let h = ev.map(e => `<div class="evento" style="--col:${esc(e.col || "")}"><span class="barra"></span><span class="hora">${e.dia ? "Todo el día" : esc(e.i.slice(11, 16))}</span>` +
     `<span><b>${esc(e.t)}</b><small>${esc([e.c, e.l].filter(Boolean).join(" · "))}</small></span></div>`).join("");
-  h += pe.map(p => `<div class="renglon"><div class="arriba"><b>${esc(p.n)}. ${esc(p.texto)}</b><span class="marca t-${agSel < hoy ? "rojo" : "gris"}">vence</span></div>${p.depas ? `<p>${esc(p.depas)}</p>` : ""}</div>`).join("");
+  h += pe.map(p => `<button class="renglon at" data-pend="${esc(p.n)}"><div class="arriba"><b>${esc(p.n)}. ${esc(p.texto)}</b><span class="marca t-${agSel < hoy ? "rojo" : "gris"}">vence</span></div>${p.depas ? `<p>${esc(p.depas)}</p>` : ""}</button>`).join("");
   if (!h) h = AG && AG.eventos == null
     ? '<p class="nota">Tu Google Calendar todavía no llega al server: falta publicar el puente en Apps Script (Implementar → Versión nueva).</p>'
     : '<p class="nota">Nada en tu calendario este día.</p>';
@@ -913,12 +974,12 @@ function pintarDia(){
 }
 function pintarPend(){
   const rango = p => p.fecha && p.fecha < hoy ? 0 : p.fecha ? 1 : 2, prio = p => ({ alta:0, media:1, baja:2 })[(p.prioridad || "").toLowerCase()] ?? 3;
-  const lista = ((AG && AG.pendientes) || []).slice().sort((a, b) => rango(a) - rango(b) || (a.fecha || "").localeCompare(b.fecha || "") || prio(a) - prio(b));
+  const lista = pendientesAG().slice().sort((a, b) => rango(a) - rango(b) || (a.fecha || "").localeCompare(b.fecha || "") || prio(a) - prio(b));
   $("pendCuenta").textContent = lista.length ? lista.length + " abiertos" : "";
   $("agPend").innerHTML = lista.map(p => {
     const marca = p.fecha ? (p.fecha < hoy ? ["rojo", "vencido " + corto(p.fecha)] : ["gris", corto(p.fecha)]) : [prio(p) === 0 ? "ambar" : "gris", p.prioridad || "Sin fecha"];
-    return `<div class="renglon"><div class="arriba"><b>${esc(p.n)}. ${esc(p.texto)}</b><span class="marca t-${marca[0]}">${esc(marca[1])}</span></div>` +
-      `<p>${esc([p.estado, p.depas].filter(Boolean).join(" · "))}</p></div>`;
+    return `<button class="renglon at" data-pend="${esc(p.n)}"><div class="arriba"><b>${esc(p.n)}. ${esc(p.texto)}</b><span class="marca t-${marca[0]}">${esc(marca[1])}</span></div>` +
+      `<p>${esc([p.estado, p.depas].filter(Boolean).join(" · "))}</p></button>`;
   }).join("") || '<p class="nota">Sin pendientes abiertos.</p>';
 }
 function pintarAgenda(){ agSel = agSel || hoy; agMes = agMes || hoy.slice(0, 7); if (AG){ pintarCal(); pintarDia(); pintarPend(); } }
