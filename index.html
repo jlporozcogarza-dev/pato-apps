@@ -1204,7 +1204,7 @@ function pintarPanel(p, forzar){
   h += `<button class="tira-pend glass card" data-ir="pendientes"><b class="num">${esc(cif("pendientes", "abiertos"))}</b>` +
     `<span>pendientes abiertos<small>${esc(cif("pendientes", "alta"))} de alta · ${esc(cif("pendientes", "vencidos"))} vencidos</small></span><em>›</em></button>`;
   $("panelCuerpo").innerHTML = h;
-  const ed = $("panelCuerpo").querySelector(".edificio"); if (ed && window.CC_CAJA) ed.after(CC_CAJA); // el calendario va abajo del edificio
+  colocarCC();
 }
 /* Atención: tocar un renglón → escribir qué pasó → "Actualizar" o "Resuelto". Lo hace Fede en la hoja Inquilinos (conector de Google Sheets).
    "Resuelto" lo quita de la lista al momento (se recuerda en el teléfono hasta que el server deje de mandarlo). */
@@ -1272,8 +1272,12 @@ $("fecha").textContent = new Date().toLocaleDateString("es-MX", { weekday:"long"
    Pendientes: A # · B Prioridad · C Pendiente · D Depas · E Fecha límite · … · I Estado · J Notas
    Colores fijos: entrada verde, salida roja, pendiente azul, pago amarillo. Cada evento lleva solo el nombre del depa; al tocarlo, sus detalles. */
 var CONDOTEC = "1Slfw8A9kXoBCsWPFIQyA6bi7XKKoURifbZcyqGzf_x0", LSCC = "jlp-condo-cal";
+function colocarCC(){ // el calendario va abajo de la lista de depas de Atención (si no hay, abajo del edificio)
+  const pc = document.getElementById("panelCuerpo"), lista = pc.querySelector(".renglones:has(> .renglon.at)") || pc.querySelector(".edificio");
+  if (lista && window.CC_CAJA) lista.after(CC_CAJA);
+}
 var CC_CAJA = document.getElementById("ccCaja"); // se guarda: al redibujar el panel se vuelve a poner abajo del edificio
-{ const ed = document.querySelector("#panelCuerpo .edificio"); if (ed) ed.after(CC_CAJA); } // por si el panel ya se pintó antes
+colocarCC(); // por si el panel ya se pintó antes
 let CC = lsLeer(LSCC, null), ccMes = hoy.slice(0, 7);
 const TIPOS_CC = { entrada:["Entrada", "verde"], salida:["Salida", "rojo"], pendiente:["Pendiente", "azul"], pago:["Pago de renta", "amarillo"] };
 function fechaCC(v){ // "01/09/2026", "2026-09-01" o número de serie de Sheets → "2026-09-01"
