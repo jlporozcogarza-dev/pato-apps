@@ -1528,12 +1528,40 @@ function vista(tab){
     const f = document.createElement("iframe");
     f.className = "vista"; f.id = "v-" + tab; f.title = tab; f.src = tab + "/";
     f.setAttribute("role", "tabpanel");
-    f.addEventListener("load", () => { pintarApp(tab); vigilarHojas(f); if (actual === tab) animarEntrada(f, 1); });
+    f.addEventListener("load", () => { pintarApp(tab); vigilarHojas(f); try{ escucharDeslizar(f.contentDocument); }catch(e){} if (actual === tab) animarEntrada(f, 1); });
     document.body.insertBefore(f, document.querySelector("nav"));
     vistas[tab] = f;
   }
   return vistas[tab];
 }
+/* Deslizar a la izquierda o derecha cambia a la pestaña de al lado, en el orden de la barra.
+   No cuenta si empieza en algo que ya se desliza solo (calendarios, carriles, listas que se mueven de lado),
+   en una caja de texto o con una hoja abierta. */
+const ordenBarra = () => [...document.querySelectorAll("nav [role=tab]")].map(b => b.dataset.ir);
+function deslizableDeLado(el){
+  for (let e = el; e && e.nodeType === 1; e = e.parentElement){
+    if (e.matches("input,textarea,select,[contenteditable],.calendario,.cc-cal,.carril,.cal,.week,.days,.strip,[data-no-deslizar],.hoja,.sheet")) return true;
+    const cs = e.ownerDocument.defaultView.getComputedStyle(e);
+    if (e.scrollWidth > e.clientWidth + 4 && /auto|scroll/.test(cs.overflowX)) return true;
+  }
+  return false;
+}
+function escucharDeslizar(doc){
+  let x0 = null, y0 = 0, t0 = 0;
+  doc.addEventListener("touchstart", e => {
+    x0 = null;
+    if (e.touches.length !== 1 || document.querySelector("nav.oculta") || deslizableDeLado(e.target)) return;
+    x0 = e.touches[0].clientX; y0 = e.touches[0].clientY; t0 = Date.now();
+  }, { passive:true });
+  doc.addEventListener("touchend", e => {
+    if (x0 == null) return;
+    const t = e.changedTouches[0], dx = t.clientX - x0, dy = t.clientY - y0; x0 = null;
+    if (Math.abs(dx) < 70 || Math.abs(dx) < Math.abs(dy) * 2 || Date.now() - t0 > 700) return; // un deslizar claro y de lado
+    const o = ordenBarra(), j = o.indexOf(actual) + (dx < 0 ? 1 : -1);
+    if (j >= 0 && j < o.length){ if (navigator.vibrate) navigator.vibrate(8); ir(o[j]); }
+  }, { passive:true });
+}
+escucharDeslizar(document);
 function ir(tab, push){
   if (!ORDEN.includes(tab)) tab = "inicio";
   const anterior = actual; actual = tab;
@@ -1541,7 +1569,7 @@ function ir(tab, push){
   pintar();
   document.querySelectorAll("nav [role=tab]").forEach(b => b.setAttribute("aria-selected", b.dataset.ir === tab));
   moverPastilla();
-  const v = vista(tab), dir = Math.sign(ORDEN.indexOf(tab) - ORDEN.indexOf(anterior)) || 1;
+  const ob = ordenBarra(), v = vista(tab), dir = Math.sign(ob.indexOf(tab) - ob.indexOf(anterior)) || 1;
   const vieja = anterior !== tab && vistas[anterior];
   if (vieja && !matchMedia("(prefers-reduced-motion: reduce)").matches){ // la anterior se queda visible mientras sale
     vieja.style.setProperty("--dir", dir);
