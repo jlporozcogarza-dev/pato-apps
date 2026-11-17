@@ -1949,7 +1949,7 @@ Responde SOLO JSON: {"categoria":"una de ${JSON.stringify(CATS[mTipo])}","monto"
   };
 
   /* ---------- comida escrita ---------- */
-  const GOAL = { kcal:[2000, 2300], prot:150 };
+  const GOAL = { kcal:[2000, 2300], prot:120 }; // proteína: de 120 g para arriba ya se cumple
   const fmt = n => Math.round(Number(n) || 0).toLocaleString("es-MX");
   const numero = v => Number(String(v == null ? "" : v).replace(/[^\d.-]/g, "")) || 0;
   const sumOf = (list, k) => list.reduce((s, x) => s + (Number(x[k]) || 0), 0);

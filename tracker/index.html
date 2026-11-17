@@ -535,7 +535,7 @@ const RULES = {
   despertar: { normal:[5*60+30, 6*60+30], minimo:[6*60+30, 7*60+30], txt:["5:30 – 6:30 AM","6:30 – 7:30 AM"] },
   // 2 pts dentro de normal; 1 pt entre low y normal o entre normal y high; 0 fuera.
   kcal: { normal:[2000, 2300], low:1700, high:2600 },
-  prot: { normal:[150, 180], low:120, high:200 },
+  prot: { normal:[120, Infinity], low:100, high:Infinity }, // de 120 g para arriba ya se cumple (100–119 g = 1 pt)
   // Ejercicio: pesas, pádel o correr = 2 pts (si haces varias no se suman). 10,000 pasos de WHOOP = 1 pt extra.
   cardio: [ {k:"Correr", p:2}, {k:"Pádel", p:2} ],
   fuerza: ["Pierna","Pecho","Espalda"],
@@ -621,7 +621,7 @@ function ptsRange(x, r){
   if ((x>=r.low && x<r.normal[0]) || (x>r.normal[1] && x<=r.high)) return 1;
   return 0;
 }
-const rangeTxt = r => fmtNum(r.normal[0])+"–"+fmtNum(r.normal[1]);
+const rangeTxt = r => isFinite(r.normal[1]) ? fmtNum(r.normal[0])+"–"+fmtNum(r.normal[1]) : fmtNum(r.normal[0])+"+";
 function ptsSueno(m){ if (m==null) return 0; const h = m/60; return h>=RULES.sueno.normal ? 2 : h>=RULES.sueno.minimo ? 1 : 0; }
 function sleepMin(bed, wake){ if(bed==null||wake==null) return null; let d=wake-bed; if(d<=0) d+=1440; return d; }
 
@@ -1468,7 +1468,8 @@ function buildFoodSheet(sh, keep){
   const focusId = keep && document.activeElement && document.activeElement.id;
   const e = evalDay(S.selected);
   const rangeBar = (label, val, r, unit, pts) => {
-    const pc = v => Math.min(100, v/r.high*100);
+    const tope = isFinite(r.high) ? r.high : r.normal[0]*1.5, fin = v => isFinite(v) ? v : tope; // meta sin techo: la barra llega a 1.5× el mínimo
+    const pc = v => Math.min(100, fin(v)/tope*100);
     const col = !e.foods.length ? "var(--c-food)" : ["var(--low)","var(--mid)","var(--good)"][pts];
     const z = (a,b,c) => '<b class="'+c+'" style="left:'+pc(a).toFixed(1)+'%;width:'+(pc(b)-pc(a)).toFixed(1)+'%"></b>';
     return '<div class="barrow" style="--c:'+col+'"><div class="bt"><span class="k">'+label+' · '+pts+(pts===1?" pt":" pts")+'</span><span class="v">'+fmtNum(val)+' <small>'+unit+' · meta '+rangeTxt(r)+'</small></span></div>'
@@ -1485,7 +1486,7 @@ function buildFoodSheet(sh, keep){
     + rangeBar("Calorías", e.kcal, K, "kcal", e.p.kcal)
     + rangeBar("Proteína", e.prot, P, "g", e.p.prot)
     + '</div>'
-    + '<p class="hint">Calorías: 2 pts de '+fmtNum(K.normal[0])+' a '+fmtNum(K.normal[1])+'; 1 pt de '+fmtNum(K.low)+' a '+fmtNum(K.normal[0]-1)+' o de '+fmtNum(K.normal[1]+1)+' a '+fmtNum(K.high)+'. Proteína: 2 pts de '+P.normal[0]+' a '+P.normal[1]+' g; 1 pt de '+P.low+' a '+(P.normal[0]-1)+' o de '+(P.normal[1]+1)+' a '+P.high+' g. Fuera de rango, 0. La franja verde de la barra es tu meta.</p>'
+    + '<p class="hint">Calorías: 2 pts de '+fmtNum(K.normal[0])+' a '+fmtNum(K.normal[1])+'; 1 pt de '+fmtNum(K.low)+' a '+fmtNum(K.normal[0]-1)+' o de '+fmtNum(K.normal[1]+1)+' a '+fmtNum(K.high)+'. Proteína: 2 pts de '+P.normal[0]+' g para arriba; 1 pt de '+P.low+' a '+(P.normal[0]-1)+' g. Menos, 0. La franja verde de la barra es tu meta.</p>'
     + '<div class="foods">'
     + (list.length ? list.map((f,i)=>{
         const k = fkey(f)+"#"+i;
