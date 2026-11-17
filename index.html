@@ -549,6 +549,14 @@ html[data-tab=inicio] .colores-flota,html:has(nav.oculta) .colores-flota{display
 #atDesc,.caja-txt{width:100%;box-sizing:border-box;padding:12px 14px;border-radius:16px;border:1px solid rgba(255,255,255,.12);background:rgba(255,255,255,.05);color:var(--fg);font:400 16px/1.4 var(--sans);resize:vertical;outline:none}
 #atDesc:focus,.caja-txt:focus{border-color:color-mix(in srgb,var(--c10) 60%,transparent)}
 #hojaAt .fila button:disabled,#hojaPend .fila button:disabled{opacity:.4}
+.uni-pregunta{margin-top:12px;padding-top:12px;border-top:1px solid rgba(255,255,255,.08)}
+.uni-pregunta b{display:block;font-size:14px;margin-bottom:8px}
+.uni-botones{display:flex;gap:8px;margin-top:10px}
+.uni-botones button{flex:1;padding:10px 12px;border-radius:14px;border:1px solid rgba(255,255,255,.12);background:rgba(255,255,255,.06);color:var(--fg);font:500 14px var(--sans);cursor:pointer}
+.uni-botones button[data-uni-ok]{background:var(--c10);color:var(--c60);border-color:transparent}
+.uni-form{display:grid;gap:10px}
+.uni-form label{display:grid;gap:5px;font-size:13px;color:var(--muted)}
+.uni-form input,.uni-form select{height:44px;padding:0 12px;border-radius:14px;border:1px solid rgba(255,255,255,.12);background:rgba(255,255,255,.05);color:var(--fg);font:400 16px var(--sans);color-scheme:dark;outline:none}
 .at-estado{margin:10px 2px 0;color:var(--muted);font-size:13px;min-height:1.2em}
 .mas-hechas{display:block;width:100%;margin-top:8px;padding:12px;border-radius:16px;border:1px solid rgba(255,255,255,.08);background:rgba(255,255,255,.03);color:var(--muted);font-size:13px;cursor:pointer}
 #v-pendientes.entra :is(.tar-prog,.tar-nueva,#tarLista){animation:sube .55s cubic-bezier(.2,.8,.2,1) .08s both}
@@ -717,6 +725,21 @@ html[data-tab=inicio] .colores-flota,html:has(nav.oculta) .colores-flota{display
 </div>
 <button class="colores-flota glass" id="abrirColores2" aria-label="Colores de esta pestaña"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><circle cx="12" cy="12" r="9"/><circle cx="8.5" cy="9.5" r="1.4" fill="currentColor"/><circle cx="12.5" cy="7.5" r="1.4" fill="currentColor"/><circle cx="16" cy="10.5" r="1.4" fill="currentColor"/><path d="M12 21a2.5 2.5 0 0 1 0-5h2a3 3 0 0 0 3-3"/></svg></button>
 <div class="velo" id="velo"></div>
+<section class="hoja" id="hojaUni" role="dialog" aria-modal="true" aria-labelledby="uniTitulo" aria-hidden="true">
+  <div class="asa" aria-hidden="true"></div>
+  <button class="cerrar-hoja" data-cerrar-hoja aria-label="Cerrar"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round"><path d="M6 6l12 12M18 6L6 18"/></svg></button>
+  <h2 id="uniTitulo"></h2>
+  <p class="sub">Cambia lo que esté mal. Fede lo corrige en tu hoja Inquilinos.</p>
+  <div class="uni-form">
+    <label>Estado<select id="uniEstadoSel"><option value="rentado">Rentado</option><option value="libre">Disponible</option><option value="duda">Por confirmar</option></select></label>
+    <label>Inquilino<input id="uniInq" maxlength="120" autocomplete="off"></label>
+    <label>Renta al mes<input id="uniRenta" inputmode="numeric" maxlength="12" autocomplete="off"></label>
+    <label>Contrato hasta<input type="date" id="uniHasta"></label>
+    <label>Nota (opcional)<textarea id="uniNota" class="caja-txt" rows="2" maxlength="400" placeholder="Ej.: renovó por 6 meses más"></textarea></label>
+  </div>
+  <div class="fila"><button class="listo" id="uniGuardar">Guardar</button></div>
+  <p class="at-estado" id="uniMsg" role="status"></p>
+</section>
 <section class="hoja" id="hojaPend" role="dialog" aria-modal="true" aria-labelledby="pendTitulo" aria-hidden="true">
   <div class="asa" aria-hidden="true"></div>
   <button class="cerrar-hoja" data-cerrar-hoja aria-label="Cerrar"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round"><path d="M6 6l12 12M18 6L6 18"/></svg></button>
@@ -1237,13 +1260,71 @@ function detalleUni(u){
   const cuando = u.dias == null ? "" : u.dias < 0 ? ` · venció hace ${-u.dias} d` : ` · en ${u.dias} d`;
   return `<div class="arriba"><b>${esc(u.d)}</b><span class="marca" data-e="${esc(u.e)}">${esc(nombre)}</span></div>` +
     (u.q && u.q.length ? `<p><b>${esc(u.q.join(" y "))}</b></p>` : `<p>Sin inquilino.</p>`) +
-    ((u.r || vence) ? `<p>${u.r ? "Renta " + pesos(u.r) + "/mes" : ""}${u.r && vence ? " · " : ""}${vence ? "Contrato hasta " + esc(vence) + cuando : ""}</p>` : "");
+    ((u.r || vence) ? `<p>${u.r ? "Renta " + pesos(u.r) + "/mes" : ""}${u.r && vence ? " · " : ""}${vence ? "Contrato hasta " + esc(vence) + cuando : ""}</p>` : "") +
+    (u.e === "duda"
+      ? `<div class="uni-pregunta"><b>¿Esta información está bien?</b><div class="uni-botones"><button data-uni-ok="${esc(u.d)}">Sí, está bien</button><button data-uni-cambiar="${esc(u.d)}">Hay que cambiarla</button></div></div>`
+      : `<div class="uni-botones"><button data-uni-cambiar="${esc(u.d)}">Cambiar info o estado</button></div>`);
 }
+/* Confirmar o cambiar la info de un depa: lo hace Fede en Inquilinos › Depas (conector de Google Sheets); mientras, se ve en el teléfono
+   (jlp-uni-cambios) y se olvida cuando el server ya lo trae o a los 2 días. */
+const LSUC = "jlp-uni-cambios";
+let cambiosUni = (() => { try{ return JSON.parse(localStorage.getItem(LSUC) || "{}") || {}; }catch(e){ return {}; } })(), uniEdit = null;
+const guardarUC = () => { try{ localStorage.setItem(LSUC, JSON.stringify(cambiosUni)); }catch(e){} };
+const ESTADO_HOJA = { rentado:"Rentado", libre:"Disponible", duda:"Por confirmar" };
+function aplicarUni(us){
+  const ahora = Date.now();
+  Object.entries(cambiosUni).forEach(([d, c]) => {
+    const u = us.find(x => x.d === d);
+    const yaLlego = u && (!c.e || u.e === c.e || (c.e === "rentado" && ["vence", "vencido"].includes(u.e))) && (c.q == null || (u.q || []).join(" y ") === c.q)
+      && (c.r == null || u.r === c.r) && (c.s === undefined || (u.s || "") === (c.s || ""));
+    if (yaLlego || ahora - c.t > 2 * 864e5) delete cambiosUni[d];
+  });
+  guardarUC();
+  return us.map(u => { const c = cambiosUni[u.d]; if (!c) return u;
+    const s = c.s === undefined ? u.s : c.s || null;
+    return { ...u, e:c.e || u.e, q:c.q != null ? (c.q ? [c.q] : []) : u.q, r:c.r != null ? c.r : u.r, s, dias:s ? Math.round((new Date(s + "T12:00") - new Date(hoy + "T12:00")) / 864e5) : null }; });
+}
+function abrirUni(d){
+  uniEdit = aplicarUni((PANEL && PANEL.unidades) || []).find(u => u.d === d); if (!uniEdit) return;
+  const u = uniEdit;
+  $("uniTitulo").textContent = u.d; $("uniEstadoSel").value = ["rentado", "libre", "duda"].includes(u.e) ? u.e : "rentado";
+  $("uniInq").value = (u.q || []).join(" y "); $("uniRenta").value = u.r || ""; $("uniHasta").value = u.s || ""; $("uniNota").value = ""; $("uniMsg").textContent = "";
+  hoja($("hojaUni"), true);
+}
+async function confirmarUni(d){
+  const x = aplicarUni((PANEL && PANEL.unidades) || []).find(v => v.d === d), c = cfg(); if (!x || !c) return;
+  const orden = `Condotec · ${d}: Pato confirma que la información está bien (inquilino: ${(x.q || []).join(" y ") || "ninguno"}, renta ${x.r ? pesos(x.r) : "sin dato"}, contrato hasta ${x.s ? dma(x.s) : "sin fecha"}). ` +
+    `En la hoja Inquilinos Condotec, pestaña Depas, cambia el Estado de ese depa a "Rentado" y quita de Notas/Necesidades lo que decía que había que confirmarlo. Usa el conector de Google Sheets (en el server es solo lectura).`;
+  cambiosUni[d] = { e:"rentado", t:Date.now() }; guardarUC(); pintarPanel(PANEL, true);
+  try{ await api(c, "fede_orden", { texto:orden }); if (navigator.vibrate) navigator.vibrate(12); }
+  catch(err){ delete cambiosUni[d]; guardarUC(); pintarPanel(PANEL, true); alert("No llegó a Fede: " + err.message); }
+}
+async function guardarUni(){
+  const u = uniEdit, c = cfg(); if (!u || !c) return;
+  const e = $("uniEstadoSel").value, q = $("uniInq").value.trim(), r = parseFloat($("uniRenta").value.replace(/[^0-9.]/g, "")) || 0, s = $("uniHasta").value, nota = $("uniNota").value.trim();
+  const cs = [], cambio = { t:Date.now() };
+  if (e !== u.e && !(e === "rentado" && ["vence", "vencido"].includes(u.e))){ cs.push(`Estado a "${ESTADO_HOJA[e]}"`); cambio.e = e; }
+  if (q !== (u.q || []).join(" y ")){ cs.push(q ? `Inquilino a "${q}"` : "deja Inquilino vacío"); cambio.q = q; }
+  if (r !== (u.r || 0)){ cs.push(`Renta mensual a ${r}`); cambio.r = r; }
+  if (s !== (u.s || "")){ cs.push(s ? `Salida a ${dma(s)}` : "deja Salida vacía"); cambio.s = s; }
+  if (nota) cs.push(`agrega a Notas: "${nota}" (con la fecha de hoy)`);
+  if (!cs.length){ $("uniMsg").textContent = "No cambiaste nada."; return; }
+  const orden = `Condotec · en la hoja Inquilinos Condotec, pestaña Depas, renglón de ${u.d}: ${cs.join("; ")}. Usa el conector de Google Sheets (en el server es solo lectura). Antes de escribir, lee el renglón para no pisar otro.`;
+  $("uniGuardar").disabled = true; $("uniMsg").textContent = "Enviando a Fede…";
+  try{
+    await api(c, "fede_orden", { texto:orden });
+    cambiosUni[u.d] = cambio; guardarUC();
+    $("uniMsg").textContent = "Listo: Fede lo cambia en la hoja."; if (navigator.vibrate) navigator.vibrate(12);
+    setTimeout(() => { cerrarHojas(); pintarPanel(PANEL, true); }, 900);
+  }catch(err){ $("uniMsg").textContent = "No llegó a Fede: " + err.message; }
+  finally{ $("uniGuardar").disabled = false; }
+}
+$("uniGuardar").onclick = guardarUni;
 function pintarPanel(p, forzar){
   const firma = JSON.stringify(p) + "|" + uniSel;
   if (!forzar && firma === panelPintado) return; // sin cambios: no se redibuja (así no se repiten las animaciones)
   panelPintado = firma; PANEL = p;
-  const us = p.unidades || [], cif = (s, r) => (((p[s] || {}).cifras || []).find(x => x.rotulo === r) || {}).valor || "0";
+  const us = aplicarUni(p.unidades || []), cif = (s, r) => (((p[s] || {}).cifras || []).find(x => x.rotulo === r) || {}).valor || "0";
   const renta = (((p.depas || {}).resumen || "").match(/\$[\d,]+/) || [""])[0];
   const cuenta = ESTADOS.map(([e, n]) => [e, n, us.filter(u => u.e === e).length]).filter(x => x[2]);
   let h = "";
@@ -1301,10 +1382,12 @@ $("atActualizar").onclick = () => mandarAt(false);
 $("atResuelto").onclick = () => mandarAt(true);
 $("panelCuerpo").addEventListener("click", e => {
   const a = e.target.closest("[data-at]"); if (a) return abrirAt(a.dataset.at);
+  const ok = e.target.closest("[data-uni-ok]"); if (ok) return confirmarUni(ok.dataset.uniOk);
+  const cam = e.target.closest("[data-uni-cambiar]"); if (cam) return abrirUni(cam.dataset.uniCambiar);
   const b = e.target.closest("[data-uni]"); if (!b || !PANEL) return;
   uniSel = uniSel === b.dataset.uni ? null : b.dataset.uni; // solo cambia la selección: no se redibuja el mapa
   $("panelCuerpo").querySelectorAll(".uni").forEach(x => x.classList.toggle("sel", x.dataset.uni === uniSel));
-  $("uniDetalle").innerHTML = detalleUni((PANEL.unidades || []).find(u => u.d === uniSel));
+  $("uniDetalle").innerHTML = detalleUni(aplicarUni(PANEL.unidades || []).find(u => u.d === uniSel));
   panelPintado = JSON.stringify(PANEL) + "|" + uniSel;
 });
 function cargarPanel(c){
