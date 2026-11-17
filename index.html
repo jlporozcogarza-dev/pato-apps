@@ -57,11 +57,23 @@ header p em{background:linear-gradient(180deg,var(--c10) 38%,color-mix(in srgb,v
 header small{display:block;color:var(--muted);font-size:13px;margin-bottom:6px}
 .quien{display:flex;align-items:center;gap:12px}
 /* el logo es el anillo de Fede (como en la compu): siempre vibra suave; tocarlo = Fede escucha */
-.logo{position:relative;width:72px;height:72px;margin:-5px;border-radius:50%;background:none;border:0;padding:0;cursor:pointer;transition:transform .2s}
+.hueco-logo{flex:none;width:62px;height:62px}
+.fede-flota{position:fixed;z-index:6;display:flex;align-items:center;gap:6px;
+  left:11px;top:calc(max(14px,env(safe-area-inset-top)) + 4px - 5px)}
+/* fuera de Inicio flota a la derecha, arriba de la barra de pestañas */
+html:not([data-tab=inicio]) .fede-flota{left:auto;top:auto;right:10px;flex-direction:row-reverse;
+  bottom:calc(max(4px,calc(env(safe-area-inset-bottom) - 12px)) + 70px)}
+html:not([data-tab=inicio]) .logo{width:64px;height:64px;filter:drop-shadow(0 6px 14px rgba(0,0,0,.6))}
+html[data-tab=fede] .fede-flota{bottom:calc(max(4px,calc(env(safe-area-inset-bottom) - 12px)) + 134px)} /* arriba de la caja para escribirle */
+html:has(nav.oculta) .fede-flota{display:none}
+.logo{position:relative;flex:none;width:72px;height:72px;border-radius:50%;background:none;border:0;padding:0;cursor:pointer;transition:transform .2s;-webkit-tap-highlight-color:transparent}
 .logo:active{transform:scale(.92)}
 .logo canvas{width:100%;height:100%;display:block}
-.quien>div{min-width:0}
-#fecha{white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+/* lo que va pasando ("Le escucho…", lo que uno dice, la respuesta): una pastilla junto al anillo, sin pantallas */
+.fede-dice{position:absolute;left:6px;top:100%;margin-top:4px;max-width:min(300px,calc(100vw - 40px));padding:7px 12px;border-radius:16px;
+  font:500 13px/1.3 var(--sans);color:var(--fg);background:color-mix(in srgb,var(--c60) 88%,#000);border:1px solid rgba(255,255,255,.14);box-shadow:0 8px 24px -8px rgba(0,0,0,.8);-webkit-backdrop-filter:blur(18px);backdrop-filter:blur(18px);display:-webkit-box;-webkit-line-clamp:3;-webkit-box-orient:vertical;overflow:hidden;width:max-content}
+.fede-dice[hidden]{display:none}
+html:not([data-tab=inicio]) .fede-dice{left:auto;right:4px;top:auto;bottom:100%;margin:0 0 6px}
 /* ✕ junto al anillo: solo mientras Fede trabaja o habla; lo calla en la compu */
 .callar{flex:none;width:38px;height:38px;border-radius:50%;display:grid;place-items:center;color:var(--fg);cursor:pointer;padding:0;animation:logoIn .35s cubic-bezier(.2,.9,.3,1.2) both}
 .callar[hidden]{display:none}
@@ -480,8 +492,7 @@ header .ajustes svg{width:20px;height:20px}
 <div class="vista on" id="v-inicio" role="tabpanel" aria-label="Inicio"><main>
 <header>
   <div class="quien">
-    <button class="logo" id="logoFede" title="Hablarle a Fede" aria-label="Hablarle a Fede"><canvas id="anilloFede" aria-hidden="true"></canvas></button>
-    <button class="callar glass" id="callarFede" hidden aria-label="Callar a Fede" title="Callar a Fede"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round"><path d="M6 6l12 12M18 6L6 18"/></svg></button>
+    <span class="hueco-logo" aria-hidden="true"></span>
     <div><small id="fecha">Hoy</small><p>Hola, <em>Pato</em></p></div>
   </div>
   <button class="ajustes glass" id="abrirColores" aria-label="Cambiar colores"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><circle cx="12" cy="12" r="9"/><circle cx="8.5" cy="9.5" r="1.4" fill="currentColor"/><circle cx="12.5" cy="7.5" r="1.4" fill="currentColor"/><circle cx="16" cy="10.5" r="1.4" fill="currentColor"/><path d="M12 21a2.5 2.5 0 0 1 0-5h2a3 3 0 0 0 3-3"/></svg></button>
@@ -643,6 +654,12 @@ header .ajustes svg{width:20px;height:20px}
 </section>
 
 
+<!-- Fede en todas las pestañas: en Inicio va en el lugar del logo; en las demás flota sobre la barra -->
+<div class="fede-flota" id="fedeFlota">
+  <button class="logo" id="logoFede" title="Hablarle a Fede" aria-label="Hablarle a Fede"><canvas id="anilloFede" aria-hidden="true"></canvas></button>
+  <button class="callar glass" id="callarFede" hidden aria-label="Callar a Fede" title="Callar a Fede"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round"><path d="M6 6l12 12M18 6L6 18"/></svg></button>
+  <span class="fede-dice" id="fedeDice" hidden role="status" aria-live="polite"></span>
+</div>
 <nav class="glass" role="tablist" aria-label="Secciones">
   <span class="pastilla" id="pastilla" aria-hidden="true"></span>
   <button role="tab" data-ir="inicio" aria-selected="true" aria-label="Inicio"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M4 10.5 12 4l8 6.5V20H4z"/><path d="M10 20v-5h4v5"/></svg><span>Inicio</span></button>
@@ -1624,16 +1641,16 @@ Si el texto no describe comida, responde {"items":[]}.`;
 
 
 /* ---------- El anillo de Fede (logo): tocar = Fede escucha; tocar otra vez = ya acabé; ✕ = que se calle ----------
-   Es el anillo Aurora de la compu. Sin pantallas: lo que pasa se ve en el anillo y en la línea de la fecha.
+   Es el anillo Aurora de la compu, en todas las pestañas. Sin pantallas: lo que pasa se ve en el anillo y en una pastilla junto a él.
    Si el teléfono reconoce voz, manda el texto y él solo nota cuando uno deja de hablar. Si no, graba una nota
    (corta sola tras 1.5 s de silencio) y Fede la transcribe en la compu. */
 (() => {
   const RV = window.SpeechRecognition || window.webkitSpeechRecognition;
-  const cv = $("anilloFede"), ctx = cv.getContext("2d"), fecha = $("fecha"), callar = $("callarFede"), logo = $("logoFede");
+  const cv = $("anilloFede"), ctx = cv.getContext("2d"), dice = $("fedeDice"), callar = $("callarFede"), logo = $("logoFede");
   const quieto = matchMedia("(prefers-reduced-motion:reduce)").matches, espera = ms => new Promise(r => setTimeout(r, ms));
-  let estado = "reposo", rec = null, grab = null, trozos = [], texto = "", nivel = 0, vigila = 0, fechaTxt = "", sigue = 0, turno = 0;
-  const decir = t => { if (!fechaTxt) fechaTxt = fecha.textContent; fecha.textContent = t; };
-  const volver = () => { if (fechaTxt){ fecha.textContent = fechaTxt; fechaTxt = ""; } };
+  let estado = "reposo", rec = null, grab = null, trozos = [], texto = "", nivel = 0, vigila = 0, sigue = 0, turno = 0;
+  const decir = t => { dice.textContent = t; dice.hidden = false; };
+  const volver = () => { dice.hidden = true; };
   function poner(e, t){
     estado = e; clearTimeout(sigue); t ? decir(t) : volver();
     logo.setAttribute("aria-label", e === "escucha" ? "Ya acabé de hablar" : "Hablarle a Fede");
