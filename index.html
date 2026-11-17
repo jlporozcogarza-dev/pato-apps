@@ -959,6 +959,19 @@ $("pendFecha").addEventListener("change", () => $("pendGuardar").disabled = !pen
 const dma = f => f ? f.slice(8) + "/" + f.slice(5, 7) + "/" + f.slice(0, 4) : "";
 async function mandarPend(hecho){
   const p = pendSel, c = cfg(); if (!p || !c) return;
+  if (p.estado === "WhatsApp"){ // sale de tus chats (pato-server), no de la hoja de Inquilinos: solo se puede cerrar
+    if (!hecho){ $("pendEstado").textContent = "Este pendiente salió de WhatsApp: solo se puede marcar como hecho."; return; }
+    $("pendHecho").disabled = true; $("pendEstado").textContent = "Cerrando…";
+    try{
+      await api(c, "wa_hecho", { id:String(p.n).slice(1) });
+      AG.pendientes = AG.pendientes.filter(x => x.n !== p.n);
+      $("pendEstado").textContent = "Listo: ya no vuelve a salir.";
+      if (navigator.vibrate) navigator.vibrate(12);
+      setTimeout(() => { cerrarHojas(); pintarAgenda(); }, 900);
+    }catch(err){ $("pendEstado").textContent = "No se pudo cerrar: " + err.message; }
+    finally{ $("pendHecho").disabled = false; }
+    return;
+  }
   const texto = $("pendTexto").value.trim(), fecha = $("pendFecha").value, cambios = [];
   if (!hecho){
     if (texto && texto !== p.texto) cambios.push(`la columna Pendiente a "${texto}"`);
