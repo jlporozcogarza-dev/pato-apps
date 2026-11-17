@@ -345,6 +345,16 @@ button.row.miss:active{background:color-mix(in srgb, var(--low) 14%, var(--surfa
 .field label{font-size:12px;color:var(--muted);font-weight:500}
 .field input{width:100%;min-width:0;font:inherit;font-size:16px;padding:11px 12px;border-radius:12px;background:var(--surface-2);border:1px solid var(--line);color:var(--fg)}
 .field input:focus{outline:2px solid var(--c-food);outline-offset:0;border-color:transparent}
+.recetas{display:flex;flex-direction:column;gap:8px}
+.receta{border:1px solid var(--line);border-radius:16px;background:var(--surface-2);overflow:hidden}
+.rec-btn{display:flex;width:100%;align-items:center;gap:10px;padding:11px 13px;background:none;border:0;text-align:left;color:inherit;font:inherit;cursor:pointer}
+.rec-btn:active{background:var(--surface)}
+.rec-t{flex:1;min-width:0}.rec-t b{display:block;font-size:15px}.rec-t small{display:block;color:var(--muted);font-size:12px;margin-top:2px}
+.rec-v{flex:none;text-align:right;font-weight:600;font-size:14px}.rec-v small{display:block;color:var(--muted);font-weight:400;font-size:12px}
+.rec-extra{display:flex;align-items:center;gap:10px;padding:8px 13px 10px;border-top:1px solid var(--line);font-size:13px}
+.rec-extra>span{flex:1}.rec-extra small{color:var(--muted)}
+.rec-extra button{width:34px;height:34px;border-radius:50%;border:1px solid var(--line);background:var(--surface);font-size:18px;line-height:1;cursor:pointer}
+.rec-extra b{min-width:18px;text-align:center;font-size:15px}
 .recent{display:flex;gap:6px;overflow-x:auto;padding-bottom:2px;scrollbar-width:none}
 .recent::-webkit-scrollbar{display:none}
 .recent button{flex-shrink:0;font-size:13px;padding:7px 11px;border-radius:99px;background:var(--surface-2);border:1px solid var(--line);white-space:nowrap}
@@ -1467,6 +1477,15 @@ function buildExerciseSheet(sh){
   };
 }
 let foodDraft = { comida:"", kcal:"", prot:"" }, confirmKey = null;
+/* Mis comidas: las recetas de siempre, un toque y se agregan. Calorías y proteína aproximadas (etiquetas de los productos y tablas USDA). */
+const RECETAS = [
+  { k:"sandwich", n:"Sandwich fit", d:"1 pan de 45 kcal, 1 rebanada de panela, 1 de jamón de pavo", kcal:140, prot:11 },
+  { k:"ensalada", n:"Ensalada", d:"175 g de feta, lata de elote, lata de garbanzos, puño de espinacas", kcal:840, prot:41 },
+  { k:"atun", n:"Atún con elote", d:"Lata de atún Tuny doble y lata de elote", kcal:390, prot:53,
+    extra:{ n:"Saladitas", u:"sobre de 3", kcal:50, prot:1 } } // 1 = un sobre de 3 galletas Saladitas (~50 kcal)
+];
+let saladitas = 0;
+const totalReceta = r => { const n = r.extra ? saladitas : 0; return { kcal:r.kcal + n * (r.extra ? r.extra.kcal : 0), prot:r.prot + n * (r.extra ? r.extra.prot : 0), n }; };
 function buildFoodSheet(sh, keep){
   const focusId = keep && document.activeElement && document.activeElement.id;
   const e = evalDay(S.selected);
@@ -1505,6 +1524,14 @@ function buildFoodSheet(sh, keep){
           + '</div>';
       }).join("") : '<div class="empty">Sin comidas registradas. Mándale la foto a Claude o agrégala abajo.</div>')
     + '</div>'
+    + '<div class="grp"><div class="grp-h"><span class="k">Mis comidas</span><span class="w">Toca para agregar</span></div><div class="recetas">'
+    + RECETAS.map(r => { const t = totalReceta(r);
+        return '<div class="receta"><button class="rec-btn" data-receta="'+r.k+'"><span class="rec-t"><b>'+esc(r.n)+'</b><small>'+esc(r.d)+'</small></span>'
+          + '<span class="rec-v">'+fmtNum(t.kcal)+' kcal<small>'+fmtNum(t.prot)+' g prot</small></span></button>'
+          + (r.extra ? '<div class="rec-extra"><span>'+esc(r.extra.n)+' <small>('+esc(r.extra.u)+')</small></span>'
+            + '<button data-sal="-1" aria-label="Menos Saladitas">−</button><b>'+saladitas+'</b><button data-sal="1" aria-label="Más Saladitas">+</button></div>' : '')
+          + '</div>'; }).join("")
+    + '</div></div>'
     + (recents.length ? '<div class="grp"><div class="grp-h"><span class="k">Recientes</span><span class="w">Toca para llenar</span></div><div class="recent">'+recents.map((f,i)=>'<button data-recent="'+i+'">'+esc(f.comida)+' · '+fmtNum(f.kcal)+'</button>').join("")+'</div></div>' : '')
     + '<form class="form" id="foodForm" autocomplete="off">'
     + '<div class="field full"><label for="fName">Comida</label><input id="fName" name="comida" placeholder="Ej. pollo con arroz" value="'+esc(foodDraft.comida)+'" required></div>'
@@ -1530,6 +1557,16 @@ function buildFoodSheet(sh, keep){
     click(t){
       if (t.dataset.askdel){ confirmKey = t.dataset.askdel; buildFoodSheet(sh, true); return true; }
       if (t.dataset.del){ const f = list[+t.dataset.del]; confirmKey = null; if (f) deleteFood(f); return true; }
+      if (t.dataset.sal){ saladitas = Math.max(0, Math.min(10, saladitas + (+t.dataset.sal))); buildFoodSheet(sh, true); return true; }
+      if (t.dataset.receta){
+        const r = RECETAS.find(x => x.k === t.dataset.receta); if (!r) return true;
+        const tt = totalReceta(r), isToday = S.selected===todayStr(), now = new Date();
+        const comida = r.n + (tt.n ? " + " + tt.n + (tt.n === 1 ? " sobre" : " sobres") + " de " + r.extra.n : "");
+        if (r.extra) saladitas = 0; // antes de agregar: addFood vuelve a dibujar la hoja
+        addFood({ fecha:S.selected, hora: isToday ? fmtTime(now.getHours()*60+now.getMinutes()) : "", comida, kcal:tt.kcal, prot:tt.prot, origen:"Manual" });
+        toast("Agregado: "+comida);
+        return true;
+      }
       if (t.dataset.recent){ const f = recents[+t.dataset.recent]; foodDraft = { comida:f.comida, kcal:String(f.kcal), prot:String(f.prot) }; buildFoodSheet(sh, true); const k=sh.querySelector("#fKcal"); if (k) k.focus(); return true; }
       return false;
     }
