@@ -1073,12 +1073,13 @@ function renderRows(){
   else if (e.steps!=null) exParts.push(fmtNum(e.steps)+" pasos");
   else if (e.w) exParts.push("— pasos");
   const rows = [
-    { k:"dormir", t:"Hora de dormir", c:"--c-sleep", parts:[part("dormir",2)],
-      sub: e.bed!=null ? fmtTime(e.bed)+" · "+(isToday?"anoche":"noche anterior")+(e.src.dormir==="whoop"?" · WHOOP":"") : null, todo:"Se llena solo con WHOOP o tócalo para ponerla" },
-    { k:"despertar", t:"Hora de despertar", c:"--c-wake", parts:[part("despertar",2)],
-      sub: e.wake!=null ? fmtTime(e.wake) + (isToday ? " · hoy" : "")+(e.src.despertar==="whoop"?" · WHOOP":"") : null, todo:"Se llena solo con WHOOP o tócalo para ponerla" },
+    // Dormir, despertar y horas de sueño solo salen de WHOOP: no se ponen a mano (info:true = no se puede tocar)
+    { k:"dormir", t:"Hora de dormir", c:"--c-sleep", parts:[part("dormir",2)], info:true,
+      sub: e.bed!=null ? fmtTime(e.bed)+" · "+(isToday?"anoche":"noche anterior")+(e.src.dormir==="whoop"?" · WHOOP":"") : null, todo:"Se llena solo con WHOOP" },
+    { k:"despertar", t:"Hora de despertar", c:"--c-wake", parts:[part("despertar",2)], info:true,
+      sub: e.wake!=null ? fmtTime(e.wake) + (isToday ? " · hoy" : "")+(e.src.despertar==="whoop"?" · WHOOP":"") : null, todo:"Se llena solo con WHOOP" },
     { k:"sueno", t:"Horas de sueño", c:"--c-rest", parts:[part("sueno",2)], info:true,
-      sub: e.sleep!=null ? "Dormiste "+fmtDur(e.sleep)+(e.src.sueno==="whoop" ? " · WHOOP" : " · automático") : null, todo:"Sale de WHOOP o de tu hora de dormir y despertar" },
+      sub: e.sleep!=null ? "Dormiste "+fmtDur(e.sleep)+(e.src.sueno==="whoop" ? " · WHOOP" : " · automático") : null, todo:"Se llena solo con WHOOP" },
     { k:"ejercicio", t:"Ejercicio", c:"--c-move", parts:[part("mov",2), part("pasos",1)],
       sub: exParts.length ? exParts.join(" · ") : null, todo:"Pesas, pádel o correr · 10,000 pasos" },
     { k:"comida", t:"Comida", c:"--c-food", parts:[part("kcal",2), part("prot",2)],

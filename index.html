@@ -368,6 +368,8 @@ nav button{min-width:0}
 nav button{position:relative;z-index:1;flex:1;height:54px;border:0;border-radius:24px;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:3px;
   background:none;color:rgba(244,241,234,.62);cursor:pointer;transition:color .35s;font:500 10.5px/1 var(--sans);letter-spacing:.01em}
 nav button svg{transition:transform .2s}
+nav button{touch-action:none;-webkit-user-select:none;user-select:none;-webkit-touch-callout:none}
+nav button.arrastrando{z-index:3;transition:none;filter:drop-shadow(0 6px 14px rgba(0,0,0,.6));background:rgba(255,255,255,.08)}
 nav button:active svg{transform:scale(.85)}
 nav button[aria-selected=true]{color:var(--c60)}
 nav button[aria-selected=true] svg{animation:pop .5s cubic-bezier(.34,1.6,.5,1)}
@@ -494,8 +496,33 @@ html[data-tab=inicio] .colores-flota,html:has(nav.oculta) .colores-flota{display
 .tarea.hecha .chk svg{width:12px;height:12px;stroke-dashoffset:0}
 .tarea .regresar{flex:none;height:32px;padding:0 11px;border-radius:11px;border:1px solid rgba(255,255,255,.10);background:rgba(255,255,255,.05);color:var(--muted);font-size:12px;cursor:pointer}
 .tarea .regresar:active{transform:scale(.94)}
+.tar-nueva{display:block;border-radius:22px;padding:8px;margin:14px 0 6px}
+.tar-linea{display:flex;gap:8px;align-items:center}
+.tar-nueva input{flex:1;min-width:0;height:42px;padding:0 12px;border-radius:14px;border:1px solid rgba(255,255,255,.10);background:rgba(255,255,255,.05);color:var(--fg);font:400 15px var(--sans);outline:none}
+.tar-nueva input:focus{border-color:color-mix(in srgb,var(--c10) 60%,transparent)}
+#tarExtra{margin-top:8px;display:grid;gap:8px}
+#tarExtra[hidden]{display:none}
+#tarExtra input{width:100%;font-size:13.5px}
+#tarAgregar{flex:none;width:42px;height:42px;border-radius:14px;border:0;display:grid;place-items:center;background:var(--c10);color:var(--c60);cursor:pointer}
+#tarAgregar:disabled{opacity:.35}
+#tarAgregar svg{width:20px;height:20px}
+.tar-cuando,.cuando-opc{display:flex;gap:6px;flex-wrap:wrap}
+.tar-cuando button,.cuando-opc button{padding:8px 13px;border-radius:99px;border:1px solid rgba(255,255,255,.12);background:rgba(255,255,255,.05);color:var(--fg);font:500 13px var(--sans);cursor:pointer}
+.tar-cuando button[aria-pressed=true],.cuando-opc button[aria-pressed=true]{background:var(--c10);color:var(--c60);border-color:transparent}
+.cuando-opc button{flex:1 1 40%;min-height:48px;font-size:15px;border-radius:16px}
+.otro-dia{display:flex;align-items:center;justify-content:space-between;gap:10px;margin-top:10px;padding:10px 14px;border-radius:16px;border:1px solid rgba(255,255,255,.12);background:rgba(255,255,255,.05);font-size:15px}
+.otro-dia input{background:none;border:0;color:var(--fg);font:500 15px var(--sans);color-scheme:dark}
+.tar-tip{margin:0 6px 10px;color:var(--muted);font-size:12px}
+.tarea{-webkit-user-select:none;user-select:none;-webkit-touch-callout:none}
+.tarea .cuando{flex:none;font:600 11px/1.3 var(--sans);padding:4px 9px;border-radius:99px;background:rgba(255,255,255,.08);color:var(--fg);white-space:nowrap}
+.tarea .cuando.hoy{background:color-mix(in srgb,var(--c10) 28%,transparent)}
+.tarea .cuando.rojo{background:var(--st-crit);color:#fff}
+/* vencida: alarma roja, con texto ("Venció …") además del color */
+.tarea.vence{border-color:color-mix(in srgb,var(--st-crit) 60%,transparent);background:linear-gradient(150deg,color-mix(in srgb,var(--st-crit) 22%,transparent),rgba(255,255,255,.02));
+  box-shadow:0 0 18px -6px color-mix(in srgb,var(--st-crit) 60%,transparent),inset 0 1px 0 rgba(255,255,255,.10)}
+.tarea.vence .chk i{border-color:color-mix(in srgb,var(--st-crit) 80%,#fff)}
 .mas-hechas{display:block;width:100%;margin-top:8px;padding:12px;border-radius:16px;border:1px solid rgba(255,255,255,.08);background:rgba(255,255,255,.03);color:var(--muted);font-size:13px;cursor:pointer}
-#v-pendientes.entra :is(.tar-prog,.tar-grupo,#tarLista){animation:sube .55s cubic-bezier(.2,.8,.2,1) .08s both}
+#v-pendientes.entra :is(.tar-prog,.tar-nueva,#tarLista){animation:sube .55s cubic-bezier(.2,.8,.2,1) .08s both}
 @media (prefers-reduced-motion:reduce){*{transition:none!important}}
 </style></head>
 <body>
@@ -564,6 +591,17 @@ html[data-tab=inicio] .colores-flota,html:has(nav.oculta) .colores-flota{display
   <div class="fila"><span class="hechas-n"><b class="num" id="tarNum">–</b><small>hechas</small></span><span class="sig" id="tarSig"></span></div>
   <span class="medidor"><i id="tarBarra"></i></span>
 </section>
+<form class="tar-nueva glass" id="tarForm" autocomplete="off">
+  <div class="tar-linea"><input id="tarNueva" placeholder="Nueva tarea…" aria-label="Nueva tarea" maxlength="140" enterkeyhint="done">
+    <button id="tarAgregar" type="submit" disabled aria-label="Agregar tarea"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round"><path d="M12 5v14M5 12h14"/></svg></button></div>
+  <div id="tarExtra" hidden>
+    <input id="tarDesc" placeholder="Descripción (opcional): para que Fede sepa qué tan pesada es" aria-label="Descripción" maxlength="300" enterkeyhint="done">
+    <div class="tar-cuando" id="tarCuandoNueva" role="group" aria-label="¿Para cuándo?">
+      <button type="button" data-nueva-fecha="sin" aria-pressed="true">Sin fecha</button><button type="button" data-nueva-fecha="hoy" aria-pressed="false">Hoy</button><button type="button" data-nueva-fecha="manana" aria-pressed="false">Mañana</button>
+    </div>
+  </div>
+</form>
+<p class="tar-tip">Deja picada una tarea para ponerle fecha.</p>
 <div id="tarLista"><p class="nota">Cargando tus tareas…</p></div>
 <div id="tarHechasCaja" hidden>
   <div class="seccion"><h2>Hechas</h2><span id="tarHechasCuenta"></span></div>
@@ -658,6 +696,16 @@ html[data-tab=inicio] .colores-flota,html:has(nav.oculta) .colores-flota{display
 </div>
 <button class="colores-flota glass" id="abrirColores2" aria-label="Colores de esta pestaña"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><circle cx="12" cy="12" r="9"/><circle cx="8.5" cy="9.5" r="1.4" fill="currentColor"/><circle cx="12.5" cy="7.5" r="1.4" fill="currentColor"/><circle cx="16" cy="10.5" r="1.4" fill="currentColor"/><path d="M12 21a2.5 2.5 0 0 1 0-5h2a3 3 0 0 0 3-3"/></svg></button>
 <div class="velo" id="velo"></div>
+<section class="hoja" id="hojaFecha" role="dialog" aria-modal="true" aria-labelledby="fechaTitulo" aria-hidden="true">
+  <div class="asa" aria-hidden="true"></div>
+  <button class="cerrar-hoja" data-cerrar-hoja aria-label="Cerrar"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round"><path d="M6 6l12 12M18 6L6 18"/></svg></button>
+  <h2 id="fechaTitulo">¿Cuándo?</h2>
+  <p class="sub" id="fechaTarea"></p>
+  <div class="cuando-opc">
+    <button data-cuando="hoy">Hoy</button><button data-cuando="manana">Mañana</button><button data-cuando="sin">Pendiente sin fecha</button>
+  </div>
+  <label class="otro-dia">Otro día<input type="date" id="fechaOtro"></label>
+</section>
 <section class="hoja" id="hoja" role="dialog" aria-modal="true" aria-labelledby="hojaTitulo" aria-hidden="true">
   <div class="asa" aria-hidden="true"></div>
   <button class="cerrar-hoja" data-cerrar-hoja aria-label="Cerrar"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round"><path d="M6 6l12 12M18 6L6 18"/></svg></button>
@@ -858,7 +906,6 @@ $("mesAnt").onclick = () => moverMes(-1); $("mesSig").onclick = () => moverMes(1
    Van de la más fácil a la más pesada (Orden). Al palomear una se marca "hecha" con fecha y pasa a Hechas; desde ahí se puede regresar.
    El cambio se ve al instante; si no hay conexión se queda en una cola en el teléfono y se manda en la siguiente actualización. */
 const LST = "jlp-tareas", LSTC = "jlp-tareas-cola", HOJA_T = "Tareas";
-const GRUPOS = [[1, 2, "Para calentar motores"], [3, 3, "Ya en ritmo"], [4, 5, "Las pesadas"]];
 const lsLeer = (k, d) => { try{ return JSON.parse(localStorage.getItem(k) || "null") ?? d; }catch(e){ return d; } };
 const lsPoner = (k, v) => { try{ localStorage.setItem(k, JSON.stringify(v)); }catch(e){} };
 let TAR = lsLeer(LST, null), colaT = lsLeer(LSTC, []), tarPintado = "", tarOcupado = 0, verTodasHechas = false, enviando = false;
@@ -875,22 +922,51 @@ async function apiT(c, tool, input){
 }
 function leerTareas(filas){
   return filas.slice(1).map(r => ({ id:sinApostrofo(r[0]), t:sinApostrofo(r[1]), det:sinApostrofo(r[2]), nv:Math.min(5, Math.max(1, Math.round(num(r[3])) || 3)),
-    tiempo:sinApostrofo(r[4]), orden:num(r[5]), estado:sinApostrofo(r[6]).toLowerCase() === "hecha" ? "hecha" : "pendiente", hecha:sinApostrofo(r[7]) }))
+    tiempo:sinApostrofo(r[4]), orden:num(r[5]), estado:sinApostrofo(r[6]).toLowerCase() === "hecha" ? "hecha" : "pendiente", hecha:sinApostrofo(r[7]),
+    fecha:/^\d{4}-\d{2}-\d{2}/.test(sinApostrofo(r[9])) ? sinApostrofo(r[9]).slice(0, 10) : "" }))
     .filter(x => x.id && x.t);
 }
-const conCola = lista => (lista || []).map(x => { const op = colaT.find(o => o.id === x.id); return op ? { ...x, estado:op.estado, hecha:op.hecha } : x; });
+/* La cola trae tres tipos de cambio: "estado" (palomear/regresar), "fecha" y "nueva" (tarea agregada desde la app). */
+const tipoOp = o => o.tipo || "estado";
+function conCola(lista){
+  const base = [...(lista || [])];
+  colaT.filter(o => o.tipo === "nueva" && !base.some(x => x.id === o.id)).forEach(o => base.push({ ...o.tarea }));
+  return base.map(x => {
+    let y = x;
+    colaT.filter(o => o.id === x.id).forEach(o => {
+      if (tipoOp(o) === "estado") y = { ...y, estado:o.estado, hecha:o.hecha };
+      if (tipoOp(o) === "fecha") y = { ...y, fecha:o.fecha };
+      if (tipoOp(o) === "nivel") y = { ...y, nv:o.nv, tiempo:o.tiempo };
+    });
+    return y;
+  });
+}
 function cuandoHecha(s){
   if (!s) return "";
   const d = s.slice(0, 10), h = s.slice(11, 16);
   const dia = d === hoy ? "hoy" : d === sumaDias(hoy, -1) ? "ayer" : corto(d);
   return h ? dia + " " + h : dia;
 }
+/* Una sola lista, sin dividir: primero lo vencido (en rojo), luego lo de hoy, luego lo que viene por fecha y al final lo que no tiene fecha.
+   Dentro de cada día, de la más sencilla a la más pesada. */
+function ordenTareas(a, b){
+  const peso = x => !x.fecha ? 3 : x.fecha < hoy ? 0 : x.fecha === hoy ? 1 : 2;
+  return peso(a) - peso(b) || (peso(a) === 2 || peso(a) === 0 ? a.fecha.localeCompare(b.fecha) : 0) || a.nv - b.nv
+    || (isFinite(a.orden) ? a.orden : 999) - (isFinite(b.orden) ? b.orden : 999);
+}
+function etiquetaFecha(f){
+  if (!f) return null;
+  if (f < hoy) return ["Venció " + corto(f), "rojo"];
+  if (f === hoy) return ["Hoy", "hoy"];
+  if (f === sumaDias(hoy, 1)) return ["Mañana", ""];
+  return [new Date(f + "T12:00").toLocaleDateString("es-MX", { weekday:"short", day:"numeric", month:"short" }), ""];
+}
 function pintarTareas(forzar){
   if (!TAR){ return; }
-  const lista = conCola(TAR), firma = JSON.stringify(lista) + "|" + verTodasHechas;
+  const lista = conCola(TAR), firma = JSON.stringify(lista) + "|" + verTodasHechas + "|" + hoy;
   if (!forzar && (tarOcupado || firma === tarPintado)) return; // sin cambios o a media animación: no se redibuja
   tarPintado = firma;
-  const pend = lista.filter(x => x.estado !== "hecha").sort((a, b) => (isFinite(a.orden) ? a.orden : 999) - (isFinite(b.orden) ? b.orden : 999) || a.nv - b.nv);
+  const pend = lista.filter(x => x.estado !== "hecha").sort(ordenTareas);
   const hechas = lista.filter(x => x.estado === "hecha").sort((a, b) => (b.hecha || "").localeCompare(a.hecha || ""));
   const total = lista.length;
   const num0 = $("tarNum"), txtNum = `${hechas.length}<sup>/${total}</sup>`;
@@ -898,14 +974,15 @@ function pintarTareas(forzar){
   $("tarBarra").parentElement.style.setProperty("--p", total ? Math.max(hechas.length ? 3 : 0, hechas.length / total * 100) : 0);
   $("tarSig").innerHTML = !total ? "Sin tareas todavía."
     : pend.length ? `Sigue<b>${esc(pend[0].t)}</b>` : "<b>Todo listo</b>No queda ninguna pendiente.";
-  const fila = x => `<div class="tarea" data-tarea="${esc(x.id)}">` +
-    `<button class="chk" data-palomear="${esc(x.id)}" aria-label="Marcar como hecha: ${esc(x.t)}"><i><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M5 12.5l4.5 4.5L19 7.5"/></svg></i></button>` +
-    `<span class="txt"><b>${esc(x.t)}</b><small>Nivel ${x.nv}${x.det ? " · " + esc(x.det) : ""}</small></span>` +
-    (x.tiempo ? `<span class="tiempo">${esc(x.tiempo)}</span>` : "") + `</div>`;
-  $("tarLista").innerHTML = pend.length ? GRUPOS.map(([de, a, nombre]) => {
-    const g = pend.filter(x => x.nv >= de && x.nv <= a);
-    return g.length ? `<div class="tar-grupo">${nombre}<span>${g.length}</span></div><div class="renglones">${g.map(fila).join("")}</div>` : "";
-  }).join("") : (total ? "" : '<p class="nota">Agrega tareas en la pestaña Tareas del Sheet del Tracker.</p>');
+  const fila = x => {
+    const et = etiquetaFecha(x.fecha), vence = et && et[1] === "rojo";
+    return `<div class="tarea${vence ? " vence" : ""}" data-tarea="${esc(x.id)}">` +
+      `<button class="chk" data-palomear="${esc(x.id)}" aria-label="Marcar como hecha: ${esc(x.t)}"><i><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M5 12.5l4.5 4.5L19 7.5"/></svg></i></button>` +
+      `<span class="txt"><b>${esc(x.t)}</b><small>Nivel ${x.nv}${x.tiempo ? " · " + esc(x.tiempo) : ""}${x.det ? " · " + esc(x.det) : ""}</small></span>` +
+      (et ? `<span class="cuando ${et[1]}">${vence ? "! " : ""}${esc(et[0])}</span>` : "") + `</div>`;
+  };
+  $("tarLista").innerHTML = pend.length ? `<div class="renglones">${pend.map(fila).join("")}</div>`
+    : (total ? "" : '<p class="nota">Escribe arriba tu primera tarea.</p>');
   $("tarHechasCaja").hidden = !hechas.length;
   $("tarHechasCuenta").textContent = hechas.length ? hechas.length + (hechas.length === 1 ? " hecha" : " hechas") : "";
   const vis = verTodasHechas ? hechas : hechas.slice(0, 5);
@@ -917,8 +994,12 @@ function pintarTareas(forzar){
 }
 function sinConexionT(msg){ if (!TAR) $("tarLista").innerHTML = `<p class="nota">${msg}</p>`; }
 function cargarTareas(c){
-  return apiT(c, "get_values", { spreadsheetId:TRACKER, range:HOJA_T + "!A:I" })
-    .then(r => { TAR = leerTareas(r.values || []); lsPoner(LST, TAR); pintarTareas(); return enviarCola(c); })
+  return apiT(c, "get_values", { spreadsheetId:TRACKER, range:HOJA_T + "!A:J" })
+    .then(r => {
+      const v = r.values || [];
+      if (v[0] && sinApostrofo(v[0][9]) !== "Fecha") apiT(c, "update_values", { spreadsheetId:TRACKER, range:HOJA_T + "!J1", values:[["Fecha"]] }).catch(() => {});
+      TAR = leerTareas(v); lsPoner(LST, TAR); pintarTareas(); return enviarCola(c);
+    })
     .catch(() => sinConexionT("No pude cargar tus tareas. Revisa tu conexión."));
 }
 /* Manda los cambios pendientes uno por uno. Cada vez busca la fila por ID, por si alguien movió renglones en el Sheet. */
@@ -927,22 +1008,100 @@ async function enviarCola(c){
   enviando = true;
   try{
     while (colaT.length){
-      const op = colaT[0];
-      const ids = ((await apiT(c, "get_values", { spreadsheetId:TRACKER, range:HOJA_T + "!A:A" })).values || []).map(r => sinApostrofo(r[0]));
-      const i = ids.indexOf(op.id);
-      if (i > 0) await apiT(c, "update_values", { spreadsheetId:TRACKER, range:`${HOJA_T}!G${i + 1}:H${i + 1}`, values:[[op.estado, op.hecha || ""]] });
+      const op = colaT[0], tipo = tipoOp(op);
+      if (tipo === "nueva"){
+        const t = op.tarea;
+        await apiT(c, "append_values", { spreadsheetId:TRACKER, range:HOJA_T + "!A:J",
+          values:[[t.id, t.t, t.det, t.nv, t.tiempo || "", "", "pendiente", "", "'" + ahoraTxt(), t.fecha ? "'" + t.fecha : ""]] });
+        if (TAR && !TAR.some(x => x.id === t.id)) TAR.push({ ...t });
+      } else {
+        const ids = ((await apiT(c, "get_values", { spreadsheetId:TRACKER, range:HOJA_T + "!A:A" })).values || []).map(r => sinApostrofo(r[0]));
+        const i = ids.indexOf(op.id), n = i + 1;
+        if (i > 0){
+          if (tipo === "estado") await apiT(c, "update_values", { spreadsheetId:TRACKER, range:`${HOJA_T}!G${n}:H${n}`, values:[[op.estado, op.hecha || ""]] });
+          if (tipo === "fecha") await apiT(c, "update_values", { spreadsheetId:TRACKER, range:`${HOJA_T}!J${n}`, values:[[op.fecha ? "'" + op.fecha : ""]] });
+          if (tipo === "nivel") await apiT(c, "update_values", { spreadsheetId:TRACKER, range:`${HOJA_T}!D${n}:E${n}`, values:[[op.nv, op.tiempo || ""]] });
+        }
+        const x = (TAR || []).find(t => t.id === op.id);
+        if (x){ if (tipo === "estado"){ x.estado = op.estado; x.hecha = op.hecha; } if (tipo === "fecha") x.fecha = op.fecha; if (tipo === "nivel"){ x.nv = op.nv; x.tiempo = op.tiempo; } }
+      }
       if (colaT[0] === op) colaT.shift(); // si la borraron del Sheet, el cambio ya no aplica
-      lsPoner(LSTC, colaT);
-      const x = (TAR || []).find(t => t.id === op.id); if (x){ x.estado = op.estado; x.hecha = op.hecha; lsPoner(LST, TAR); }
+      lsPoner(LSTC, colaT); lsPoner(LST, TAR);
     }
   }catch(e){ /* sin conexión: se queda en la cola y se reintenta en la siguiente actualización */ }
   enviando = false;
 }
-function cambiarTarea(id, estado){
-  const op = { id, estado, hecha:estado === "hecha" ? ahoraTxt() : "" };
-  colaT = colaT.filter(o => o.id !== id).concat(op); lsPoner(LSTC, colaT);
+function encolar(op){
+  colaT = colaT.filter(o => !(o.id === op.id && tipoOp(o) === tipoOp(op) && tipoOp(op) !== "nueva")).concat(op); lsPoner(LSTC, colaT);
   const c = cfg(); if (c) enviarCola(c);
 }
+function cambiarTarea(id, estado){ encolar({ tipo:"estado", id, estado, hecha:estado === "hecha" ? ahoraTxt() : "" }); }
+function ponerFecha(id, fecha){ encolar({ tipo:"fecha", id, fecha:fecha || "" }); pintarTareas(true); }
+
+/* Agregar: el título basta; la descripción es para que Fede sepa qué tan pesada es y la acomode (nivel 1-5). */
+let fechaNueva = "";
+$("tarNueva").addEventListener("input", () => { $("tarAgregar").disabled = !$("tarNueva").value.trim(); $("tarExtra").hidden = false; });
+$("tarNueva").addEventListener("focus", () => { $("tarExtra").hidden = false; });
+$("tarCuandoNueva").addEventListener("click", e => {
+  const b = e.target.closest("[data-nueva-fecha]"); if (!b) return;
+  fechaNueva = b.dataset.nuevaFecha === "hoy" ? hoy : b.dataset.nuevaFecha === "manana" ? sumaDias(hoy, 1) : "";
+  $("tarCuandoNueva").querySelectorAll("[data-nueva-fecha]").forEach(x => x.setAttribute("aria-pressed", x === b));
+});
+$("tarForm").addEventListener("submit", e => {
+  e.preventDefault();
+  const t = $("tarNueva").value.trim(), det = $("tarDesc").value.trim(); if (!t) return;
+  const tarea = { id:"app-" + Date.now().toString(36), t, det, nv:3, tiempo:"", orden:NaN, estado:"pendiente", hecha:"", fecha:fechaNueva };
+  if (!TAR) TAR = [];
+  encolar({ tipo:"nueva", id:tarea.id, tarea });
+  $("tarNueva").value = ""; $("tarDesc").value = ""; $("tarAgregar").disabled = true; $("tarExtra").hidden = true; $("tarNueva").blur();
+  if (navigator.vibrate) navigator.vibrate(12);
+  pintarTareas(true);
+  calificar(tarea);
+});
+async function calificar(tarea){ // Fede (Claude en la compu) decide qué tan pesada es; si está apagada se queda en nivel 3
+  const c = cfg(); if (!c) return;
+  try{
+    const prompt = `Califica esta tarea de Pato del 1 (muy sencilla, minutos) al 5 (muy pesada: horas o mucho esfuerzo mental) y estima cuánto tarda.\n` +
+      `Tarea: "${tarea.t}"\nContexto: "${tarea.det || "sin contexto"}"\nResponde SOLO JSON así: {"nivel":2,"tiempo":"~15 min"}`;
+    const { id } = await api(c, "fede_analizar", { prompt });
+    for (const hasta = Date.now() + 120000; Date.now() < hasta;){
+      await new Promise(r => setTimeout(r, 2000));
+      const r = await api(c, "fede_resultado", { id });
+      if (r.estado !== "lista") continue;
+      const j = JSON.parse((String(r.respuesta || "").match(/\{[\s\S]*\}/) || ["{}"])[0]);
+      const nv = Math.min(5, Math.max(1, Math.round(+j.nivel) || 3));
+      encolar({ tipo:"nivel", id:tarea.id, nv, tiempo:String(j.tiempo || "").slice(0, 20) }); pintarTareas(true);
+      return;
+    }
+  }catch(e){ /* sin Fede: se queda en nivel 3 */ }
+}
+
+/* Dejar picada una tarea: ¿cuándo? (hoy, mañana, otro día o pendiente sin fecha) */
+let tareaFecha = "", tocarTimer = 0;
+function abrirFecha(id){
+  const x = conCola(TAR).find(t => t.id === id); if (!x) return;
+  tareaFecha = id; $("fechaTarea").textContent = x.t; $("fechaOtro").value = x.fecha || "";
+  $("hojaFecha").querySelectorAll("[data-cuando]").forEach(b => b.setAttribute("aria-pressed",
+    b.dataset.cuando === "hoy" ? x.fecha === hoy : b.dataset.cuando === "manana" ? x.fecha === sumaDias(hoy, 1) : b.dataset.cuando === "sin" ? !x.fecha : false));
+  if (navigator.vibrate) navigator.vibrate(20);
+  hoja($("hojaFecha"), true);
+}
+$("tarLista").addEventListener("pointerdown", e => {
+  const row = e.target.closest(".tarea"); if (!row || e.target.closest(".chk")) return;
+  const x0 = e.clientX, y0 = e.clientY; clearTimeout(tocarTimer);
+  tocarTimer = setTimeout(() => abrirFecha(row.dataset.tarea), 480);
+  const mover = ev => { if (Math.abs(ev.clientX - x0) > 10 || Math.abs(ev.clientY - y0) > 10) soltar(); };
+  const soltar = () => { clearTimeout(tocarTimer); removeEventListener("pointermove", mover); removeEventListener("pointerup", soltar); removeEventListener("pointercancel", soltar); };
+  addEventListener("pointermove", mover); addEventListener("pointerup", soltar); addEventListener("pointercancel", soltar);
+});
+$("tarLista").addEventListener("contextmenu", e => { if (e.target.closest(".tarea")) e.preventDefault(); });
+$("hojaFecha").addEventListener("click", e => {
+  const b = e.target.closest("[data-cuando]"); if (!b || !tareaFecha) return;
+  ponerFecha(tareaFecha, b.dataset.cuando === "hoy" ? hoy : b.dataset.cuando === "manana" ? sumaDias(hoy, 1) : "");
+  cerrarHojas();
+});
+$("fechaOtro").addEventListener("change", e => { if (tareaFecha && e.target.value){ ponerFecha(tareaFecha, e.target.value); cerrarHojas(); } });
+
 $("tarLista").addEventListener("click", e => {
   const b = e.target.closest("[data-palomear]"); if (!b) return;
   const row = b.closest(".tarea"); if (row.classList.contains("lista")) return;
@@ -1285,6 +1444,43 @@ function moverPastilla(){
   p.style.width = b.offsetWidth + "px"; p.style.transform = `translateX(${b.offsetLeft}px)`;
 }
 addEventListener("resize", moverPastilla);
+/* Barra: dejar picada una pestaña ~0.4 s y deslizarla para cambiar el orden (se guarda en el teléfono) */
+(() => {
+  const nav = document.querySelector("nav"), LSO = "jlp-orden-barra", tabs = () => [...nav.querySelectorAll("[role=tab]")];
+  try{ JSON.parse(localStorage.getItem(LSO) || "[]").forEach(t => { const b = nav.querySelector(`[data-ir="${t}"]`); if (b) nav.appendChild(b); }); }catch(e){}
+  let b = null, timer = 0, x0 = 0, y0 = 0, moviendo = false, quitarClick = false;
+  nav.addEventListener("pointerdown", e => {
+    const t = e.target.closest("[role=tab]"); if (!t) return;
+    x0 = e.clientX; y0 = e.clientY; clearTimeout(timer);
+    timer = setTimeout(() => {
+      b = t; moviendo = true; b.classList.add("arrastrando"); nav.classList.add("ordenando");
+      if (navigator.vibrate) navigator.vibrate(20);
+      try{ nav.setPointerCapture(e.pointerId); }catch(err){}
+    }, 420);
+  });
+  nav.addEventListener("pointermove", e => {
+    if (!moviendo){ if (Math.abs(e.clientX - x0) > 10 || Math.abs(e.clientY - y0) > 10) clearTimeout(timer); return; }
+    e.preventDefault();
+    const lista = tabs(), i = lista.indexOf(b), r = b.getBoundingClientRect(), centro = r.left + r.width / 2;
+    const sig = lista[i + 1], ant = lista[i - 1], mitad = x => { const q = x.getBoundingClientRect(); return q.left + q.width / 2; };
+    const antes = b.offsetLeft;
+    if (sig && centro > mitad(sig)) nav.insertBefore(sig, b);       // pasó la mitad del de la derecha: cambian de lugar
+    else if (ant && centro < mitad(ant)) nav.insertBefore(b, ant);  // o la del de la izquierda
+    x0 += b.offsetLeft - antes;
+    b.style.transform = `translateX(${e.clientX - x0}px) scale(1.12)`;
+    moverPastilla();
+  });
+  function soltar(){
+    clearTimeout(timer); if (!moviendo) return;
+    moviendo = false; quitarClick = true; setTimeout(() => quitarClick = false, 350);
+    b.classList.remove("arrastrando"); b.style.transform = ""; nav.classList.remove("ordenando"); b = null;
+    try{ localStorage.setItem(LSO, JSON.stringify(tabs().map(x => x.dataset.ir))); }catch(e){}
+    moverPastilla();
+  }
+  nav.addEventListener("pointerup", soltar); nav.addEventListener("pointercancel", soltar);
+  nav.addEventListener("click", e => { if (quitarClick){ e.stopPropagation(); e.preventDefault(); quitarClick = false; } }, true); // soltar no cambia de pestaña
+  nav.addEventListener("contextmenu", e => e.preventDefault());
+})();
 
 /* La pantalla entra deslizándose desde el lado de la pestaña, y sus textos suben escalonados. */
 function animarEntrada(v, dir){
