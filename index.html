@@ -488,6 +488,10 @@ html[data-tab=inicio] .colores-flota,html:has(nav.oculta) .colores-flota{display
 .tar-prog .fila{display:flex;align-items:flex-end;justify-content:space-between;gap:12px;margin-bottom:12px}
 .tar-prog .num{font-size:44px}
 .tar-prog .num sup{color:var(--muted);font-size:.38em}
+.tar-gen{display:grid;grid-template-columns:auto auto 1fr;align-items:center;gap:10px;margin-top:14px;color:var(--muted);font-size:12.5px}
+.tar-gen b{color:var(--fg);font:600 13px var(--sans)}
+.tar-gen .medidor{height:5px}
+.medidor.lleno i{box-shadow:0 0 14px color-mix(in srgb,var(--c10) 70%,transparent)}
 .tar-prog .hechas-n{display:flex;align-items:baseline;gap:8px;flex:none}
 .tar-prog .hechas-n small{color:var(--muted);font-size:14px}
 .tar-prog .sig{flex:1;min-width:0;text-align:right;color:var(--muted);font-size:12.5px;line-height:1.3}
@@ -603,8 +607,9 @@ html[data-tab=inicio] .colores-flota,html:has(nav.oculta) .colores-flota{display
 <div class="vista" id="v-pendientes" role="tabpanel" aria-label="Pendientes"><main>
 <header class="titulo-pagina"><div><small>Agenda</small><h1>Pendientes</h1></div></header>
 <section class="tar-prog glass" aria-label="Avance de tus tareas">
-  <div class="fila"><span class="hechas-n"><b class="num" id="tarNum">–</b><small>hechas</small></span><span class="sig" id="tarSig"></span></div>
-  <span class="medidor"><i id="tarBarra"></i></span>
+  <div class="fila"><span class="hechas-n"><b class="num" id="tarHoyNum">–</b><small>de hoy</small></span><span class="sig" id="tarSig"></span></div>
+  <span class="medidor"><i id="tarHoyBarra"></i></span>
+  <div class="tar-gen"><span>General</span><b id="tarNum">–</b><span class="medidor"><i id="tarBarra"></i></span></div>
 </section>
 <form class="tar-nueva glass" id="tarForm" autocomplete="off">
   <div class="tar-linea"><input id="tarNueva" placeholder="Nueva tarea…" aria-label="Nueva tarea" maxlength="140" enterkeyhint="done">
@@ -996,10 +1001,18 @@ function pintarTareas(forzar){
   const pend = lista.filter(x => x.estado !== "hecha").sort(ordenTareas);
   const hechas = lista.filter(x => x.estado === "hecha").sort((a, b) => (b.hecha || "").localeCompare(a.hecha || ""));
   const total = lista.length;
-  const num0 = $("tarNum"), txtNum = `${hechas.length}<sup>/${total}</sup>`;
-  if (num0.innerHTML !== txtNum){ num0.innerHTML = txtNum; num0.classList.remove("nuevo"); void num0.offsetWidth; num0.classList.add("nuevo"); }
+  // Hoy: lo que tiene fecha de hoy o ya venció, más lo que se hizo hoy de eso. Se llena al terminar todo lo del día; mañana empieza de nuevo.
+  const deHoy = lista.filter(x => x.fecha && x.fecha <= hoy && (x.estado !== "hecha" || (x.hecha || "").slice(0, 10) === hoy));
+  const hoyHechas = deHoy.filter(x => x.estado === "hecha").length;
+  const poner = (id, txt) => { const n = $(id); if (n.innerHTML !== txt){ n.innerHTML = txt; n.classList.remove("nuevo"); void n.offsetWidth; n.classList.add("nuevo"); } };
+  poner("tarHoyNum", deHoy.length ? `${hoyHechas}<sup>/${deHoy.length}</sup>` : "–");
+  poner("tarNum", `${hechas.length}/${total}`);
+  $("tarHoyBarra").parentElement.style.setProperty("--p", deHoy.length ? Math.max(hoyHechas ? 3 : 0, hoyHechas / deHoy.length * 100) : 0);
+  $("tarHoyBarra").parentElement.classList.toggle("lleno", !!deHoy.length && hoyHechas === deHoy.length);
   $("tarBarra").parentElement.style.setProperty("--p", total ? Math.max(hechas.length ? 3 : 0, hechas.length / total * 100) : 0);
   $("tarSig").innerHTML = !total ? "Sin tareas todavía."
+    : deHoy.length && hoyHechas === deHoy.length ? "<b>Hoy, todo listo</b>" + (pend.length ? "Sigue: " + esc(pend[0].t) : "No queda ninguna pendiente.")
+    : !deHoy.length && pend.length ? `Nada para hoy · sigue<b>${esc(pend[0].t)}</b>`
     : pend.length ? `Sigue<b>${esc(pend[0].t)}</b>` : "<b>Todo listo</b>No queda ninguna pendiente.";
   const fila = x => {
     const et = etiquetaFecha(x.fecha), vence = et && et[1] === "rojo";
