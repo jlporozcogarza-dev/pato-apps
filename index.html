@@ -456,6 +456,15 @@ html[data-tab=inicio] .colores-flota,html:has(nav.oculta) .colores-flota{display
 .pal b{display:block;font-size:13px;font-weight:500;margin-top:7px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
 .pal small{display:block;font:500 11px/1.4 var(--kanji);color:var(--muted);white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
 .hoja>h2{font:700 28px/1 var(--display)!important}
+.pal-c{position:relative;flex:none;scroll-snap-align:start}
+.pal-c .pal{scroll-snap-align:none}
+.estrella{position:absolute;top:4px;right:4px;width:30px;height:30px;border-radius:50%;display:grid;place-items:center;padding:0;cursor:pointer;
+  border:0;background:rgba(0,0,0,.45);-webkit-backdrop-filter:blur(8px);backdrop-filter:blur(8px)}
+.estrella svg{width:16px;height:16px;fill:none;stroke:rgba(255,255,255,.85);stroke-width:1.8;stroke-linejoin:round;transition:transform .25s cubic-bezier(.34,1.6,.5,1)}
+.estrella[aria-pressed=true] svg{fill:#F7C948;stroke:#F7C948}
+.estrella:active svg{transform:scale(1.35)}
+.pal-c.brota{animation:brota .45s cubic-bezier(.34,1.4,.5,1) both}
+.fav-vacio{margin:0 0 4px;color:var(--muted);font-size:13px}
 .pal[aria-pressed=true]{border-color:var(--c10);box-shadow:0 0 0 2px color-mix(in srgb,var(--c10) 45%,transparent),inset 0 1px 0 rgba(255,255,255,.18);background:rgba(255,255,255,.08)}
 .hoja .fila{display:flex;gap:10px;margin-top:22px}
 .hoja .fila button{flex:1;min-height:48px;border-radius:16px;cursor:pointer;border:1px solid rgba(255,255,255,.12);background:rgba(255,255,255,.06)}
@@ -735,10 +744,27 @@ function elegir(tab, id){
   pintar(); dibujarCarriles();
 }
 let carriles = ORDEN; // en Inicio salen todas; en otra pestaña, solo la de esa pestaña
+const LSFAV = "jlp-favoritas";
+let favs = (() => { try{ return JSON.parse(localStorage.getItem(LSFAV) || "[]"); }catch(e){ return []; } })(), favNueva = "";
+const ESTRELLA = '<svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12 3.2l2.7 5.6 6.1.8-4.5 4.2 1.1 6-5.4-2.9-5.4 2.9 1.1-6-4.5-4.2 6.1-.8z"/></svg>';
+function tarjeta(t, p, extra){
+  const fav = favs.includes(p.id);
+  return `<div class="pal-c${extra || ""}"><button class="pal" data-tab-pal="${t}" data-pal="${p.id}" aria-pressed="${p.id === pal(t).id}" aria-label="${p.n} para ${NOMBRE[t]}">` +
+    `<span class="mu"><i style="background:${p.c60}"></i><i style="background:${p.c30}"></i><i style="background:${p.c10}"></i></span><b>${p.n}</b><small>${p.k}</small></button>` +
+    `<button class="estrella" data-fav="${p.id}" aria-pressed="${fav}" aria-label="${fav ? "Quitar de" : "Agregar a"} favoritos: ${p.n}">${ESTRELLA}</button></div>`;
+}
 function dibujarCarriles(){
-  $("carriles").innerHTML = carriles.map(t => `<h3>${NOMBRE[t]} <span>· ${pal(t).n}</span></h3><div class="carril" role="group" aria-label="Paleta de ${NOMBRE[t]}">` +
-    PALETAS.map(p => `<button class="pal" data-tab-pal="${t}" data-pal="${p.id}" aria-pressed="${p.id === pal(t).id}" aria-label="${p.n} para ${NOMBRE[t]}">` +
-      `<span class="mu"><i style="background:${p.c60}"></i><i style="background:${p.c30}"></i><i style="background:${p.c10}"></i></span><b>${p.n}</b><small>${p.k}</small></button>`).join("") + `</div>`).join("");
+  // los carriles guardan dónde iban al volver a dibujarse (al elegir o al poner estrella)
+  const scroll = {}; $("carriles").querySelectorAll(".carril").forEach(c => scroll[c.dataset.carril] = c.scrollLeft);
+  // Favoritos arriba: se aplican a la pestaña en la que uno está
+  const lista = favs.map(id => PALETAS.find(p => p.id === id)).filter(Boolean);
+  $("carriles").innerHTML = `<h3>★ Favoritos <span>· para ${NOMBRE[actual]}</span></h3>` +
+    (lista.length ? `<div class="carril" data-carril="fav" role="group" aria-label="Paletas favoritas">` + lista.map(p => tarjeta(actual, p, p.id === favNueva ? " brota" : "")).join("") + `</div>`
+      : `<p class="fav-vacio">Toca la estrella de una paleta para guardarla aquí.</p>`) +
+    carriles.map(t => `<h3>${NOMBRE[t]} <span>· ${pal(t).n}</span></h3><div class="carril" data-carril="${t}" role="group" aria-label="Paleta de ${NOMBRE[t]}">` +
+      PALETAS.map(p => tarjeta(t, p)).join("") + `</div>`).join("");
+  $("carriles").querySelectorAll(".carril").forEach(c => { if (scroll[c.dataset.carril]) c.scrollLeft = scroll[c.dataset.carril]; });
+  favNueva = "";
 }
 function hoja(el, abrir){
   el.classList.toggle("on", abrir); $("velo").classList.toggle("on", abrir);
@@ -998,7 +1024,17 @@ function cargarPanel(c){
 }
 try{ const p = JSON.parse(localStorage.getItem(LSPANEL) || "null"); if (p) pintarPanel(p); }catch(e){}
 $("restablecer").onclick = () => { carriles.forEach(t => elegidas[t] = DEF[t]); try{ localStorage.setItem(LSP, JSON.stringify(elegidas)); }catch(e){} pintar(); dibujarCarriles(); }; // solo lo que se ve en la hoja
-$("carriles").addEventListener("click", e => { const b = e.target.closest("[data-pal]"); if (b) elegir(b.dataset.tabPal, b.dataset.pal); });
+$("carriles").addEventListener("click", e => {
+  const f = e.target.closest("[data-fav]");
+  if (f){ // estrella: entra o sale de Favoritos (la nueva va al principio)
+    const id = f.dataset.fav; favs = favs.includes(id) ? favs.filter(x => x !== id) : [id, ...favs]; favNueva = favs.includes(id) ? id : "";
+    try{ localStorage.setItem(LSFAV, JSON.stringify(favs)); }catch(err){}
+    if (navigator.vibrate) navigator.vibrate(10);
+    dibujarCarriles(); const fav = $("carriles").querySelector('[data-carril="fav"]'); if (fav && favs[0] === id) fav.scrollLeft = 0;
+    return;
+  }
+  const b = e.target.closest("[data-pal]"); if (b) elegir(b.dataset.tabPal, b.dataset.pal);
+});
 addEventListener("keydown", e => { if (e.key === "Escape") cerrarHojas(); });
 const hoy = new Date().toLocaleDateString("sv-SE");
 $("fecha").textContent = new Date().toLocaleDateString("es-MX", { weekday:"long", day:"numeric", month:"long" });
