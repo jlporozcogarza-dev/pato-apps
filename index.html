@@ -584,14 +584,14 @@ html[data-tab=inicio] .colores-flota,html:has(nav.oculta) .colores-flota{display
   <a class="acceso glass" href="https://portal.condotecmty.com" target="_blank" rel="noopener"><span class="ic"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><rect x="3" y="4" width="18" height="16" rx="3"/><path d="M3 9h18M8 14h3M8 17h6"/></svg></span><span><b>Condotec Admin</b><small>Portal</small></span></a>
 </div>
 <div id="panelCuerpo"><p class="nota">Cargando…</p></div>
-<div class="seccion"><h2>Calendario</h2><button class="cc-hoy" id="ccHoy">Hoy</button></div>
+<div id="ccCaja"><div class="seccion"><h2>Calendario</h2><button class="cc-hoy" id="ccHoy">Hoy</button></div>
 <section class="calendario cc glass" aria-label="Calendario de Condotec">
   <div class="cal-top"><button class="cal-nav" id="ccAnt" aria-label="Mes anterior">‹</button><b id="ccMes"></b><button class="cal-nav" id="ccSig" aria-label="Mes siguiente">›</button></div>
   <div class="cal-sem" aria-hidden="true"><span>L</span><span>M</span><span>M</span><span>J</span><span>V</span><span>S</span><span>D</span></div>
   <div class="cc-cal" id="ccDias"></div>
   <div class="cc-ley"><span><i class="ev verde"></i>Entrada</span><span><i class="ev rojo"></i>Salida</span><span><i class="ev azul"></i>Pendiente</span><span><i class="ev amarillo"></i>Pago</span></div>
 </section>
-<p class="nota" id="ccNota"></p>
+<p class="nota" id="ccNota"></p></div>
 </main></div>
 
 <div class="vista" id="v-pendientes" role="tabpanel" aria-label="Pendientes"><main>
@@ -1174,6 +1174,7 @@ function pintarPanel(p, forzar){
   h += `<button class="tira-pend glass card" data-ir="pendientes"><b class="num">${esc(cif("pendientes", "abiertos"))}</b>` +
     `<span>pendientes abiertos<small>${esc(cif("pendientes", "alta"))} de alta · ${esc(cif("pendientes", "vencidos"))} vencidos</small></span><em>›</em></button>`;
   $("panelCuerpo").innerHTML = h;
+  const ed = $("panelCuerpo").querySelector(".edificio"); if (ed && window.CC_CAJA) ed.after(CC_CAJA); // el calendario va abajo del edificio
 }
 $("panelCuerpo").addEventListener("click", e => {
   const b = e.target.closest("[data-uni]"); if (!b || !PANEL) return;
@@ -1209,6 +1210,8 @@ $("fecha").textContent = new Date().toLocaleDateString("es-MX", { weekday:"long"
    Pendientes: A # · B Prioridad · C Pendiente · D Depas · E Fecha límite · … · I Estado · J Notas
    Colores fijos: entrada verde, salida roja, pendiente azul, pago amarillo. Cada evento lleva solo el nombre del depa; al tocarlo, sus detalles. */
 var CONDOTEC = "1Slfw8A9kXoBCsWPFIQyA6bi7XKKoURifbZcyqGzf_x0", LSCC = "jlp-condo-cal";
+var CC_CAJA = document.getElementById("ccCaja"); // se guarda: al redibujar el panel se vuelve a poner abajo del edificio
+{ const ed = document.querySelector("#panelCuerpo .edificio"); if (ed) ed.after(CC_CAJA); } // por si el panel ya se pintó antes
 let CC = lsLeer(LSCC, null), ccMes = hoy.slice(0, 7);
 const TIPOS_CC = { entrada:["Entrada", "verde"], salida:["Salida", "rojo"], pendiente:["Pendiente", "azul"], pago:["Pago de renta", "amarillo"] };
 function fechaCC(v){ // "01/09/2026", "2026-09-01" o número de serie de Sheets → "2026-09-01"
