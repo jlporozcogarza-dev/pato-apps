@@ -1949,7 +1949,7 @@ Responde SOLO JSON: {"categoria":"una de ${JSON.stringify(CATS[mTipo])}","monto"
   };
 
   /* ---------- comida escrita ---------- */
-  const GOAL = { kcal:[2000, 2300], prot:120 }; // proteína: de 120 g para arriba ya se cumple
+  const GOAL = { deficit:300, prot:120 }; // comida: déficit de 300 kcal o más contra lo quemado (WHOOP); proteína: 120 g o más
   const fmt = n => Math.round(Number(n) || 0).toLocaleString("es-MX");
   const numero = v => Number(String(v == null ? "" : v).replace(/[^\d.-]/g, "")) || 0;
   const sumOf = (list, k) => list.reduce((s, x) => s + (Number(x[k]) || 0), 0);
@@ -2012,11 +2012,14 @@ Si el texto no describe comida, responde {"items":[]}.`;
   async function showDay(fecha){
     const box = $("tDay"); box.hidden = true; box.textContent = "";
     try{
-      const rows = await leerH(TRACK_ID, "Comidas!A2:F"); let k = 0, p = 0;
+      const [rows, wh] = await Promise.all([leerH(TRACK_ID, "Comidas!A2:F"), leerH(TRACK_ID, "Whoop!A2:K").catch(() => [])]); let k = 0, p = 0;
       rows.forEach(r => { if (r && String(r[0] || "").replace(/^'/, "").trim() === fecha){ k += numero(r[3]); p += numero(r[4]); } });
-      const rango = fmt(GOAL.kcal[0]) + "–" + fmt(GOAL.kcal[1]);
+      const w = wh.find(r => r && String(r[0] || "").replace(/^'/, "").trim() === fecha), quemado = w ? numero(w[10]) : 0;
       const head = (fecha === today() ? "Hoy llevas " : "Ese día llevas ") + fmt(k) + " kcal · " + fmt(p) + " g de proteína";
-      const kTxt = k > GOAL.kcal[1] ? "Te pasaste " + fmt(k - GOAL.kcal[1]) + " kcal de tu meta (" + rango + ")." : k >= GOAL.kcal[0] ? "Calorías dentro de tu meta (" + rango + ")." : "Te quedan " + fmt(GOAL.kcal[1] - k) + " kcal antes de tu máximo (" + fmt(GOAL.kcal[1]) + ").";
+      // Meta de comida: déficit de 300 kcal o más contra lo quemado según WHOOP
+      const kTxt = !quemado ? "Todavía no llega de WHOOP lo que quemaste ese día."
+        : k <= quemado - GOAL.deficit ? "Déficit de " + fmt(quemado - k) + " kcal (quemaste " + fmt(quemado) + "): meta cumplida."
+        : "Para tu déficit de " + GOAL.deficit + " te pasaste por " + fmt(k - (quemado - GOAL.deficit)) + " kcal (quemaste " + fmt(quemado) + ").";
       const pTxt = p >= GOAL.prot ? "Proteína cumplida: " + fmt(p) + " g de " + GOAL.prot + " g." : "Te faltan " + fmt(GOAL.prot - p) + " g de proteína para llegar a " + GOAL.prot + " g.";
       [head, kTxt, pTxt].forEach((t, i) => { const el = document.createElement(i ? "span" : "strong"); el.textContent = t; box.appendChild(el); });
       box.hidden = false;

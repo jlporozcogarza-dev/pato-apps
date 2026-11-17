@@ -441,7 +441,9 @@ const RULES = {
   dormir:    { normal:[21*60+30, 23*60], minimo:[23*60, 24*60+30], txt:["9:30 – 11:00 PM","11:00 PM – 12:30 AM"] },
   despertar: { normal:[5*60+30, 6*60+30], minimo:[6*60+30, 7*60+30], txt:["5:30 – 6:30 AM","6:30 – 7:30 AM"] },
   // 2 pts dentro de normal; 1 pt entre low y normal o entre normal y high; 0 fuera.
-  kcal: { normal:[2000, 2300], low:1700, high:2600 },
+  kcal: { normal:[2000, 2300], low:1700, high:2600 }, // solo si WHOOP aún no trae lo quemado
+  // Meta de comida = balance del día (comido − quemado según WHOOP): déficit de 300 kcal o más = 2 pts; déficit de 0 a 299 = 1 pt; superávit = 0.
+  deficit: 300,
   prot: { normal:[120, Infinity], low:100, high:Infinity }, // de 120 g para arriba ya se cumple (100–119 g = 1 pt)
   // Ejercicio: pesas, pádel o correr = 2 pts (si haces varias no se suman). 10,000 pasos de WHOOP = 1 pt extra.
   cardio: [ {k:"Correr", p:2}, {k:"Pádel", p:2} ],
@@ -529,6 +531,7 @@ function ptsRange(x, r){
   return 0;
 }
 const rangeTxt = r => isFinite(r.normal[1]) ? fmtNum(r.normal[0])+"–"+fmtNum(r.normal[1]) : fmtNum(r.normal[0])+"+";
+const ptsBal = b => b <= -RULES.deficit ? 2 : b <= 0 ? 1 : 0;
 function ptsSueno(m){ if (m==null) return 0; const h = m/60; return h>=RULES.sueno.normal ? 2 : h>=RULES.sueno.minimo ? 1 : 0; }
 function sleepMin(bed, wake){ if(bed==null||wake==null) return null; let d=wake-bed; if(d<=0) d+=1440; return d; }
 
@@ -539,6 +542,7 @@ function evalDay(date){
   const sw = (w && S.start && date >= S.start) ? w : null;
   const foods = S.foods.filter(f=>f.fecha===date);
   const kcal = foods.reduce((a,f)=>a+f.kcal,0), prot = foods.reduce((a,f)=>a+f.prot,0);
+  const burn = (w && w.burn!=null) ? w.burn : null, bal = (foods.length && burn!=null) ? kcal - burn : null;
   // Lo manual manda; WHOOP llena lo que falta.
   const mBed = parseTime(r0.dormir), mWake = parseTime(r0.despertar);
   const wBed = sw ? parseTime(sw.dormir) : null, wWake = sw ? parseTime(sw.despertar) : null;
@@ -573,7 +577,7 @@ function evalDay(date){
     sueno: ptsSueno(sleep),
     mov: Math.max(cardioP, fuerzaP),
     pasos: pasosP,
-    kcal: foods.length ? ptsRange(kcal, RULES.kcal) : 0,
+    kcal: !foods.length ? 0 : bal!=null ? ptsBal(bal) : ptsRange(kcal, RULES.kcal),
     prot: foods.length ? ptsRange(prot, RULES.prot) : 0,
     supl: ptsSupl(supl),
     skin: r0.skin ? 1 : 0
@@ -581,7 +585,7 @@ function evalDay(date){
   const logged = { dormir:bed!=null, despertar:wake!=null, sueno:sleep!=null, mov:!!r.cardioSet||!!r.fuerzaSet, pasos:steps!=null||!!mPasos, kcal:foods.length>0, prot:foods.length>0, supl:!!r.suplSet, skin:!!r0.skin };
   const total = CATS.reduce((a,c)=>a+p[c],0);
   const any = Object.values(logged).some(Boolean);
-  return { r, w, src, foods, kcal, prot, bed, wake, sleep, steps, pasosSrc, cardioP, fuerzaP, p, logged, total, any };
+  return { r, w, src, foods, kcal, prot, burn, bal, bed, wake, sleep, steps, pasosSrc, cardioP, fuerzaP, p, logged, total, any };
 }
 const tone = (v,max) => { const x=v/max; return x>=0.67?"good":x>=0.34?"mid":"low"; };
 // Color del puntaje: rojo en 0, amarillo a la mitad, verde en el máximo. Cada punto (y cada valor intermedio) tiene su tono.
@@ -1028,16 +1032,15 @@ function renderHero(){
   const kT = hasF ? PT[e.p.kcal] : "", pT = hasF ? PT[e.p.prot] : "";
   const dash = '<span style="color:var(--faint)">—</span>';
   const pts = n => n+(n===1?" pt":" pts");
-  const burn = (e.w && e.w.burn!=null) ? e.w.burn : null;
-  const bal = (hasF && burn!=null) ? e.kcal - burn : null;
+  const burn = e.burn, bal = e.bal;
   const hstat = (k, v) => '<div class="hstat"><div class="k">'+k+'</div><div class="v">'+v+'</div></div>';
   $("hero").setAttribute("aria-label", e.any ? "Puntaje del día: "+e.total+" de "+MAX : "Puntaje del día: sin registro");
   $("hero").innerHTML = ring
     + '<div class="hstats">'
-    + hstat("Comidas · "+rangeTxt(RULES.kcal), hasF ? '<span class="tone-'+kT+'">'+fmtNum(e.kcal)+'</span> <small>kcal · '+pts(e.p.kcal)+'</small>' : dash)
+    + hstat("Comidas", hasF ? fmtNum(e.kcal)+' <small>kcal</small>' : dash)
     + hstat("Prote · "+rangeTxt(RULES.prot)+" g", hasF ? '<span class="tone-'+pT+'">'+fmtNum(e.prot)+' g</span> <small>'+pts(e.p.prot)+'</small>' : dash)
     + hstat("Quemadas · WHOOP", burn!=null ? fmtNum(burn)+' <small>kcal</small>' : dash)
-    + hstat("Balance", bal!=null ? '<span class="tone-'+(bal<=0?"good":"low")+'">'+(bal>0?"+":"−")+fmtNum(Math.abs(bal))+'</span> <small>kcal</small>' : dash)
+    + hstat("Balance · meta −"+fmtNum(RULES.deficit), bal!=null ? '<span class="tone-'+kT+'">'+(bal>0?"+":"−")+fmtNum(Math.abs(bal))+'</span> <small>kcal · '+pts(e.p.kcal)+'</small>' : hasF ? '<span class="tone-'+kT+'">'+fmtNum(e.kcal)+'</span> <small>kcal · sin WHOOP</small>' : dash)
     + '</div>';
   // El anillo se acaba de redibujar: se pinta en el valor actual de la animación y sigue desde ahí.
   if (heroAnim.raf && heroAnim.date===S.selected && heroAnim.v!=null) paintHero(heroAnim.v);
@@ -1382,7 +1385,13 @@ function buildFoodSheet(sh, keep){
     return '<div class="barrow" style="--c:'+col+'"><div class="bt"><span class="k">'+label+' · '+pts+(pts===1?" pt":" pts")+'</span><span class="v">'+fmtNum(val)+' <small>'+unit+' · meta '+rangeTxt(r)+'</small></span></div>'
       + '<div class="bar">'+z(r.low, r.normal[0], "z1")+z(r.normal[0], r.normal[1], "z2")+z(r.normal[1], r.high, "z1")+'<i style="width:'+pc(val).toFixed(1)+'%"></i></div></div>';
   };
-  const K = RULES.kcal, P = RULES.prot;
+  const K = RULES.kcal, P = RULES.prot, D = RULES.deficit;
+  const balBar = () => { // déficit: de 0 (izquierda) a 2× la meta (derecha); la franja verde empieza en la meta
+    const tope = D*2, pc = v => Math.max(0, Math.min(100, v/tope*100)), def = -e.bal;
+    const col = ["var(--low)","var(--mid)","var(--good)"][e.p.kcal];
+    return '<div class="barrow" style="--c:'+col+'"><div class="bt"><span class="k">Balance · '+e.p.kcal+(e.p.kcal===1?" pt":" pts")+'</span><span class="v">'+(e.bal>0?"+":"−")+fmtNum(Math.abs(e.bal))+' <small>kcal · comiste '+fmtNum(e.kcal)+' de '+fmtNum(e.burn)+' quemadas · meta −'+fmtNum(D)+'</small></span></div>'
+      + '<div class="bar"><b class="z1" style="left:0;width:'+pc(D)+'%"></b><b class="z2" style="left:'+pc(D)+'%;width:'+(100-pc(D))+'%"></b><i style="width:'+pc(def).toFixed(1)+'%"></i></div></div>';
+  };
   const recents = [];
   const seen = new Set();
   S.foods.slice().sort((a,b)=> a.fecha!==b.fecha ? (a.fecha<b.fecha?1:-1) : ((b.row||9e9)-(a.row||9e9))).forEach(f=>{ const k=strip(f.comida); if (!seen.has(k) && recents.length<8){ seen.add(k); recents.push(f); } });
@@ -1390,10 +1399,10 @@ function buildFoodSheet(sh, keep){
   sh.innerHTML = head(dayWord()+" · "+shortDate(S.selected), "Comida")
     + '<div class="sh-body">'
     + '<div class="bars">'
-    + rangeBar("Calorías", e.kcal, K, "kcal", e.p.kcal)
+    + (e.bal!=null ? balBar() : rangeBar("Calorías", e.kcal, K, "kcal", e.p.kcal))
     + rangeBar("Proteína", e.prot, P, "g", e.p.prot)
     + '</div>'
-    + '<p class="hint">Calorías: 2 pts de '+fmtNum(K.normal[0])+' a '+fmtNum(K.normal[1])+'; 1 pt de '+fmtNum(K.low)+' a '+fmtNum(K.normal[0]-1)+' o de '+fmtNum(K.normal[1]+1)+' a '+fmtNum(K.high)+'. Proteína: 2 pts de '+P.normal[0]+' g para arriba; 1 pt de '+P.low+' a '+(P.normal[0]-1)+' g. Menos, 0. La franja verde de la barra es tu meta.</p>'
+    + '<p class="hint">Comida: tu meta es el balance del día (lo que comes menos lo que quemas según WHOOP). Déficit de '+fmtNum(D)+' kcal o más = 2 pts; déficit menor = 1 pt; si comes más de lo que quemas, 0. Proteína: 2 pts de '+P.normal[0]+' g para arriba; 1 pt de '+P.low+' a '+(P.normal[0]-1)+' g. Menos, 0. La franja verde de la barra es tu meta.</p>'
     + '<div class="foods">'
     + (list.length ? list.map((f,i)=>{
         const k = fkey(f)+"#"+i;
