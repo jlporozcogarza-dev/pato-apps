@@ -66,6 +66,7 @@ html:not([data-tab=inicio]) .fede-flota{left:auto;top:auto;right:10px;flex-direc
 html:not([data-tab=inicio]) .logo{width:64px;height:64px;filter:drop-shadow(0 6px 14px rgba(0,0,0,.6))}
 html[data-tab=fede] .fede-flota{bottom:calc(max(4px,calc(env(safe-area-inset-bottom) - 12px)) + 134px)} /* arriba de la caja para escribirle */
 html:has(nav.oculta) .fede-flota{display:none}
+html[data-tab=fede] .colores-flota{bottom:calc(max(4px,calc(env(safe-area-inset-bottom) - 12px)) + 144px)}
 .logo{position:relative;flex:none;width:72px;height:72px;border-radius:50%;background:none;border:0;padding:0;cursor:pointer;transition:transform .2s;-webkit-tap-highlight-color:transparent}
 .logo:active{transform:scale(.92)}
 .logo canvas{width:100%;height:100%;display:block}
@@ -435,7 +436,15 @@ header .ajustes svg{width:20px;height:20px}
   background:linear-gradient(180deg,color-mix(in srgb,var(--c30) 34%,transparent),color-mix(in srgb,var(--c60) 94%,transparent)),var(--c60);
   -webkit-backdrop-filter:var(--blur);backdrop-filter:var(--blur);border-top:1px solid color-mix(in srgb,var(--c30) 50%,transparent);box-shadow:inset 0 1px 0 rgba(255,255,255,.14)}
 .hoja.on{transform:none}
-.hoja .asa{width:40px;height:5px;border-radius:3px;background:rgba(255,255,255,.25);margin:0 auto 12px}
+.hoja .asa{width:40px;height:5px;border-radius:3px;background:rgba(255,255,255,.25);margin:0 auto 12px;position:sticky;top:0;z-index:2}
+.hoja .asa::before{content:"";position:absolute;inset:-14px -60px}  /* más área para agarrarla */
+.hoja.arrastra{transition:none}
+.cerrar-hoja{position:sticky;top:0;float:right;z-index:2;width:36px;height:36px;margin:-4px -4px 0 0;border-radius:50%;display:grid;place-items:center;cursor:pointer;
+  color:var(--fg);border:1px solid rgba(255,255,255,.14);background:rgba(255,255,255,.1);-webkit-backdrop-filter:blur(12px);backdrop-filter:blur(12px)}
+.cerrar-hoja svg{width:16px;height:16px}
+.colores-flota{position:fixed;z-index:6;left:14px;bottom:calc(max(4px,calc(env(safe-area-inset-bottom) - 12px)) + 82px);width:44px;height:44px;border-radius:50%;box-shadow:0 6px 14px rgba(0,0,0,.5);display:grid;place-items:center;cursor:pointer;color:var(--muted)}
+.colores-flota svg{width:22px;height:22px}
+html[data-tab=inicio] .colores-flota,html:has(nav.oculta) .colores-flota{display:none}
 .hoja h2{font-size:24px;font-weight:500;margin:0 0 4px}
 .hoja .sub{color:var(--muted);font-size:14px;margin:0 0 18px}
 .hoja h3{font-size:15px;font-weight:500;margin:18px 0 10px;display:flex;align-items:center;gap:8px}
@@ -644,9 +653,11 @@ header .ajustes svg{width:20px;height:20px}
 </main></div>
 
 </div>
+<button class="colores-flota glass" id="abrirColores2" aria-label="Colores de esta pestaña"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><circle cx="12" cy="12" r="9"/><circle cx="8.5" cy="9.5" r="1.4" fill="currentColor"/><circle cx="12.5" cy="7.5" r="1.4" fill="currentColor"/><circle cx="16" cy="10.5" r="1.4" fill="currentColor"/><path d="M12 21a2.5 2.5 0 0 1 0-5h2a3 3 0 0 0 3-3"/></svg></button>
 <div class="velo" id="velo"></div>
 <section class="hoja" id="hoja" role="dialog" aria-modal="true" aria-labelledby="hojaTitulo" aria-hidden="true">
-  <div class="asa"></div>
+  <div class="asa" aria-hidden="true"></div>
+  <button class="cerrar-hoja" data-cerrar-hoja aria-label="Cerrar"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round"><path d="M6 6l12 12M18 6L6 18"/></svg></button>
   <h2 id="hojaTitulo">Colores</h2>
   <p class="sub">Paletas del diccionario de colores japonés. Fondo 60 · vidrio 30 · acento 10.</p>
   <div id="carriles"></div>
@@ -723,8 +734,9 @@ function elegir(tab, id){
   try{ localStorage.setItem(LSP, JSON.stringify(elegidas)); }catch(e){}
   pintar(); dibujarCarriles();
 }
+let carriles = ORDEN; // en Inicio salen todas; en otra pestaña, solo la de esa pestaña
 function dibujarCarriles(){
-  $("carriles").innerHTML = ORDEN.map(t => `<h3>${NOMBRE[t]} <span>· ${pal(t).n}</span></h3><div class="carril" role="group" aria-label="Paleta de ${NOMBRE[t]}">` +
+  $("carriles").innerHTML = carriles.map(t => `<h3>${NOMBRE[t]} <span>· ${pal(t).n}</span></h3><div class="carril" role="group" aria-label="Paleta de ${NOMBRE[t]}">` +
     PALETAS.map(p => `<button class="pal" data-tab-pal="${t}" data-pal="${p.id}" aria-pressed="${p.id === pal(t).id}" aria-label="${p.n} para ${NOMBRE[t]}">` +
       `<span class="mu"><i style="background:${p.c60}"></i><i style="background:${p.c30}"></i><i style="background:${p.c10}"></i></span><b>${p.n}</b><small>${p.k}</small></button>`).join("") + `</div>`).join("");
 }
@@ -736,9 +748,29 @@ function hoja(el, abrir){
 const cerrarHojas = () => document.querySelectorAll(".hoja.on").forEach(h => hoja(h, false));
 function hojaColores(abrir){
   hoja($("hoja"), abrir);
-  if (abrir){ dibujarCarriles(); $("cerrarColores").focus({ preventScroll:true }); }
+  if (abrir){ carriles = actual === "inicio" ? ORDEN : [actual]; dibujarCarriles(); $("hoja").scrollTop = 0; }
 }
-$("abrirColores").onclick = () => hojaColores(true);
+$("abrirColores").onclick = $("abrirColores2").onclick = () => hojaColores(true);
+document.addEventListener("click", e => { if (e.target.closest("[data-cerrar-hoja]")) cerrarHojas(); });
+/* Las hojas se bajan deslizando hacia abajo (desde la rayita o desde arriba de la hoja): más de 90 px o un jalón rápido = se cierra */
+document.querySelectorAll(".hoja").forEach(h => {
+  let y0 = 0, x0 = 0, dy = 0, t0 = 0, modo = "";
+  h.addEventListener("touchstart", e => {
+    const t = e.touches[0], enAsa = t.clientY - h.getBoundingClientRect().top < 70;
+    modo = enAsa || h.scrollTop <= 0 ? "?" : ""; y0 = t.clientY; x0 = t.clientX; dy = 0; t0 = Date.now();
+  }, { passive:true });
+  h.addEventListener("touchmove", e => {
+    if (!modo) return;
+    const t = e.touches[0], ddy = t.clientY - y0, ddx = t.clientX - x0;
+    if (modo === "?"){ if (Math.abs(ddy) < 8 && Math.abs(ddx) < 8) return; modo = ddy > 0 && Math.abs(ddy) > Math.abs(ddx) ? "baja" : ""; if (!modo) return; h.classList.add("arrastra"); }
+    dy = Math.max(0, ddy); h.style.transform = `translateY(${dy}px)`; e.preventDefault();
+  }, { passive:false });
+  h.addEventListener("touchend", () => {
+    if (modo !== "baja"){ modo = ""; return; }
+    modo = ""; h.classList.remove("arrastra"); h.style.transform = "";
+    if (dy > 90 || dy / Math.max(1, Date.now() - t0) > .5) cerrarHojas();
+  });
+});
 $("cerrarColores").onclick = $("velo").onclick = cerrarHojas;
 
 /* ---------- Pendientes: calendario (Google Calendar vía el server) + agenda del día + pendientes de Condotec ---------- */
@@ -965,7 +997,7 @@ function cargarPanel(c){
     .catch(() => { if (!localStorage.getItem(LSPANEL)) $("panelCuerpo").innerHTML = '<p class="nota">No pude cargar tus pendientes. Revisa tu conexión.</p>'; });
 }
 try{ const p = JSON.parse(localStorage.getItem(LSPANEL) || "null"); if (p) pintarPanel(p); }catch(e){}
-$("restablecer").onclick = () => { elegidas = { ...DEF }; try{ localStorage.removeItem(LSP); }catch(e){} pintar(); dibujarCarriles(); };
+$("restablecer").onclick = () => { carriles.forEach(t => elegidas[t] = DEF[t]); try{ localStorage.setItem(LSP, JSON.stringify(elegidas)); }catch(e){} pintar(); dibujarCarriles(); }; // solo lo que se ve en la hoja
 $("carriles").addEventListener("click", e => { const b = e.target.closest("[data-pal]"); if (b) elegir(b.dataset.tabPal, b.dataset.pal); });
 addEventListener("keydown", e => { if (e.key === "Escape") cerrarHojas(); });
 const hoy = new Date().toLocaleDateString("sv-SE");
