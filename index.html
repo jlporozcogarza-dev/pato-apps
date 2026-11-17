@@ -706,6 +706,8 @@ header .ajustes{visibility:hidden} /* en Inicio se usa el fijo de arriba a la de
 
 <section class="cam-tarjeta glass" aria-labelledby="tT">
   <div class="cam-cab"><h2 id="tT">Comida escrita</h2></div>
+  <div class="cam-l">Mis comidas: toca para agregar</div>
+  <div class="cam-chips" id="tMias"></div>
   <label class="cam-l">Escribe lo que comiste, como se lo dirías a Claude<textarea id="tTexto" rows="3" placeholder="Ej. Cené 2 latas de atún con elote y mayonesa y 3 paquetes de saladitas de 45 calorías"></textarea></label>
   <div class="cam-btns"><button class="cam-go" id="tCalc">Calcular</button></div>
   <div id="tRes" hidden>
@@ -1856,7 +1858,7 @@ ${ctx ? 'Contexto del usuario sobre la foto: "' + ctx.replace(/"/g, "'") + '". �
 Casos:
 1) Comida o bebida: {"tipo":"comida","comida":"nombre corto en español","kcal":número,"proteina":gramos}
    Estima las porciones que se ven. Cuenta aceite, salsas y acompañamientos.
-2) Ticket, recibo o factura de una compra: {"tipo":"ticket","concepto":"...","monto":número,"fecha":"...","hora":"...","metodo":"...","cat_egreso":"...","cat_ingreso":"..."}
+   ${miasTxt()}2) Ticket, recibo o factura de una compra: {"tipo":"ticket","concepto":"...","monto":número,"fecha":"...","hora":"...","metodo":"...","cat_egreso":"...","cat_ingreso":"..."}
 3) Comprobante de transferencia, depósito o pago bancario: {"tipo":"transferencia","direccion":"egreso" si el usuario envió el dinero o "ingreso" si lo recibió,"concepto":"...","monto":número,"fecha":"...","hora":"...","metodo":"...","cat_egreso":"...","cat_ingreso":"..."}
 4) Cualquier otra cosa: {"tipo":"otro"}
 Campos de 2 y 3:
@@ -2014,13 +2016,30 @@ Responde SOLO JSON: {"categoria":"una de ${JSON.stringify(CATS[mTipo])}","monto"
   const numero = v => Number(String(v == null ? "" : v).replace(/[^\d.-]/g, "")) || 0;
   const sumOf = (list, k) => list.reduce((s, x) => s + (Number(x[k]) || 0), 0);
   let tItems = [];
+  /* Mis comidas: los mismos valores que en Tracker (src/tracker.html, RECETAS). Si cambias uno, cambia los dos. */
+  const MIAS = [
+    { n:"Sandwich fit", d:"1 pan de 45 kcal, 1 rebanada de panela FUD, 1 de jamón de pavo HCF", kcal:166, prot:10 },
+    { n:"Ensalada", d:"50 g de feta Laclette, lata de elote, lata de garbanzos, puño de espinacas", kcal:527, prot:28 },
+    { n:"Atún con elote", d:"lata de atún Tuny doble y lata de elote", kcal:390, prot:53 },
+    { n:"Saladitas", d:"1 sobre de 3 galletas", kcal:50, prot:1 }];
+  const miasTxt = () => "Comidas de siempre de Pato. Si menciona una (aunque sea con otras palabras, ej. «mi sándwich», «la ensalada de siempre», «el atún»), usa EXACTO estos valores por porción y multiplícalos por la cantidad:\n" +
+    MIAS.map(m => `- ${m.n} (${m.d}): ${m.kcal} kcal, ${m.prot} g de proteína`).join("\n") + "\n";
+  $("tMias").innerHTML = MIAS.map((m, i) => '<button type="button" data-mia="' + i + '">' + esc(m.n) + " · " + m.kcal + "</button>").join("");
+  $("tMias").onclick = e => {
+    const b = e.target.closest("[data-mia]"); if (!b) return; const m = MIAS[b.dataset.mia];
+    const ya = m.n === "Saladitas" && tItems.find(x => x.sal);
+    if (ya){ ya.n++; ya.comida = ya.n + " sobres de Saladitas"; ya.kcal = m.kcal * ya.n; ya.prot = m.prot * ya.n; }
+    else tItems.push({ comida:m.n === "Saladitas" ? "1 sobre de Saladitas" : m.n, kcal:m.kcal, prot:m.prot, sal:m.n === "Saladitas", n:1 });
+    if ($("tRes").hidden){ $("tFecha").value = today(); $("tHora").value = nowHM(); $("tNote").hidden = true; $("tRes").hidden = false; }
+    drawItems(); setStatus($("tStatus"), "Revisa y guarda. Puedes agregar más o corregir.");
+  };
   function textPrompt(txt){
     const d = new Date(), y = new Date(d.getTime() - 864e5), ymd = x => x.getFullYear() + "-" + p2(x.getMonth() + 1) + "-" + p2(x.getDate());
     return `Eres nutriólogo. El usuario escribió lo que comió, en español de México:
 "${txt.replace(/"/g, "'")}"
 Hoy es ${ymd(d)} y son las ${nowHM()}.
 Separa cada alimento o bebida en su propio renglón y estima calorías y proteína.
-- Si el usuario da calorías o proteína de algo (ej. "3 paquetes de 45 calorías"), usa sus números exactos y multiplícalos por la cantidad.
+${miasTxt()}- Si el usuario da calorías o proteína de algo (ej. "3 paquetes de 45 calorías"), usa sus números exactos y multiplícalos por la cantidad.
 - Para lo demás usa porciones y productos típicos de México (latas, paquetes, piezas, tortillas). Cuenta aceite, mayonesa, crema y salsas.
 - Si dice cené, desayuné, comí o snack, empieza el nombre con "Cena: ", "Desayuno: ", "Comida: " o "Snack: ".
 - comida: nombre corto en español con la cantidad, ej. "Cena: 2 latas de atún en agua".
