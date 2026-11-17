@@ -125,6 +125,7 @@ html{{background:var(--j60)}} html.embed,html.embed body,body{{background:transp
 html:not(.embed) body{{background:radial-gradient(60% 40% at 90% 0%,{m(10, 16)},transparent 70%),radial-gradient(60% 40% at 0% 60%,{m(30, 22)},transparent 70%),var(--j60)!important;background-attachment:fixed!important}}
 html.embed body{{padding-bottom:calc(104px + env(safe-area-inset-bottom))!important}}
 html.embed .top-l{{padding-left:66px;min-height:62px}} /* a la izquierda va el anillo de Fede de JLP */
+html.embed .top{{padding-right:56px}} /* a la derecha va el botón de colores de JLP */
 html.embed,html.embed body{{overscroll-behavior:none}} /* sin rebote al jalar: en el iPhone el rebote dentro del iframe se veía blanco */
 {VIDRIO[key]}{{-webkit-backdrop-filter:blur(24px) saturate(160%);backdrop-filter:blur(24px) saturate(160%);border-color:rgba(255,255,255,.10)!important;
   background-image:linear-gradient(150deg,rgba(255,255,255,.08),rgba(255,255,255,.02) 40%,transparent)!important;
