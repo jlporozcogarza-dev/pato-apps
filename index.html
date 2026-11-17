@@ -307,7 +307,25 @@ button.card:active{transform:scale(.98)}
 #v-camara.entra .cam-dos{animation-delay:.06s}#v-camara.entra .cam-fila{animation-delay:.12s}#v-camara.entra .cam-tarjeta{animation-delay:.18s}
 
 @media (prefers-reduced-motion:reduce){#v-camara.entra *{animation:none!important}}
-/* Condotec · Entradas y salidas: calendario de cuadritos con el número de cada depa (rojo = sale, verde = entra) y el plan de cada salida */
+/* Condotec · Calendario del mes: entrada verde, salida roja, pendiente azul, pago amarillo (solo el nombre del depa) */
+.cc{padding:12px 8px 10px}
+.cc-cal{display:grid;grid-template-columns:repeat(7,minmax(0,1fr));border-top:1px solid rgba(255,255,255,.08)}
+.cc-dia{min-height:76px;padding:3px 2px 4px;border-bottom:1px solid rgba(255,255,255,.06);border-right:1px solid rgba(255,255,255,.06);display:flex;flex-direction:column;gap:2px;cursor:pointer;min-width:0}
+.cc-dia:nth-child(7n){border-right:0}
+.cc-dia .n{font:600 11px/1 var(--sans);color:var(--muted);text-align:center;padding:3px 0 2px}
+.cc-dia.fuera{opacity:.38}
+.cc-dia.hoy .n{color:var(--c60);background:var(--c10);border-radius:99px;width:20px;height:20px;line-height:20px;padding:0;margin:0 auto 1px}
+.ev{display:block;width:100%;min-width:0;border:0;border-radius:4px;padding:2px 3px;font:700 10px/1.2 var(--sans);text-align:left;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;cursor:pointer;color:#fff}
+.ev.verde{background:var(--st-ok)}.ev.rojo{background:var(--st-crit)}.ev.azul{background:var(--st-info)}.ev.amarillo{background:#F7C948;color:#1d1a10}
+.ev.mas{background:none;color:var(--muted);padding:0 3px}
+.cc-ley{display:flex;flex-wrap:wrap;gap:6px 14px;margin:10px 6px 0;font-size:12px;color:var(--muted)}
+.cc-ley span{display:flex;align-items:center;gap:6px}.cc-ley i.ev{width:14px;height:10px;padding:0}
+.cc-hoy{padding:6px 12px;border-radius:99px;border:1px solid rgba(255,255,255,.12);background:rgba(255,255,255,.05);color:var(--fg);font:500 13px var(--sans);cursor:pointer}
+.cc-det{padding:12px 14px;border-radius:18px;border:1px solid rgba(255,255,255,.10);background:rgba(255,255,255,.04);margin-top:10px}
+.cc-det-top{display:flex;align-items:center;gap:10px}.cc-det-top .ev{width:auto;padding:4px 9px;font-size:11px;border-radius:99px}.cc-det-top b{font:600 17px var(--display)}
+.cc-det dl{display:grid;grid-template-columns:auto 1fr;gap:6px 12px;margin:10px 0 0;font-size:14px}
+.cc-det dt{color:var(--muted)}.cc-det dd{margin:0}
+/* Condotec · Entradas y salidas (viejo): calendario de cuadritos con el número de cada depa (rojo = sale, verde = entra) y el plan de cada salida */
 .es-cifras{grid-template-columns:repeat(4,1fr);margin-bottom:12px}
 .es-cal{display:grid;grid-template-columns:repeat(7,1fr);gap:1px;border-radius:16px;overflow:hidden;background:rgba(255,255,255,.10);border:1px solid rgba(255,255,255,.10)}
 .es-dia{position:relative;min-height:60px;border:0;margin:0;padding:5px 3px 3px;cursor:pointer;color:var(--fg);font:inherit;text-align:left;
@@ -566,23 +584,14 @@ html[data-tab=inicio] .colores-flota,html:has(nav.oculta) .colores-flota{display
   <a class="acceso glass" href="https://portal.condotecmty.com" target="_blank" rel="noopener"><span class="ic"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><rect x="3" y="4" width="18" height="16" rx="3"/><path d="M3 9h18M8 14h3M8 17h6"/></svg></span><span><b>Condotec Admin</b><small>Portal</small></span></a>
 </div>
 <div id="panelCuerpo"><p class="nota">Cargando…</p></div>
-<div class="seccion"><h2>Entradas y salidas</h2><span id="esCuenta"></span></div>
-<div class="cifras es-cifras" id="esCifras"></div>
-<section class="calendario glass" aria-label="Calendario de entradas y salidas">
-  <div class="cal-top"><button class="cal-nav" id="esMesAnt" aria-label="Mes anterior">‹</button><b id="esCalMes"></b><button class="cal-nav" id="esMesSig" aria-label="Mes siguiente">›</button></div>
+<div class="seccion"><h2>Calendario</h2><button class="cc-hoy" id="ccHoy">Hoy</button></div>
+<section class="calendario cc glass" aria-label="Calendario de Condotec">
+  <div class="cal-top"><button class="cal-nav" id="ccAnt" aria-label="Mes anterior">‹</button><b id="ccMes"></b><button class="cal-nav" id="ccSig" aria-label="Mes siguiente">›</button></div>
   <div class="cal-sem" aria-hidden="true"><span>L</span><span>M</span><span>M</span><span>J</span><span>V</span><span>S</span><span>D</span></div>
-  <div class="es-cal" id="esCalDias"></div>
-  <div class="es-ley"><span><b style="background:var(--st-crit)">12</b>Sale</span><span><b style="background:var(--st-ok)">12</b>Entra</span><span><i style="--col:color-mix(in srgb,var(--fg) 70%,var(--c60))"></i>Pendiente del plan</span><span><i style="--col:var(--st-crit)"></i>Atrasado</span></div>
+  <div class="cc-cal" id="ccDias"></div>
+  <div class="cc-ley"><span><i class="ev verde"></i>Entrada</span><span><i class="ev rojo"></i>Salida</span><span><i class="ev azul"></i>Pendiente</span><span><i class="ev amarillo"></i>Pago</span></div>
 </section>
-<div class="seccion"><h2 id="esDiaTitulo">Hoy</h2><span id="esDiaFecha"></span></div>
-<div class="renglones" id="esDia"></div>
-<div class="seccion"><h2>Próximas salidas</h2><span id="esListaCuenta"></span></div>
-<div class="renglones" id="esLista"><p class="nota">Cargando…</p></div>
-<div id="esSinFechaCaja" hidden>
-  <div class="seccion"><h2>Sin fecha de salida</h2><span id="esSinFechaCuenta"></span></div>
-  <div class="renglones" id="esSinFecha"></div>
-</div>
-<p class="nota">Las fechas salen de la pestaña Salidas de tu hoja Inquilinos Condotec. Si alguien renueva, ponle Sí en ¿Renueva? y su plan queda en solo firmar. Para marcar una entrada, pon la fecha en Entrada.</p>
+<p class="nota" id="ccNota"></p>
 </main></div>
 
 <div class="vista" id="v-pendientes" role="tabpanel" aria-label="Pendientes"><main>
@@ -696,6 +705,12 @@ html[data-tab=inicio] .colores-flota,html:has(nav.oculta) .colores-flota{display
 </div>
 <button class="colores-flota glass" id="abrirColores2" aria-label="Colores de esta pestaña"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><circle cx="12" cy="12" r="9"/><circle cx="8.5" cy="9.5" r="1.4" fill="currentColor"/><circle cx="12.5" cy="7.5" r="1.4" fill="currentColor"/><circle cx="16" cy="10.5" r="1.4" fill="currentColor"/><path d="M12 21a2.5 2.5 0 0 1 0-5h2a3 3 0 0 0 3-3"/></svg></button>
 <div class="velo" id="velo"></div>
+<section class="hoja" id="hojaCC" role="dialog" aria-modal="true" aria-labelledby="ccHojaTitulo" aria-hidden="true">
+  <div class="asa" aria-hidden="true"></div>
+  <button class="cerrar-hoja" data-cerrar-hoja aria-label="Cerrar"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round"><path d="M6 6l12 12M18 6L6 18"/></svg></button>
+  <h2 id="ccHojaTitulo"></h2>
+  <div id="ccHojaCuerpo"></div>
+</section>
 <section class="hoja" id="hojaFecha" role="dialog" aria-modal="true" aria-labelledby="fechaTitulo" aria-hidden="true">
   <div class="asa" aria-hidden="true"></div>
   <button class="cerrar-hoja" data-cerrar-hoja aria-label="Cerrar"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round"><path d="M6 6l12 12M18 6L6 18"/></svg></button>
@@ -858,10 +873,8 @@ function pintarCal(){
   $("calDias").innerHTML = [...Array(celdas)].map((_, i) => {
     const d = sumaDias(inicio, i), ev = eventosDe(d).slice(0, 3), pe = pendDe(d);
     const puntos = ev.map(e => `<i style="--col:${esc(e.col || "")}"></i>`).join("") + (pe.length ? `<i class="${d < hoy ? "venc" : "pend"}"></i>` : "");
-    const sa = planDiaS(d); // plan de salidas de Condotec: aro rojo si alguien sale ese día o hay algo atrasado
-    const puntosS = sa.length ? `<i class="cs" style="--col:${sa.some(x => x.clave === "salida" || x.atrasado) ? "var(--st-crit)" : "color-mix(in srgb,var(--fg) 78%,var(--c60))"}"></i>` : "";
     const cls = ["dia", d.slice(0, 7) !== agMes && "fuera", d === hoy && "hoy", d === agSel && "sel"].filter(Boolean).join(" ");
-    return `<button class="${cls}" data-dia="${d}" aria-label="${corto(d)}${ev.length ? ", " + ev.length + " eventos" : ""}"><span>${+d.slice(8)}</span><span class="puntos">${puntos}${puntosS}</span></button>`;
+    return `<button class="${cls}" data-dia="${d}" aria-label="${corto(d)}${ev.length ? ", " + ev.length + " eventos" : ""}"><span>${+d.slice(8)}</span><span class="puntos">${puntos}</span></button>`;
   }).join("");
 }
 function pintarDia(){
@@ -872,7 +885,6 @@ function pintarDia(){
   let h = ev.map(e => `<div class="evento" style="--col:${esc(e.col || "")}"><span class="barra"></span><span class="hora">${e.dia ? "Todo el día" : esc(e.i.slice(11, 16))}</span>` +
     `<span><b>${esc(e.t)}</b><small>${esc([e.c, e.l].filter(Boolean).join(" · "))}</small></span></div>`).join("");
   h += pe.map(p => `<div class="renglon"><div class="arriba"><b>${esc(p.n)}. ${esc(p.texto)}</b><span class="marca t-${agSel < hoy ? "rojo" : "gris"}">vence</span></div>${p.depas ? `<p>${esc(p.depas)}</p>` : ""}</div>`).join("");
-  h += planDiaS(agSel).map(x => filaPaso(x, true)).join(""); // plan de salidas de Condotec: se palomea aquí o en la pestaña Condotec
   if (!h) h = AG && AG.eventos == null
     ? '<p class="nota">Tu Google Calendar todavía no llega al server: falta publicar el puente en Apps Script (Implementar → Versión nueva).</p>'
     : '<p class="nota">Nada en tu calendario este día.</p>';
@@ -1191,204 +1203,108 @@ addEventListener("keydown", e => { if (e.key === "Escape") cerrarHojas(); });
 const hoy = new Date().toLocaleDateString("sv-SE");
 $("fecha").textContent = new Date().toLocaleDateString("es-MX", { weekday:"long", day:"numeric", month:"long" });
 
-/* ---------- Condotec · Entradas y salidas ----------
-   Pestaña "Salidas" de la hoja Inquilinos Condotec: A Depa · B Inquilino · C Entrada · D Salida · E Fecha según · F ¿Renueva? · G Corredor · H Mantenimiento · I Nota.
-   El calendario es de cuadritos: en cada día va el número del depa, rojo si sale y verde si entra. Se cambia de mes con las flechas.
-   Cada salida trae su plan: confirmar si renueva (60 días antes, lo que pide el contrato), publicar (30), agendar la revisión (7), sale,
-   mantenimiento (+1), disponible (+6) y devolver el depósito (+60, el plazo del contrato). Si ¿Renueva? dice Sí, solo queda firmar 30 días antes.
-   Lo palomeado se guarda en la pestaña "Plan salidas" (A ID · B Estado · C Hecha · D Depa · E Paso); sin conexión espera en una cola en el teléfono. */
-var CONDOTEC = "1Slfw8A9kXoBCsWPFIQyA6bi7XKKoURifbZcyqGzf_x0", HOJA_S = "Salidas", HOJA_P = "Plan salidas", LSS = "jlp-salidas", LSSC = "jlp-salidas-cola";
-var PASOS_S = [
-  ["confirmar", -60, "Confirmar si renueva", "El contrato pide el aviso con 60 días"],
-  ["publicar", -30, "Publicar y avisar a corredores", "Página de promo, Messenger y corredores"],
-  ["revision", -7, "Agendar revisión de salida", "Inventario, daños, llaves y lectura de luz"],
-  ["salida", 0, "Sale: revisión, fotos y llaves", "Debe entregar limpio y con la misma pintura"],
-  ["mant", 1, "Mantenimiento y limpieza", "Pintura, limpieza profunda y fumigación"],
-  ["lista", 6, "Listo para el siguiente inquilino", "Fotos nuevas y publicarlo como disponible"],
-  ["deposito", 60, "Devolver depósito", "Plazo máximo del contrato: 60 días después de que sale"]];
-var SAL = lsLeer(LSS, null), colaS = lsLeer(LSSC, []), esSel = null, esMes = null, verTodasS = false, enviandoS = false, ITEMS_S = [], abiertasS = new Set();
-function fechaS(v){
-  const s = sinApostrofo(v);
-  let m = s.match(/^\d{4}-\d{2}-\d{2}/); if (m) return m[0];
-  m = s.match(/^(\d{1,2})\/(\d{1,2})\/(\d{4})$/); // por si la hoja la muestra en formato de México (día/mes/año)
-  return m ? `${m[3]}-${m[2].padStart(2, "0")}-${m[1].padStart(2, "0")}` : "";
+/* ---------- Condotec · Calendario del mes (como Google Calendar) ----------
+   Sale todo de la hoja Inquilinos Condotec (solo lectura):
+   Depas: A Depa · B Estado · C Inquilino · D Renta · E Día de pago · F Entrada · G Salida · H Corredor · I Necesidades · J Notas
+   Pendientes: A # · B Prioridad · C Pendiente · D Depas · E Fecha límite · … · I Estado · J Notas
+   Colores fijos: entrada verde, salida roja, pendiente azul, pago amarillo. Cada evento lleva solo el nombre del depa; al tocarlo, sus detalles. */
+var CONDOTEC = "1Slfw8A9kXoBCsWPFIQyA6bi7XKKoURifbZcyqGzf_x0", LSCC = "jlp-condo-cal";
+let CC = lsLeer(LSCC, null), ccMes = hoy.slice(0, 7);
+const TIPOS_CC = { entrada:["Entrada", "verde"], salida:["Salida", "rojo"], pendiente:["Pendiente", "azul"], pago:["Pago de renta", "amarillo"] };
+function fechaCC(v){ // "01/09/2026", "2026-09-01" o número de serie de Sheets → "2026-09-01"
+  const s = sinApostrofo(v); let m;
+  if ((m = s.match(/^(\d{4})-(\d{2})-(\d{2})/))) return m[0];
+  if ((m = s.match(/^(\d{1,2})\/(\d{1,2})\/(\d{4})/))) return `${m[3]}-${m[2].padStart(2, "0")}-${m[1].padStart(2, "0")}`;
+  if (/^\d{5}$/.test(s)) return new Date(Date.UTC(1899, 11, 30 + +s)).toISOString().slice(0, 10);
+  return "";
 }
-const renS = v => { const s = sinApostrofo(v).toLowerCase(); return /^s[ií]/.test(s) ? "si" : /^no\b/.test(s) ? "no" : "?"; };
-const numDepa = d => String(d).replace(/^(loft|depa|depto\.?)\s*/i, ""); // "Loft 12" → "12", "Depa 2201" → "2201"
-function leerSalidas(fs, fp){
-  const unis = fs.slice(1).map(r => ({ depa:sinApostrofo(r[0]), inq:sinApostrofo(r[1]), entrada:fechaS(r[2]), salida:fechaS(r[3]),
-    fuente:sinApostrofo(r[4]), ren:renS(r[5]), corredor:sinApostrofo(r[6]), mant:sinApostrofo(r[7]), nota:sinApostrofo(r[8]) })).filter(u => u.depa);
-  const est = {};
-  fp.slice(1).forEach(r => { const id = sinApostrofo(r[0]); if (id) est[id] = { estado:sinApostrofo(r[1]).toLowerCase() === "hecha" ? "hecha" : "pendiente", hecha:sinApostrofo(r[2]) }; });
-  return { unis, est };
+function leerCC(depas, pend){ // Día de pago puede traer texto: "1 (el contrato dice 22)" → 1; "Pago anual" → una vez al año
+  const unis = depas.slice(1).filter(r => r[0]).map(r => ({ depa:sinApostrofo(r[0]), estado:sinApostrofo(r[1]), inq:sinApostrofo(r[2]), renta:num(r[3]),
+    diaPago:(d => d >= 1 && d <= 31 ? d : 0)(parseInt(sinApostrofo(r[4]), 10)), anual:/anual/i.test(sinApostrofo(r[4])), entrada:fechaCC(r[5]), salida:fechaCC(r[6]), corredor:sinApostrofo(r[7]), nec:sinApostrofo(r[8]), notas:sinApostrofo(r[9]) }));
+  const pends = pend.slice(1).filter(r => r[2] && fechaCC(r[4]) && !/hecho|cancel/i.test(sinApostrofo(r[8])))
+    .map(r => ({ n:sinApostrofo(r[0]), prio:sinApostrofo(r[1]), texto:sinApostrofo(r[2]), depas:sinApostrofo(r[3]), fecha:fechaCC(r[4]), estado:sinApostrofo(r[8]), notas:sinApostrofo(r[9]) }));
+  return { unis, pends };
 }
-function estadoS(id){ return colaS.find(o => o.id === id) || (SAL && SAL.est[id]) || { estado:"pendiente", hecha:"" }; }
-/* Los pasos de una salida. El ID no cambia mientras no cambie la fecha de salida. Lo atrasado se muestra hoy, en rojo. */
-function pasosS(u){
-  if (!u.salida) return [];
-  const libre = /^libre/i.test(u.inq), base = `${u.depa}|${u.inq.split(/\s+/)[0]}|${u.salida}|`;
-  const lista = u.ren === "si" ? [["renovar", -30, "Firmar renovación", "Contrato nuevo; la renta sube con la inflación (INPC)"]]
-    : PASOS_S.filter(([c]) => !(c === "confirmar" && u.ren === "no") && !(libre && ["confirmar", "revision", "salida", "deposito"].includes(c)));
-  return lista.map(([clave, dias, t, det]) => {
-    const id = base + clave, f = sumaDias(u.salida, dias), st = estadoS(id), hecha = st.estado === "hecha";
-    return { id, clave, f, dia:hecha ? f : (f < hoy ? hoy : f), t, det:clave === "mant" && u.mant ? u.mant : det,
-      hecha, cuando:st.hecha || "", atrasado:!hecha && f < hoy, u };
+const cortoDepa = s => { s = String(s || "").trim(); const m = s.match(/^(Loft\s*\d+|\d{3,4})/i); return m ? m[1] + (s.length > m[1].length + 1 ? "…" : "") : s ? s.slice(0, 9) : "General"; };
+// Eventos de un día. El pago es cada mes, el día de pago (o el día en que entró), mientras dure el contrato.
+function eventosCC(d){
+  if (!CC) return [];
+  const out = [], dia = +d.slice(8), finMes = new Date(+d.slice(0, 4), +d.slice(5, 7), 0).getDate();
+  CC.unis.forEach(u => {
+    if (u.entrada === d) out.push({ tipo:"entrada", nombre:u.depa, u });
+    if (u.salida === d) out.push({ tipo:"salida", nombre:u.depa, u });
+    const dp = u.diaPago || (u.entrada ? +u.entrada.slice(8) : 0);
+    const mesOk = !u.anual || (u.entrada && d.slice(5, 7) === u.entrada.slice(5, 7)); // pago anual: una vez al año, en el mes en que entró
+    if (dp && mesOk && u.inq && /rentad/i.test(u.estado) && Math.min(dp, finMes) === dia && (!u.entrada || d > u.entrada) && (!u.salida || d <= u.salida))
+      out.push({ tipo:"pago", nombre:u.depa, u });
   });
+  CC.pends.filter(p => p.fecha === d).forEach(p => out.push({ tipo:"pendiente", nombre:cortoDepa(p.depas), p }));
+  const orden = { salida:0, entrada:1, pago:2, pendiente:3 };
+  return out.sort((a, b) => orden[a.tipo] - orden[b.tipo]);
 }
-function calcularS(){
-  ITEMS_S = [];
-  ((SAL && SAL.unis) || []).forEach(u => {
-    if (u.entrada) ITEMS_S.push({ tipo:"entrada", dia:u.entrada, u });
-    if (u.salida) ITEMS_S.push({ tipo:"salida", dia:u.salida, u });
-    pasosS(u).forEach(p => ITEMS_S.push({ tipo:"paso", dia:p.dia, p, u }));
-  });
-}
-const delDiaS = d => ITEMS_S.filter(x => x.dia === d);
-/* Para el calendario de Pendientes: lo del plan que falta en ese día. */
-function planDiaS(d){ return (ITEMS_S || []).filter(x => x.tipo === "paso" && x.dia === d && !x.p.hecha).map(x => x.p); }
-const chkSvg = '<i><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M5 12.5l4.5 4.5L19 7.5"/></svg></i>';
-function filaPaso(p, conDepa){
-  const etiqueta = p.hecha ? "Hecho" : p.atrasado ? "Atrasado" : p.dia === hoy ? "Hoy" : corto(p.dia);
-  const det = p.hecha ? (p.cuando ? "Hecho " + cuandoHecha(p.cuando) : "Hecho") : p.atrasado ? `Era para el ${corto(p.f)} · ${p.det}` : p.det;
-  return `<div class="tarea${p.hecha ? " hecha" : ""}">` +
-    `<button class="chk" ${p.hecha ? "data-desmarcar" : "data-paso"}="${esc(p.id)}" aria-label="${p.hecha ? "Regresar a pendiente" : "Marcar como hecho"}: ${esc(p.u.depa)}, ${esc(p.t)}">${chkSvg}</button>` +
-    `<span class="txt"><b>${conDepa ? esc(p.u.depa) + " · " : ""}${esc(p.t)}</b><small>${esc(det)}</small></span>` +
-    `<span class="tiempo${p.atrasado ? " tarde" : ""}">${esc(etiqueta)}</span></div>`;
-}
-function pintarCalS(){
-  const primero = new Date(esMes + "-01T12:00"), off = (primero.getDay() + 6) % 7;
-  const enMes = new Date(primero.getFullYear(), primero.getMonth() + 1, 0).getDate(), celdas = Math.ceil((off + enMes) / 7) * 7;
-  const inicio = sumaDias(esMes + "-01", -off);
-  $("esCalMes").textContent = primero.toLocaleDateString("es-MX", { month:"long", year:"numeric" }).replace(/^./, c => c.toUpperCase());
-  $("esCalDias").innerHTML = [...Array(celdas)].map((_, i) => {
-    const d = sumaDias(inicio, i), xs = delDiaS(d);
-    const mov = xs.filter(x => x.tipo !== "paso").sort((a, b) => (a.tipo === "salida" ? 0 : 1) - (b.tipo === "salida" ? 0 : 1));
-    const nums = [...new Map(mov.map(x => [x.tipo + numDepa(x.u.depa), x])).values()]; // el 2206 tiene 3 contratos: un solo número
-    const pend = xs.filter(x => x.tipo === "paso" && !x.p.hecha), tarde = pend.some(x => x.p.atrasado);
-    const chips = nums.slice(0, 4).map(x => `<b class="${x.tipo === "salida" ? "sale" : "entra"}">${esc(numDepa(x.u.depa))}</b>`).join("") +
-      (nums.length > 4 ? `<b class="mas">+${nums.length - 4}</b>` : "");
-    const cls = ["es-dia", d.slice(0, 7) !== esMes && "fuera", d === hoy && "hoy", d === esSel && "sel"].filter(Boolean).join(" ");
-    const lee = [nums.filter(x => x.tipo === "salida").map(x => "sale " + x.u.depa).join(", "), nums.filter(x => x.tipo === "entrada").map(x => "entra " + x.u.depa).join(", "),
-      pend.length ? pend.length + " pendientes" : ""].filter(Boolean).join("; ");
-    return `<button class="${cls}" data-es-dia="${d}" aria-label="${corto(d)}${lee ? ": " + esc(lee) : ""}"><span class="n">${+d.slice(8)}</span>` +
-      (pend.length ? `<i class="pt${tarde ? " tarde" : ""}"></i>` : "") + `<span class="nums">${chips}</span></button>`;
+function pintarCC(){
+  const primero = new Date(ccMes + "-01T12:00"), off = (primero.getDay() + 6) % 7;
+  const dias = new Date(primero.getFullYear(), primero.getMonth() + 1, 0).getDate(), celdas = Math.ceil((off + dias) / 7) * 7;
+  const inicio = sumaDias(ccMes + "-01", -off);
+  $("ccMes").textContent = primero.toLocaleDateString("es-MX", { month:"long", year:"numeric" }).replace(/^./, c => c.toUpperCase());
+  $("ccDias").innerHTML = [...Array(celdas)].map((_, i) => {
+    const d = sumaDias(inicio, i), ev = eventosCC(d), vis = ev.slice(0, 3);
+    const cls = ["cc-dia", d.slice(0, 7) !== ccMes && "fuera", d === hoy && "hoy"].filter(Boolean).join(" ");
+    return `<div class="${cls}" data-cc-dia="${d}"><span class="n">${+d.slice(8)}</span>` +
+      vis.map(e => `<button class="ev ${TIPOS_CC[e.tipo][1]}" data-cc-ev="${d}|${ev.indexOf(e)}" aria-label="${TIPOS_CC[e.tipo][0]}: ${esc(e.nombre)}">${esc(e.nombre.replace(/^Loft\s*/i, "L").replace(/^Depa\s*/i, ""))}</button>`).join("") +
+      (ev.length > 3 ? `<button class="ev mas" data-cc-mas="${d}">+${ev.length - 3}</button>` : "") + `</div>`;
   }).join("");
+  if (!CC) $("ccNota").textContent = "Cargando…";
+  else $("ccNota").textContent = "";
 }
-function pintarDiaS(){
-  const fecha = new Date(esSel + "T12:00");
-  $("esDiaTitulo").textContent = esSel === hoy ? "Hoy" : esSel === sumaDias(hoy, 1) ? "Mañana" : fecha.toLocaleDateString("es-MX", { weekday:"long" }).replace(/^./, c => c.toUpperCase());
-  $("esDiaFecha").textContent = fecha.toLocaleDateString("es-MX", { day:"numeric", month:"long", year:"numeric" });
-  const xs = delDiaS(esSel);
-  const mov = xs.filter(x => x.tipo !== "paso").sort((a, b) => (a.tipo === "salida" ? 0 : 1) - (b.tipo === "salida" ? 0 : 1));
-  let h = mov.map(x => `<div class="evento" style="--col:var(${x.tipo === "salida" ? "--st-crit" : "--st-ok"})"><span class="barra"></span>` +
-    `<span class="hora">${x.tipo === "salida" ? "Sale" : "Entra"}</span><span><b>${esc(x.u.depa)}</b><small>${esc(x.u.inq)}</small></span></div>`).join("");
-  h += xs.filter(x => x.tipo === "paso" && x.p.clave !== "salida").map(x => filaPaso(x.p, true)).join("");
-  h += xs.filter(x => x.tipo === "paso" && x.p.clave === "salida").map(x => filaPaso(x.p, true)).join("");
-  $("esDia").innerHTML = h || '<p class="nota">Nada de Condotec este día.</p>';
+function detalleCC(e){
+  const [nombre, color] = TIPOS_CC[e.tipo], filas = [];
+  if (e.u){
+    const u = e.u;
+    if (u.inq) filas.push(["Inquilino", u.inq]);
+    if (isFinite(u.renta) && u.renta) filas.push(["Renta", pesos(u.renta) + "/mes"]);
+    if (u.entrada) filas.push(["Entró", corto(u.entrada)]);
+    if (u.salida) filas.push(["Sale", corto(u.salida)]);
+    if (u.corredor) filas.push(["Corredor", u.corredor]);
+    if (u.nec) filas.push(["Pendiente en el depa", u.nec]);
+    if (u.notas) filas.push(["Notas", u.notas]);
+  } else {
+    const p = e.p;
+    filas.push(["Pendiente", (p.n ? p.n + ". " : "") + p.texto]);
+    if (p.depas) filas.push(["Depas", p.depas]);
+    if (p.prio) filas.push(["Prioridad", p.prio]);
+    if (p.estado) filas.push(["Estado", p.estado]);
+    if (p.notas) filas.push(["Notas", p.notas]);
+  }
+  return `<article class="cc-det"><div class="cc-det-top"><span class="ev ${color}">${esc(nombre)}</span><b>${esc(e.nombre)}</b></div>` +
+    `<dl>${filas.map(([k, v]) => `<dt>${esc(k)}</dt><dd>${esc(v)}</dd>`).join("")}</dl></article>`;
 }
-function pintarListaS(){
-  const unis = (SAL && SAL.unis) || [], limite = sumaDias(hoy, 90);
-  const conPlan = unis.filter(u => u.salida).map(u => ({ u, ps:pasosS(u) }))
-    .filter(x => x.u.salida >= hoy || x.ps.some(p => !p.hecha)).sort((a, b) => a.u.salida.localeCompare(b.u.salida) || a.u.depa.localeCompare(b.u.depa));
-  const vis = verTodasS ? conPlan : conPlan.filter(x => x.u.salida <= limite || x.ps.some(p => p.atrasado));
-  $("esListaCuenta").textContent = conPlan.length ? (verTodasS ? conPlan.length + " en total" : "próximos 90 días") : "";
-  $("esLista").innerHTML = vis.map(({ u, ps }) => {
-    const n = Math.round((new Date(u.salida + "T12:00") - new Date(hoy + "T12:00")) / 864e5);
-    const tono = n < 0 ? "gris" : n <= 14 ? "rojo" : n <= 45 ? "ambar" : "gris";
-    const cuando = n < 0 ? `salió hace ${-n} d` : n === 0 ? "sale hoy" : `en ${n} d`;
-    const f = new Date(u.salida + "T12:00"), hechos = ps.filter(p => p.hecha).length;
-    const ren = u.ren === "si" ? "Renueva" : u.ren === "no" ? "Se va" : "¿Renueva? Por confirmar";
-    const pend = ps.filter(p => !p.hecha), urgentes = pend.filter(p => p.atrasado || p.dia <= sumaDias(hoy, 14));
-    const arriba = urgentes.length ? urgentes : pend.slice(0, 1), resto = ps.filter(p => !arriba.includes(p));
-    const clave = u.depa + "|" + u.inq;
-    return `<article class="sal"><div class="sal-top"><span class="sal-f t-${tono}"><b>${f.getDate()}</b><small>${esc(f.toLocaleDateString("es-MX", { month:"short" }).replace(".", ""))}</small></span>` +
-      `<span class="sal-q"><b>${esc(u.depa)}</b><small>${esc(u.inq)}</small></span><span class="marca t-${tono}">${esc(cuando)}</span></div>` +
-      `<p class="sal-nota">${esc([ren, u.fuente && "fecha según " + u.fuente.toLowerCase(), u.nota].filter(Boolean).join(" · "))}</p>` +
-      `<div class="sal-av"><span class="medidor" style="--p:${ps.length ? Math.max(hechos ? 4 : 0, hechos / ps.length * 100) : 0}"><i></i></span>${hechos}/${ps.length} pasos</div>` +
-      `<div class="sal-pasos">${arriba.map(p => filaPaso(p, false)).join("")}</div>` +
-      (resto.length ? `<details data-sal="${esc(clave)}"${abiertasS.has(clave) ? " open" : ""}><summary>Plan completo (${ps.length} pasos)</summary>` +
-        `<div class="sal-pasos">${resto.map(p => filaPaso(p, false)).join("")}</div></details>` : "") + `</article>`;
-  }).join("") + (conPlan.length > vis.length || verTodasS ? `<button class="mas-hechas" data-ver-salidas>${verTodasS ? "Ver solo los próximos 90 días" : "Ver todas (" + conPlan.length + ")"}</button>` : "")
-    || '<p class="nota">No hay salidas en la pestaña Salidas.</p>';
-  const sin = unis.filter(u => !u.salida);
-  $("esSinFechaCaja").hidden = !sin.length;
-  $("esSinFechaCuenta").textContent = sin.length ? sin.length + " por confirmar" : "";
-  $("esSinFecha").innerHTML = sin.map(u => `<div class="renglon"><div class="arriba"><b>${esc(u.depa)} · ${esc(u.inq)}</b><span class="marca t-gris">Sin fecha</span></div>` +
-    `<p>${esc([u.corredor && "Corredor: " + u.corredor, u.nota].filter(Boolean).join(" · "))}</p></div>`).join("");
+function abrirCC(d, i){
+  const ev = eventosCC(d), lista = i == null ? ev : [ev[i]];
+  if (!lista.length) return;
+  const f = new Date(d + "T12:00").toLocaleDateString("es-MX", { weekday:"long", day:"numeric", month:"long" });
+  $("ccHojaTitulo").textContent = f.replace(/^./, c => c.toUpperCase());
+  $("ccHojaCuerpo").innerHTML = lista.map(detalleCC).join("");
+  hoja($("hojaCC"), true);
 }
-function pintarCifrasS(){
-  const unis = (SAL && SAL.unis) || [], depas = l => new Set(l.map(u => u.depa)).size;
-  const en = n => depas(unis.filter(u => u.salida && u.salida >= hoy && u.salida <= sumaDias(hoy, n)));
-  const atras = ITEMS_S.filter(x => x.tipo === "paso" && x.p.atrasado).length, sin = unis.filter(u => !u.salida).length;
-  const c = [[en(30), "salen en 30 días", "t-rojo"], [en(90), "salen en 90 días", ""], [atras, "pasos atrasados", atras ? "t-rojo" : ""], [sin, "sin fecha", ""]];
-  $("esCifras").innerHTML = c.map(([v, t, k]) => `<div class="cifra"><b class="${k}">${v}</b><small>${t}</small></div>`).join("");
-  const prox = unis.filter(u => u.salida >= hoy).sort((a, b) => a.salida.localeCompare(b.salida))[0];
-  $("esCuenta").textContent = prox ? `sigue ${prox.depa}, ${corto(prox.salida)}` : "";
+function cargarSalidas(c){ // (mismo nombre de antes: lo llaman las pestañas al refrescar)
+  return Promise.all([apiT(c, "get_values", { spreadsheetId:CONDOTEC, range:"Depas!A:K" }), apiT(c, "get_values", { spreadsheetId:CONDOTEC, range:"Pendientes!A:J" })])
+    .then(([d, p]) => { const nuevo = leerCC(d.values || [], p.values || []); if (JSON.stringify(nuevo) !== JSON.stringify(CC)){ CC = nuevo; lsPoner(LSCC, CC); pintarCC(); } })
+    .catch(() => { if (!CC) $("ccNota").textContent = "No pude cargar el calendario. Revisa tu conexión."; });
 }
-function pintarSalidas(){
-  if (!SAL) return;
-  esSel = esSel || hoy; esMes = esMes || hoy.slice(0, 7);
-  calcularS(); pintarCifrasS(); pintarCalS(); pintarDiaS(); pintarListaS();
-  if (AG && agSel){ pintarCal(); pintarDia(); } // el calendario de Pendientes también muestra el plan
-}
-function cargarSalidas(c){
-  return Promise.all([apiT(c, "get_values", { spreadsheetId:CONDOTEC, range:HOJA_S + "!A:I" }), apiT(c, "get_values", { spreadsheetId:CONDOTEC, range:`'${HOJA_P}'!A:C` })])
-    .then(([s, p]) => {
-      const nuevo = leerSalidas(s.values || [], p.values || []), igual = JSON.stringify(nuevo) === JSON.stringify(SAL);
-      SAL = nuevo; lsPoner(LSS, SAL); if (!igual) pintarSalidas(); return enviarColaS(c);
-    })
-    .catch(() => { if (!SAL) $("esLista").innerHTML = '<p class="nota">No pude cargar las salidas. Revisa tu conexión.</p>'; });
-}
-/* Manda lo palomeado uno por uno. Busca la fila por ID; si todavía no existe, la agrega al final de "Plan salidas". */
-async function enviarColaS(c){
-  if (enviandoS || !colaS.length || !c) return;
-  enviandoS = true;
-  try{
-    while (colaS.length){
-      const op = colaS[0], hoja = `'${HOJA_P}'`;
-      const ids = ((await apiT(c, "get_values", { spreadsheetId:CONDOTEC, range:hoja + "!A:A" })).values || []).map(r => sinApostrofo(r[0]));
-      const i = ids.indexOf(op.id);
-      if (i > 0) await apiT(c, "update_values", { spreadsheetId:CONDOTEC, range:`${hoja}!B${i + 1}:C${i + 1}`, values:[[op.estado, op.hecha || ""]] });
-      else { const n = Math.max(ids.length, 1) + 1;
-        await apiT(c, "update_values", { spreadsheetId:CONDOTEC, range:`${hoja}!A${n}:E${n}`, values:[[op.id, op.estado, op.hecha || "", op.depa, op.paso]] }); }
-      if (colaS[0] === op) colaS.shift();
-      lsPoner(LSSC, colaS);
-      if (SAL){ SAL.est[op.id] = { estado:op.estado, hecha:op.hecha }; lsPoner(LSS, SAL); }
-    }
-  }catch(e){ /* sin conexión: se queda en la cola y se reintenta en la siguiente actualización */ }
-  enviandoS = false;
-}
-function cambiarPaso(id, estado){
-  const x = ITEMS_S.find(x => x.tipo === "paso" && x.p.id === id);
-  const op = { id, estado, hecha:estado === "hecha" ? ahoraTxt() : "", depa:x ? x.u.depa : "", paso:x ? x.p.t : "" };
-  colaS = colaS.filter(o => o.id !== id).concat(op); lsPoner(LSSC, colaS);
-  if (navigator.vibrate && estado === "hecha") navigator.vibrate(12);
-  pintarSalidas();
-  const c = cfg(); if (c) enviarColaS(c);
-}
-document.addEventListener("click", e => {
-  const b = e.target.closest("[data-paso],[data-desmarcar]"); if (!b) return;
-  if (b.dataset.paso){
-    const row = b.closest(".tarea"); row.classList.add("lista");
-    setTimeout(() => cambiarPaso(b.dataset.paso, "hecha"), matchMedia("(prefers-reduced-motion: reduce)").matches ? 0 : 380);
-  } else cambiarPaso(b.dataset.desmarcar, "pendiente");
+$("ccDias").addEventListener("click", e => {
+  const b = e.target.closest("[data-cc-ev]");
+  if (b){ const [d, i] = b.dataset.ccEv.split("|"); return abrirCC(d, +i); }
+  const dia = e.target.closest("[data-cc-dia]"); if (dia) abrirCC(dia.dataset.ccDia); // el día (o "+2") abre todo lo de ese día
 });
-$("esCalDias").addEventListener("click", e => {
-  const b = e.target.closest("[data-es-dia]"); if (!b) return;
-  esSel = b.dataset.esDia; if (esSel.slice(0, 7) !== esMes) esMes = esSel.slice(0, 7);
-  pintarCalS(); pintarDiaS();
-});
-const moverMesS = n => { if (!esMes) return; const d = new Date(esMes + "-01T12:00"); d.setMonth(d.getMonth() + n); esMes = d.toLocaleDateString("sv-SE").slice(0, 7); pintarCalS(); };
-$("esMesAnt").onclick = () => moverMesS(-1); $("esMesSig").onclick = () => moverMesS(1);
-/* deslizar el calendario a los lados también cambia de mes */
-(function(){ let x0 = null, y0 = 0; const el = $("esCalDias");
+const moverMesCC = n => { const d = new Date(ccMes + "-01T12:00"); d.setMonth(d.getMonth() + n); ccMes = d.toLocaleDateString("sv-SE").slice(0, 7); pintarCC(); };
+$("ccAnt").onclick = () => moverMesCC(-1); $("ccSig").onclick = () => moverMesCC(1); $("ccHoy").onclick = () => { ccMes = hoy.slice(0, 7); pintarCC(); };
+(function(){ let x0 = null, y0 = 0; const el = $("ccDias"); // deslizar a los lados cambia de mes
   el.addEventListener("touchstart", e => { x0 = e.touches[0].clientX; y0 = e.touches[0].clientY; }, { passive:true });
   el.addEventListener("touchend", e => { if (x0 == null) return; const dx = e.changedTouches[0].clientX - x0, dy = e.changedTouches[0].clientY - y0; x0 = null;
-    if (Math.abs(dx) > 50 && Math.abs(dx) > Math.abs(dy) * 1.5) moverMesS(dx < 0 ? 1 : -1); }, { passive:true });
+    if (Math.abs(dx) > 50 && Math.abs(dx) > Math.abs(dy) * 1.5) moverMesCC(dx < 0 ? 1 : -1); }, { passive:true });
 })();
-$("esLista").addEventListener("click", e => { if (e.target.closest("[data-ver-salidas]")){ verTodasS = !verTodasS; pintarListaS(); } });
-$("esLista").addEventListener("toggle", e => { const d = e.target.closest("details[data-sal]"); if (d) d.open ? abiertasS.add(d.dataset.sal) : abiertasS.delete(d.dataset.sal); }, true);
-pintarSalidas(); // lo guardado en el teléfono se ve al instante
+pintarCC(); // lo guardado en el teléfono se ve al instante
 
 /* ---------- pestañas: cada app vive en su iframe, se crea la primera vez y se queda viva ---------- */
 const vistas = { inicio:$("v-inicio"), condotec:$("v-condotec"), fede:$("v-fede"), pendientes:$("v-pendientes"), camara:$("v-camara") };
