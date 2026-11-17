@@ -60,8 +60,13 @@ header small{display:block;color:var(--muted);font-size:13px;margin-bottom:6px}
 .logo{position:relative;width:72px;height:72px;margin:-5px;border-radius:50%;background:none;border:0;padding:0;cursor:pointer;transition:transform .2s}
 .logo:active{transform:scale(.92)}
 .logo canvas{width:100%;height:100%;display:block}
-.aviso{position:absolute;top:-5px;right:-5px;min-width:19px;height:19px;padding:0 5px;border-radius:10px;background:var(--c10);color:var(--c60);
-  font:600 11px/19px var(--sans);font-style:normal;text-align:center;box-shadow:0 0 0 2px var(--c60)}
+.quien>div{min-width:0}
+#fecha{white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+/* ✕ junto al anillo: solo mientras Fede trabaja o habla; lo calla en la compu */
+.callar{flex:none;width:38px;height:38px;border-radius:50%;display:grid;place-items:center;color:var(--fg);cursor:pointer;padding:0;animation:logoIn .35s cubic-bezier(.2,.9,.3,1.2) both}
+.callar[hidden]{display:none}
+.callar svg{width:16px;height:16px}
+.callar:active{transform:scale(.9)}
 
 /* ---------- Fede: la misma conversación que en la compu; la orden viaja por el server y Fede la hace allá ---------- */
 #v-fede{overflow:hidden}
@@ -128,22 +133,6 @@ header small{display:block;color:var(--muted);font-size:13px;margin-bottom:6px}
 .cam-total{display:flex;justify-content:space-between;padding-top:10px;border-top:1px solid rgba(255,255,255,.1);font-weight:600;font-variant-numeric:tabular-nums}
 .cam-dia{display:flex;flex-direction:column;gap:3px;padding:12px;border-radius:16px;background:rgba(255,255,255,.05);font-size:14px}.cam-dia span{color:var(--muted)}
 
-/* Tocar el logo: Fede escucha (voz del teléfono → texto → la orden va a Fede por el server) */
-.escucha{position:fixed;inset:0;z-index:20;display:none;flex-direction:column;align-items:center;justify-content:center;gap:22px;padding:24px;
-  background:color-mix(in srgb,var(--c60) 78%,transparent);-webkit-backdrop-filter:blur(26px) saturate(150%);backdrop-filter:blur(26px) saturate(150%)}
-.escucha.on{display:flex;animation:entrar .35s cubic-bezier(.16,1,.3,1) both}
-.escucha .orbe{width:150px;height:150px;border-radius:50%;position:relative;
-  background:radial-gradient(circle at 50% 40%,color-mix(in srgb,var(--c10) 55%,#fff) 0,var(--c10) 38%,color-mix(in srgb,var(--c10) 30%,transparent) 70%);
-  box-shadow:0 0 60px color-mix(in srgb,var(--c10) 60%,transparent);animation:respira 1.6s ease-in-out infinite}
-.escucha .orbe::after{content:"";position:absolute;inset:-18px;border-radius:50%;border:2px solid color-mix(in srgb,var(--c10) 50%,transparent);animation:onda 1.6s ease-out infinite}
-.escucha.pensando .orbe{animation-duration:.8s;filter:saturate(.7)}
-@keyframes respira{50%{transform:scale(1.08)}}
-@keyframes onda{from{opacity:1;transform:scale(.9)}to{opacity:0;transform:scale(1.35)}}
-.escucha b{font:700 26px/1.15 var(--display);text-align:center}
-.escucha p{margin:0;color:var(--muted);font-size:16px;text-align:center;max-width:320px;min-height:2.6em}
-.escucha .botones{display:flex;gap:10px}
-.escucha button{min-width:120px;padding:13px 18px;border-radius:18px;border:1px solid rgba(255,255,255,.14);background:rgba(255,255,255,.08);font:700 16px/1 var(--display);cursor:pointer}
-.escucha button.listo{background:var(--c10);color:var(--c60);border-color:transparent}
 /* hoja de Pendientes y Depas (como en Fede) */
 .accesos{display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-bottom:6px}
 .acceso{display:flex;align-items:center;gap:10px;padding:12px;border-radius:22px;border:1px solid rgba(255,255,255,.10);background:rgba(255,255,255,.05);color:inherit;text-decoration:none;min-height:56px}
@@ -491,7 +480,8 @@ header .ajustes svg{width:20px;height:20px}
 <div class="vista on" id="v-inicio" role="tabpanel" aria-label="Inicio"><main>
 <header>
   <div class="quien">
-    <button class="logo" id="logoFede" title="Hablarle a Fede" aria-label="Hablarle a Fede"><canvas id="anilloFede" aria-hidden="true"></canvas><i class="aviso" id="avisoPend" hidden></i></button>
+    <button class="logo" id="logoFede" title="Hablarle a Fede" aria-label="Hablarle a Fede"><canvas id="anilloFede" aria-hidden="true"></canvas></button>
+    <button class="callar glass" id="callarFede" hidden aria-label="Callar a Fede" title="Callar a Fede"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round"><path d="M6 6l12 12M18 6L6 18"/></svg></button>
     <div><small id="fecha">Hoy</small><p>Hola, <em>Pato</em></p></div>
   </div>
   <button class="ajustes glass" id="abrirColores" aria-label="Cambiar colores"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><circle cx="12" cy="12" r="9"/><circle cx="8.5" cy="9.5" r="1.4" fill="currentColor"/><circle cx="12.5" cy="7.5" r="1.4" fill="currentColor"/><circle cx="16" cy="10.5" r="1.4" fill="currentColor"/><path d="M12 21a2.5 2.5 0 0 1 0-5h2a3 3 0 0 0 3-3"/></svg></button>
@@ -642,11 +632,6 @@ header .ajustes svg{width:20px;height:20px}
 <button type="submit" id="fedeEnviar" aria-label="Enviar a Fede"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 19V5M5 12l7-7 7 7"/></svg></button></form>
 </main></div>
 
-<div class="escucha" id="escucha" role="dialog" aria-modal="true" aria-label="Fede le escucha">
-  <div class="orbe" aria-hidden="true"></div>
-  <b id="escuchaT">Le escucho, señor</b>
-  <p id="escuchaTxt">Diga su orden.</p>
-  <div class="botones"><button id="escuchaNo">Cancelar</button><button class="listo" id="escuchaSi">Listo</button></div>
 </div>
 <div class="velo" id="velo"></div>
 <section class="hoja" id="hoja" role="dialog" aria-modal="true" aria-labelledby="hojaTitulo" aria-hidden="true">
@@ -950,8 +935,6 @@ function pintarPanel(p, forzar){
   h += `<button class="tira-pend glass card" data-ir="pendientes"><b class="num">${esc(cif("pendientes", "abiertos"))}</b>` +
     `<span>pendientes abiertos<small>${esc(cif("pendientes", "alta"))} de alta · ${esc(cif("pendientes", "vencidos"))} vencidos</small></span><em>›</em></button>`;
   $("panelCuerpo").innerHTML = h;
-  const n = parseInt(cif("pendientes", "alta"), 10) || 0;
-  $("avisoPend").hidden = !n; $("avisoPend").textContent = n;
 }
 $("panelCuerpo").addEventListener("click", e => {
   const b = e.target.closest("[data-uni]"); if (!b || !PANEL) return;
@@ -1640,82 +1623,141 @@ Si el texto no describe comida, responde {"items":[]}.`;
 })();
 
 
-/* ---------- Tocar el logo: Fede escucha ----------
-   Si el teléfono reconoce voz (Safari/Chrome), se manda el texto. Si no, se graba una nota y Fede la transcribe en la compu. */
+/* ---------- El anillo de Fede (logo): tocar = Fede escucha; tocar otra vez = ya acabé; ✕ = que se calle ----------
+   Es el anillo Aurora de la compu. Sin pantallas: lo que pasa se ve en el anillo y en la línea de la fecha.
+   Si el teléfono reconoce voz, manda el texto y él solo nota cuando uno deja de hablar. Si no, graba una nota
+   (corta sola tras 1.5 s de silencio) y Fede la transcribe en la compu. */
 (() => {
   const RV = window.SpeechRecognition || window.webkitSpeechRecognition;
-  let rec = null, grab = null, trozos = [], texto = "", activo = false, corte = 0;
-  const caja = $("escucha"), lbl = $("escuchaTxt");
-  function cerrar(){ activo = false; clearTimeout(corte); caja.classList.remove("on", "pensando"); try{ rec && rec.abort(); }catch(e){} try{ grab && grab.state !== "inactive" && grab.stop(); }catch(e){} rec = null; }
-  async function enviar(){
-    if (!activo) return;
-    activo = false; caja.classList.add("pensando"); $("escuchaT").textContent = "Enviando a Fede…";
-    try{
-      if (rec){ try{ rec.stop(); }catch(e){} if (texto.trim()){ await mandarFede(texto.trim()); } else { lbl.textContent = "No le oí nada, señor."; setTimeout(cerrar, 1200); return; } }
-      else if (grab){
-        await new Promise(r => { grab.onstop = r; grab.state !== "inactive" ? grab.stop() : r(); });
-        grab.stream.getTracks().forEach(t => t.stop());
-        const b = new Blob(trozos, { type:grab.mimeType || "audio/mp4" });
-        if (b.size < 2000){ lbl.textContent = "No le oí nada, señor."; setTimeout(cerrar, 1200); return; }
-        const audio = await new Promise((res, rej) => { const f = new FileReader(); f.onload = () => res(String(f.result).split(",")[1]); f.onerror = rej; f.readAsDataURL(b); });
-        await api(cfg(), "fede_orden", { audio, mime:b.type }); pintarFede.forzar = true;
-      }
-      else { cerrar(); return; }  // ni reconocimiento ni grabación (micrófono negado): no se manda nada
-      cerrar(); ir("fede"); cargarFede();
-    }catch(e){ lbl.textContent = "No llegó a Fede: " + e.message; setTimeout(cerrar, 2200); }
+  const cv = $("anilloFede"), ctx = cv.getContext("2d"), fecha = $("fecha"), callar = $("callarFede"), logo = $("logoFede");
+  const quieto = matchMedia("(prefers-reduced-motion:reduce)").matches, espera = ms => new Promise(r => setTimeout(r, ms));
+  let estado = "reposo", rec = null, grab = null, trozos = [], texto = "", nivel = 0, vigila = 0, fechaTxt = "", sigue = 0, turno = 0;
+  const decir = t => { if (!fechaTxt) fechaTxt = fecha.textContent; fecha.textContent = t; };
+  const volver = () => { if (fechaTxt){ fecha.textContent = fechaTxt; fechaTxt = ""; } };
+  function poner(e, t){
+    estado = e; clearTimeout(sigue); t ? decir(t) : volver();
+    logo.setAttribute("aria-label", e === "escucha" ? "Ya acabé de hablar" : "Hablarle a Fede");
+    if (quieto) requestAnimationFrame(cuadro);
   }
-  async function abrir(){
+  const aviso = t => { poner("reposo", t); sigue = setTimeout(volver, 2600); };
+
+  async function empezar(){
     if (!cfg()) return;
-    texto = ""; trozos = []; activo = true; lbl.textContent = "Diga su orden."; $("escuchaT").textContent = "Le escucho, señor";
-    caja.classList.add("on");
+    texto = ""; trozos = []; turno++; poner("escucha", "Le escucho, señor…");
     if (navigator.vibrate) navigator.vibrate(15);
     if (RV){
-      rec = new RV(); rec.lang = "es-MX"; rec.interimResults = true; rec.continuous = false;
-      rec.onresult = e => { texto = Array.from(e.results).map(r => r[0].transcript).join(" "); lbl.textContent = "«" + texto + "»"; };
-      rec.onend = () => { if (activo && rec) enviar(); };      // al dejar de hablar se manda solo
-      rec.onerror = e => { if (e.error === "not-allowed" || e.error === "service-not-allowed"){ rec = null; grabar(); } };
-      try{ rec.start(); return; }catch(e){ rec = null; }
+      const r = rec = new RV(); r.lang = "es-MX"; r.interimResults = true; r.continuous = false;
+      r.onresult = e => { texto = Array.from(e.results).map(x => x[0].transcript).join(" "); decir("«" + texto + "»"); nivel = 1; };
+      r.onend = () => { if (estado === "escucha" && rec === r) terminar(); };   // dejó de hablar: se manda solo
+      r.onerror = e => { if (rec === r && (e.error === "not-allowed" || e.error === "service-not-allowed")){ rec = null; grabar(); } };
+      try{ r.start(); return; }catch(e){ rec = null; }
     }
     grabar();
   }
   async function grabar(){
     try{
       const st = await navigator.mediaDevices.getUserMedia({ audio:true });
-      grab = new MediaRecorder(st); trozos = [];
-      grab.ondataavailable = e => { if (e.data && e.data.size) trozos.push(e.data); };
-      grab.start(); lbl.textContent = "Grabando… toque Listo al terminar.";
-      corte = setTimeout(enviar, 30000);
-    }catch(e){ lbl.textContent = "Necesito permiso para el micrófono."; setTimeout(cerrar, 2200); }
+      if (estado !== "escucha"){ st.getTracks().forEach(t => t.stop()); return; }
+      const g = grab = new MediaRecorder(st); trozos = [];
+      g.ondataavailable = e => { if (e.data && e.data.size) trozos.push(e.data); };
+      g.start();
+      const ac = g.ac = new (window.AudioContext || window.webkitAudioContext)(), an = ac.createAnalyser(); an.fftSize = 512;
+      ac.createMediaStreamSource(st).connect(an);
+      const buf = new Uint8Array(an.fftSize), t0 = performance.now(); let hablo = false, ultimaVoz = t0;
+      clearInterval(vigila);
+      vigila = setInterval(() => {
+        an.getByteTimeDomainData(buf); let s = 0; for (const v of buf) s += (v - 128) * (v - 128);
+        const rms = Math.sqrt(s / buf.length) / 128, ahora = performance.now(); nivel = Math.min(1, rms * 6);
+        // shortcut: umbral fijo de voz (0.04); si con ruido de fondo no corta, calibrar con los primeros 300 ms
+        if (rms > .04){ hablo = true; ultimaVoz = ahora; }
+        if ((hablo && ahora - ultimaVoz > 1500) || (!hablo && ahora - t0 > 8000) || ahora - t0 > 30000) terminar();
+      }, 100);
+    }catch(e){ aviso("Necesito permiso para el micrófono."); }
   }
-  // Anillo de Fede en el logo: el mismo de la compu (hub, interfaz "jlp"), en reposo.
-  (() => {
-    const cv = $("anilloFede"), ctx = cv.getContext("2d"), N = 64, quieto = matchMedia("(prefers-reduced-motion:reduce)").matches;
-    const TONOS = [[255,128,0],[227,211,197],[255,166,77],[255,128,0]];
-    const tono = f => { f = (((f % 1) + 1) % 1) * 3; const i = Math.floor(f), r = f - i, a = TONOS[i], b = TONOS[i + 1]; return a.map((x, k) => Math.round(x + (b[k] - x) * r)); };
-    function cuadro(t){
-      const dpr = devicePixelRatio || 1, s = cv.clientWidth * dpr;
-      if (!s) return requestAnimationFrame(cuadro);
-      if (cv.width !== s){ cv.width = cv.height = s; }
-      const c = s / 2, R = s * 0.27;
-      ctx.clearRect(0, 0, s, s);
-      const g = ctx.createRadialGradient(c, c - R * .2, 0, c, c, R * 1.05);
-      g.addColorStop(0, "rgba(255,255,255,.22)"); g.addColorStop(.65, "rgba(255,128,0,.12)"); g.addColorStop(1, "rgba(255,128,0,0)");
-      ctx.fillStyle = g; ctx.beginPath(); ctx.arc(c, c, R * 1.05, 0, 6.2832); ctx.fill();
-      ctx.strokeStyle = "rgba(255,255,255,.5)"; ctx.lineWidth = Math.max(1, dpr * .8); ctx.beginPath(); ctx.arc(c, c, R * .98, 0, 6.2832); ctx.stroke();
-      ctx.lineCap = "round"; ctx.lineWidth = Math.max(1.5, s * .022);
-      for (let i = 0; i < N; i++){
-        const a = i / N * 6.2832 - 1.5708 + t / 40000, ruido = .5 + .5 * Math.sin(t / 700 + i * .45) * Math.cos(t / 1100 + i * .13);
-        const largo = R * (.06 + .32 * ruido), k = tono(i / N + t / 24000);
-        ctx.strokeStyle = `rgba(${k},.9)`; ctx.beginPath();
-        ctx.moveTo(c + Math.cos(a) * R * 1.1, c + Math.sin(a) * R * 1.1); ctx.lineTo(c + Math.cos(a) * (R * 1.1 + largo), c + Math.sin(a) * (R * 1.1 + largo)); ctx.stroke();
-      }
-      if (!quieto) requestAnimationFrame(cuadro);
+  async function terminar(){
+    if (estado !== "escucha") return;
+    clearInterval(vigila); nivel = 0; poner("enviando", "Enviando a Fede…");
+    const c = cfg();
+    try{
+      let id;
+      if (rec){
+        const r = rec; rec = null; try{ r.stop(); }catch(e){}
+        if (!texto.trim()) return aviso("No le oí nada, señor.");
+        id = (await api(c, "fede_orden", { texto:texto.trim() })).id;
+      } else if (grab){
+        const g = grab; grab = null;
+        await new Promise(r => { g.onstop = r; g.state !== "inactive" ? g.stop() : r(); });
+        g.stream.getTracks().forEach(t => t.stop()); try{ g.ac.close(); }catch(e){}
+        const b = new Blob(trozos, { type:g.mimeType || "audio/mp4" });
+        if (b.size < 2000) return aviso("No le oí nada, señor.");
+        const audio = await new Promise((res, rej) => { const f = new FileReader(); f.onload = () => res(String(f.result).split(",")[1]); f.onerror = rej; f.readAsDataURL(b); });
+        id = (await api(c, "fede_orden", { audio, mime:b.type })).id;
+      } else return poner("reposo");
+      seguir(id);
+    }catch(e){ aviso("No llegó a Fede: " + e.message); }
+  }
+  // Mientras Fede trabaja y mientras lo dice en la compu, el ✕ queda a la mano.
+  async function seguir(id){
+    const mio = ++turno, c = cfg(), t0 = Date.now(); let hasta = 0;
+    poner("pensando", "Fede está en eso…"); callar.hidden = false; pintarFede.forzar = true;
+    while (turno === mio && Date.now() - t0 < 180000){
+      try{
+        FEDE = await api(c, "fede_charla", {}); pintarFede();
+        const m = FEDE.mensajes.find(x => x.id === id);
+        if (turno !== mio) return;
+        if (m && m.estado === "lista"){ decir("Fede: " + String(m.respuesta || "").replace(/\s+/g, " ")); hasta = Date.now() + 5000; break; }
+        decir(FEDE.en_linea ? "Fede está en eso…" : "La compu de Fede está apagada…");
+      }catch(e){}
+      await espera(1500);
     }
-    requestAnimationFrame(cuadro);
-  })();
-  $("logoFede").addEventListener("click", e => { e.stopPropagation(); e.preventDefault(); abrir(); });
-  $("escuchaSi").addEventListener("click", enviar);
-  $("escuchaNo").addEventListener("click", cerrar);
+    while (turno === mio && Date.now() < hasta) await espera(400);
+    if (turno === mio){ callar.hidden = true; poner("reposo"); }
+  }
+  callar.addEventListener("click", async e => {
+    e.stopPropagation(); turno++; callar.hidden = true; aviso("Cancelado.");
+    try{ await api(cfg(), "fede_orden", { cancelar:true }); }catch(err){ aviso("No llegó a Fede: " + err.message); }
+  });
+  logo.addEventListener("click", e => {
+    e.stopPropagation(); e.preventDefault();
+    if (estado === "escucha") terminar();
+    else if (estado !== "enviando"){ callar.hidden = true; empezar(); }
+  });
+
+  // El anillo Aurora de la compu: verde agua en reposo, sigue la voz al escuchar, ámbar y en giro mientras Fede piensa.
+  const TONOS = [[60,235,190],[255,214,170],[140,205,255],[60,235,190]];
+  const COLOR = { reposo:"31,214,170", escucha:"140,240,215", enviando:"255,179,107", pensando:"255,179,107" };
+  const tono = f => { f = (((f % 1) + 1) % 1) * 3; const i = Math.floor(f), r = f - i, a = TONOS[i], b = TONOS[i + 1]; return a.map((x, k) => Math.round(x + (b[k] - x) * r)); };
+  const hist = new Float32Array(32); let giro = 0, antes = 0;
+  function cuadro(t){
+    const dt = antes ? Math.min(.1, (t - antes) / 1000) : 0; antes = t;
+    const dpr = devicePixelRatio || 1, s = Math.round(cv.clientWidth * dpr);
+    if (!s) return requestAnimationFrame(cuadro);
+    if (cv.width !== s) cv.width = cv.height = s;
+    const piensa = estado === "enviando" || estado === "pensando", rgb = COLOR[estado], c = s / 2, R = s * .27, N = 64;
+    nivel *= .93; hist.copyWithin(1, 0); hist[0] = estado === "escucha" ? nivel : 0;
+    giro += dt * (piensa ? 1.4 : .06);
+    ctx.clearRect(0, 0, s, s);
+    const g = ctx.createRadialGradient(c, c - R * .2, 0, c, c, R * 1.05);
+    g.addColorStop(0, `rgba(255,255,255,${.2 + .22 * nivel})`); g.addColorStop(.65, `rgba(${rgb},.12)`); g.addColorStop(1, `rgba(${rgb},0)`);
+    ctx.fillStyle = g; ctx.beginPath(); ctx.arc(c, c, R * 1.05, 0, 6.2832); ctx.fill();
+    ctx.strokeStyle = `rgba(255,255,255,${.45 + .3 * nivel})`; ctx.lineWidth = Math.max(1, dpr * .8); ctx.beginPath(); ctx.arc(c, c, R * .98, 0, 6.2832); ctx.stroke();
+    ctx.lineCap = "round"; ctx.lineWidth = Math.max(1.5, s * .022);
+    for (let i = 0; i < N; i++){
+      const a = i / N * 6.2832 - 1.5708 + giro * .12, esp = i < N / 2 ? i : N - i, h = hist[Math.min(31, Math.floor(esp / (N / 2) * 31))];
+      const ruido = .5 + .5 * Math.sin(t / 700 + i * .45) * Math.cos(t / 1100 + i * .13);
+      let largo = R * (.06 + .26 * ruido + .55 * h);
+      if (piensa) largo += R * .3 * Math.pow(Math.max(0, Math.cos(a - giro * 2.2)), 6);
+      const k = piensa ? [255, Math.round(179 + 40 * ruido), Math.round(107 + 60 * ruido)] : tono(i / N + t / 24000);
+      ctx.strokeStyle = `rgba(${k},.9)`; ctx.beginPath();
+      ctx.moveTo(c + Math.cos(a) * R * 1.1, c + Math.sin(a) * R * 1.1); ctx.lineTo(c + Math.cos(a) * (R * 1.1 + largo), c + Math.sin(a) * (R * 1.1 + largo)); ctx.stroke();
+    }
+    if (piensa) for (let k = 0; k < 12; k++){
+      ctx.strokeStyle = `rgba(255,190,120,${.5 * (1 - k / 12)})`; ctx.lineWidth = Math.max(1.5, s * .03);
+      const a0 = giro * 2.2 - k * .07; ctx.beginPath(); ctx.arc(c, c, R * .86, a0 - .07, a0); ctx.stroke();
+    }
+    if (!quieto || estado !== "reposo") requestAnimationFrame(cuadro);
+  }
+  requestAnimationFrame(cuadro);
 })();
 
 /* ---------- Inicio ---------- */
@@ -1888,7 +1930,6 @@ try{ AG = JSON.parse(localStorage.getItem(LSAG) || "null"); pintarAgenda(); }cat
 pintarTareas(); if (!c) sinConexionT("Conecta tus datos en Inicio para ver tus tareas."); // tareas guardadas: se ven al instante
 if (c) setTimeout(() => cargarTareas(c), 1500);
 if (c) setTimeout(() => cargarPanel(c), 1200);
-if (c) setTimeout(() => cargarSalidas(c), 1800); // el aviso del logo se actualiza sin estorbar la carga del Inicio
 /* Las otras pestañas se preparan por detrás en cuanto el Inicio ya se ve, para que al tocarlas abran al instante. */
 if (c) (window.requestIdleCallback || (f => setTimeout(f, 600)))(() => ORDEN.forEach(vista), { timeout:1500 });
 </script>
