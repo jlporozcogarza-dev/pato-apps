@@ -212,6 +212,12 @@ button.evento:active{filter:brightness(1.15)}
 .ev-horas{display:grid;grid-template-columns:1fr 1fr;gap:10px}
 .ev-horas[hidden]{display:none}
 #hojaEv .caja-txt{margin-top:10px}
+.otro-dia select{background:none;border:0;color:var(--fg);font:500 15px var(--sans);color-scheme:dark;text-align:right;max-width:60%}
+.ev-avisos-t{margin:14px 2px 6px;font-size:13px;color:var(--muted)}
+.ev-avisos{display:flex;flex-wrap:wrap;gap:8px}
+.chip-aviso{padding:8px 12px;border-radius:999px;border:1px solid rgba(255,255,255,.14);background:rgba(255,255,255,.06);color:var(--fg);font:inherit;font-size:14px}
+.chip-aviso span{opacity:.6;margin-left:4px}
+.ev-sin{font-size:14px;color:var(--muted);padding:6px 2px}
 .ev-borrar{color:var(--st-crit)!important}
 .cal-filtros{display:flex;gap:6px;flex-wrap:wrap;margin:2px 2px 10px}
 .cal-filtros button{display:inline-flex;align-items:center;gap:6px;padding:6px 11px;border-radius:99px;font:600 12.5px/1 var(--sans);cursor:pointer;
@@ -734,6 +740,10 @@ header .ajustes{visibility:hidden} /* en Inicio se usa el fijo de arriba a la de
   <div class="ev-horas" id="evHoras"><label class="otro-dia">Empieza<input type="time" id="evIni"></label><label class="otro-dia">Termina<input type="time" id="evFin"></label></div>
   <input id="evLugar" class="caja-txt" maxlength="200" placeholder="Lugar" aria-label="Lugar">
   <textarea id="evNota" class="caja-txt" rows="3" maxlength="500" placeholder="Notas" aria-label="Notas"></textarea>
+  <label class="otro-dia">Calendario<select id="evCal"></select></label>
+  <div class="ev-avisos-t">Avisos</div>
+  <div class="ev-avisos" id="evAvisos"></div>
+  <select id="evAvisoNuevo" class="caja-txt" aria-label="Agregar aviso"></select>
   <div class="fila"><button id="evGuardar" disabled>Guardar en Google Calendar</button><button class="ev-borrar" id="evBorrar">Borrar</button></div>
   <p class="at-estado" id="evEstado" role="status"></p>
 </section>
@@ -1012,17 +1022,32 @@ $("pendHecho").onclick = () => mandarPend(true);
 $("pendGuardar").onclick = () => mandarPend(false);
 ["agPend", "agDia"].forEach(id => $(id).addEventListener("click", e => { const b = e.target.closest("[data-pend]"); if (b) abrirPend(b.dataset.pend); }));
 /* Editar o borrar un evento de Google Calendar desde aquí: el server lo cambia en Google (Apps Script) y vuelve a copiar el calendario. */
-let evDia = [], evSel = null;
+let evDia = [], evSel = null, evRec = [], evRecTocado = false;
+const AVISOS = [[0,"Al empezar"],[10,"10 min antes"],[30,"30 min antes"],[60,"1 hora antes"],[180,"3 horas antes"],[1440,"1 día antes"],[2880,"2 días antes"],[10080,"1 semana antes"]];
+const avisoTxt = m => (AVISOS.find(a => a[0] === m) || [m, m + " min antes"])[1];
+$("evAvisoNuevo").innerHTML = '<option value="">+ Agregar aviso</option>' + AVISOS.map(a => `<option value="${a[0]}">${a[1]}</option>`).join("");
+function pintarAvisos(){
+  $("evAvisos").innerHTML = evRec.map(m => `<button type="button" class="chip-aviso" data-quita="${m}" aria-label="Quitar aviso ${avisoTxt(m)}">${avisoTxt(m)} <span aria-hidden="true">✕</span></button>`).join("")
+    || `<span class="ev-sin">${evRecTocado ? "Sin avisos" : "Los avisos normales del calendario"}</span>`;
+}
+$("evAvisoNuevo").addEventListener("change", e => { const m = e.target.value; e.target.value = ""; if (m === "") return;
+  evRec = [...new Set([...evRec, +m])].sort((a, b) => a - b); evRecTocado = true; pintarAvisos(); $("evGuardar").disabled = false; });
+$("evAvisos").addEventListener("click", e => { const b = e.target.closest("[data-quita]"); if (!b) return;
+  evRec = evRec.filter(m => m !== +b.dataset.quita); evRecTocado = true; pintarAvisos(); $("evGuardar").disabled = false; });
 function abrirEv(n){
   const e = evSel = evDia[n]; if (!e) return;
   $("evTitulo").textContent = e.t || "Evento"; $("evSub").textContent = e.c + (e.ro ? " · solo lectura" : "");
   $("evNombre").value = e.t || ""; $("evFecha").value = agSel; $("evTodo").checked = !!e.dia;
   $("evIni").value = e.dia ? "09:00" : e.i.slice(11, 16); $("evFin").value = e.dia ? "10:00" : e.f.slice(11, 16);
   $("evLugar").value = e.l || ""; $("evNota").value = e.d || ""; $("evHoras").hidden = !!e.dia;
+  // shortcut: los calendarios salen de los eventos copiados (±2 meses); uno sin ningún evento en ese rango no aparece
+  const cals = new Map(((AG && AG.eventos) || []).filter(x => x.cid && !x.ro).map(x => [x.cid, x.c]));
+  $("evCal").innerHTML = [...cals].sort((a, b) => a[1].localeCompare(b[1])).map(([cid, c]) => `<option value="${esc(cid)}"${cid === e.cid ? " selected" : ""}>${esc(c)}</option>`).join("");
+  evRec = [...(e.rec || [])].sort((a, b) => a - b); evRecTocado = false; pintarAvisos();
   $("evEstado").textContent = ""; $("evGuardar").disabled = true; $("evBorrar").disabled = false;
   hoja($("hojaEv"), true);
 }
-["evNombre", "evFecha", "evTodo", "evIni", "evFin", "evLugar", "evNota"].forEach(id => $(id).addEventListener("input", () => {
+["evNombre", "evFecha", "evTodo", "evIni", "evFin", "evLugar", "evNota", "evCal"].forEach(id => $(id).addEventListener("input", () => {
   $("evHoras").hidden = $("evTodo").checked; $("evGuardar").disabled = false; }));
 $("evTodo").addEventListener("change", () => { $("evHoras").hidden = $("evTodo").checked; $("evGuardar").disabled = false; });
 $("agDia").addEventListener("click", e => { const b = e.target.closest("[data-ev]"); if (b) abrirEv(+b.dataset.ev); });
@@ -1032,6 +1057,8 @@ async function mandarEv(borrar){
   const x = { accion:borrar ? "borrar" : "editar", cid:e.cid, id:e.id, dia0:agSel };
   if (!borrar) Object.assign(x, { t:$("evNombre").value.trim() || e.t, l:$("evLugar").value.trim(), d:$("evNota").value.trim(),
     fecha:$("evFecha").value || agSel, todo:$("evTodo").checked, ini:$("evIni").value || "09:00", fin:$("evFin").value || $("evIni").value || "10:00" });
+  if (!borrar && evRecTocado) x.rec = evRec;
+  if (!borrar && $("evCal").value && $("evCal").value !== e.cid) x.cid2 = $("evCal").value;
   if (!borrar && !x.todo && x.fin <= x.ini){ $("evEstado").textContent = "La hora de terminar debe ser después de la de empezar."; return; }
   $("evGuardar").disabled = $("evBorrar").disabled = true; $("evEstado").textContent = borrar ? "Borrando…" : "Guardando en Google Calendar…";
   try{

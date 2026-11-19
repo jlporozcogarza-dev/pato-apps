@@ -118,7 +118,7 @@ function eventos(x) {
     cal.getEvents(desde, hasta).forEach(function (ev) {
       out.push({ t: ev.getTitle(), i: f(ev.getStartTime()), f: f(ev.getEndTime()), dia: ev.isAllDayEvent(),
                  l: ev.getLocation() || '', c: cal.getName().trim(), col: cal.getColor(),
-                 id: ev.getId(), cid: cal.getId(), d: (ev.getDescription() || '').slice(0, 500), ro: /#holiday|#contacts|#weather/.test(cal.getId()) });
+                 id: ev.getId(), cid: cal.getId(), d: (ev.getDescription() || '').slice(0, 500), ro: /#holiday|#contacts|#weather/.test(cal.getId()), rec: ev.getPopupReminders() });
     });
   });
   return { eventos: out };
@@ -139,6 +139,20 @@ function evento(x) {
   if (x.fecha) {
     if (x.todo) ev.setAllDayDate(new Date(x.fecha + 'T00:00:00' + z));
     else ev.setTime(new Date(x.fecha + 'T' + x.ini + ':00' + z), new Date(x.fecha + 'T' + x.fin + ':00' + z));
+  }
+  // avisos: solo llegan si se tocaron en JLP (si no, se quedan los del calendario)
+  if (x.rec) { ev.removeAllReminders(); x.rec.forEach(function (m) { ev.addPopupReminder(Number(m)); }); }
+  // mover a otro calendario: Google no deja moverlo, así que se crea igual en el otro y se borra el original
+  if (x.cid2 && x.cid2 !== x.cid) {
+    if (ev.isRecurringEvent()) throw new Error('Un evento que se repite no se puede cambiar de calendario desde aquí');
+    const otro = CalendarApp.getCalendarById(x.cid2);
+    if (!otro) throw new Error('Calendario destino no encontrado');
+    const op = { description: ev.getDescription(), location: ev.getLocation() }, rec = ev.getPopupReminders();
+    const nuevo = ev.isAllDayEvent()
+      ? otro.createAllDayEvent(ev.getTitle(), ev.getAllDayStartDate(), ev.getAllDayEndDate(), op)
+      : otro.createEvent(ev.getTitle(), ev.getStartTime(), ev.getEndTime(), op);
+    if (rec.length) { nuevo.removeAllReminders(); rec.forEach(function (m) { nuevo.addPopupReminder(m); }); }
+    ev.deleteEvent();
   }
   return { ok: true };
 }
