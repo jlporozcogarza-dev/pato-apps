@@ -1674,6 +1674,34 @@ $("ccAnt").onclick = () => moverMesCC(-1); $("ccSig").onclick = () => moverMesCC
 })();
 pintarCC(); // lo guardado en el teléfono se ve al instante
 
+/* Sin rebote en el iPhone: si ya estás hasta arriba y jalas hacia abajo (o hasta abajo y jalas hacia arriba),
+   el gesto no hace nada. iOS ignora overscroll-behavior dentro de los iframes, por eso va con código. */
+(function(){
+  var yAnt = 0, x0 = 0, y0 = 0, eje = 0;
+  function scroller(el){
+    for (; el && el !== document.body && el !== document.documentElement; el = el.parentElement){
+      var o = getComputedStyle(el).overflowY;
+      if ((o === "auto" || o === "scroll") && el.scrollHeight > el.clientHeight + 1) return el;
+    }
+    return document.scrollingElement || document.documentElement;
+  }
+  document.addEventListener("touchstart", function(e){
+    if (e.touches.length !== 1) return;
+    yAnt = y0 = e.touches[0].clientY; x0 = e.touches[0].clientX; eje = 0;
+  }, { passive:true });
+  document.addEventListener("touchmove", function(e){
+    if (e.touches.length !== 1) return;
+    var y = e.touches[0].clientY, dy = y - yAnt; yAnt = y;
+    if (!eje){
+      var ay = Math.abs(y - y0), ax = Math.abs(e.touches[0].clientX - x0);
+      if (ay < 4 && ax < 4) return;
+      eje = ay > ax ? 1 : 2;   // 2 = gesto de lado (cambiar de pestaña): no se toca
+    }
+    if (eje !== 1 || !e.cancelable) return;
+    var s = scroller(e.target), arriba = s.scrollTop <= 0, abajo = s.scrollTop + s.clientHeight >= s.scrollHeight - 1;
+    if ((dy > 0 && arriba) || (dy < 0 && abajo)) e.preventDefault();
+  }, { passive:false });
+})();
 /* ---------- pestañas: cada app vive en su iframe, se crea la primera vez y se queda viva ---------- */
 const vistas = { inicio:$("v-inicio"), condotec:$("v-condotec"), fede:$("v-fede"), pendientes:$("v-pendientes"), ideas:$("v-ideas"), cam:$("v-cam") };
 let actual = "inicio";
