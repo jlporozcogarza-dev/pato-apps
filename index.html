@@ -725,12 +725,12 @@ input[type=checkbox]{accent-color:var(--c10)}
 
 <div class="vista" id="v-fede" role="tabpanel" aria-label="Fede"><main>
 <header class="titulo-pagina"><div><small class="fecha-hoy"></small><h1>Fede</h1></div><span class="fede-estado" id="fedeEstado"><i></i><span>…</span></span></header>
-<div class="charla" id="charla" aria-live="polite"><div class="vacia"><b>A su servicio, señor.</b>Escríbale a Fede: lo hace en la compu de la casa y le contesta aquí.</div></div>
+<div class="charla" id="charla" aria-live="polite"><div class="vacia"><b>¿Qué onda, Pato?</b>Escríbele a Fede: lo hace en la compu de la casa y le contesta aquí.</div></div>
 <div class="atajos-fede" id="atajosFede">
   <button data-dile="Hazme el resumen del día">Resumen del día</button><button data-dile="¿Qué tengo hoy en la agenda?">Mi agenda</button>
   <button data-dile="¿Qué correos importantes tengo?">Correos que importan</button><button data-dile="¿Cuánto llevo gastado esta semana?">Gasto de la semana</button>
 </div>
-<form class="redactar glass" id="redactar"><textarea id="fedeTexto" rows="1" placeholder="Escriba una orden, señor…" aria-label="Orden para Fede"></textarea>
+<form class="redactar glass" id="redactar"><textarea id="fedeTexto" rows="1" placeholder="Escríbele algo a Fede…" aria-label="Orden para Fede"></textarea>
 <button type="submit" id="fedeEnviar" aria-label="Enviar a Fede"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 19V5M5 12l7-7 7 7"/></svg></button></form>
 </main></div>
 
@@ -2095,8 +2095,26 @@ pintarFede.forzar = true; pintarFede();
     logo.setAttribute("aria-label", e === "escucha" ? "Ya acabé de hablar" : "Hablarle a Fede");
   }
   const aviso = t => { poner("reposo", t); sigue = setTimeout(volver, 2600); };
+  /* La voz de Fede en el app: frases cortas ya grabadas con su voz (voz/*.mp3). El iPhone solo deja sonar un audio
+     que se "desbloqueó" con un toque, por eso se desbloquea al tocar el anillo y luego se reusa el mismo elemento. */
+  const vozFede = new Audio(); vozFede.preload = "auto";
+  const CLIPS = { nooi:[["nooi1","No te oí nada, Pato."],["nooi2","Nel, no te caché nada. ¿Me lo repites?"],["nooi3","Uy, no se oyó nada, carnal."]],
+    cancelado:[["cancelado","Va, cancelado."]], nollego:[["nollego","No le pude llegar a la compu. ¿Está prendida?"]],
+    micro:[["micro","Necesito permiso para usar el micrófono."]] };
+  function desbloquearVoz(){
+    if (vozFede.dataset.ok) return;
+    vozFede.src = "voz/cancelado.mp3"; vozFede.muted = true;
+    vozFede.play().then(() => { vozFede.pause(); vozFede.currentTime = 0; vozFede.muted = false; vozFede.dataset.ok = "1"; })
+      .catch(() => { vozFede.muted = false; });
+  }
+  function hablarApp(clave){   // la dice con la voz de Fede y devuelve el texto para la burbuja
+    const l = CLIPS[clave], [archivo, texto] = l[Math.floor(Math.random() * l.length)];
+    try{ vozFede.muted = false; vozFede.src = "voz/" + archivo + ".mp3"; vozFede.play().catch(() => {}); }catch(e){}
+    return texto;
+  }
 
   async function empezar(){
+    desbloquearVoz();
     if (!cfg()) return;
     texto = ""; trozos = []; turno++; callar.hidden = true; poner("escucha", "Le escucho… toque el anillo cuando termine");
     if (navigator.vibrate) navigator.vibrate(15);
@@ -2129,7 +2147,7 @@ pintarFede.forzar = true; pintarFede();
         if (rms > .04){ hablo = true; ultimaVoz = ahora; }
         if (ahora - t0 > 90000) terminar();   // solo un tope de 90 s; si no, se apaga cuando tocas el anillo
       }, 100);
-    }catch(e){ aviso("Necesito permiso para el micrófono."); }
+    }catch(e){ aviso(hablarApp("micro")); }
   }
   async function terminar(){
     if (estado !== "escucha") return;
@@ -2139,7 +2157,7 @@ pintarFede.forzar = true; pintarFede();
       let id;
       if (rec){
         const r = rec; rec = null; try{ r.stop(); }catch(e){}
-        if (!texto.trim()) return aviso("No le oí nada, señor.");
+        if (!texto.trim()) return aviso(hablarApp("nooi"));
         if (CALLAR.test(limpio(texto))) return cancelarTodo(true);
         id = (await api(c, "fede_orden", { texto:texto.trim() })).id;
       } else if (grab){
@@ -2147,12 +2165,12 @@ pintarFede.forzar = true; pintarFede();
         await new Promise(r => { g.onstop = r; g.state !== "inactive" ? g.stop() : r(); });
         g.stream.getTracks().forEach(t => t.stop()); try{ g.ac.close(); }catch(e){}
         const b = new Blob(trozos, { type:g.mimeType || "audio/mp4" });
-        if (b.size < 2000) return aviso("No le oí nada, señor.");
+        if (b.size < 2000) return aviso(hablarApp("nooi"));
         const audio = await new Promise((res, rej) => { const f = new FileReader(); f.onload = () => res(String(f.result).split(",")[1]); f.onerror = rej; f.readAsDataURL(b); });
         id = (await api(c, "fede_orden", { audio, mime:b.type })).id;
       } else return poner("reposo");
       seguir(id);
-    }catch(e){ aviso("No llegó a Fede: " + e.message); }
+    }catch(e){ hablarApp("nollego"); aviso("No llegó a Fede: " + e.message); }
   }
   // Mientras Fede trabaja y mientras lo dice en la compu, el ✕ queda a la mano.
   async function seguir(id){
@@ -2180,7 +2198,7 @@ pintarFede.forzar = true; pintarFede();
   }
   dice.addEventListener("click", () => { volver(); ir("fede"); cargarFede(); }); // la respuesta completa
   callar.addEventListener("click", async e => {
-    e.stopPropagation(); turno++; callar.hidden = true; aviso("Cancelado.");
+    e.stopPropagation(); turno++; callar.hidden = true; aviso(hablarApp("cancelado"));
     try{ await api(cfg(), "fede_orden", { cancelar:true }); }catch(err){ aviso("No llegó a Fede: " + err.message); }
   });
   // Apaga el micrófono sin mandar nada
