@@ -58,7 +58,7 @@ Cada uno lleva quién lo destraba y una estimación de tiempo (sale del promedio
 | C3 | Revisar «Gastado desde el inicio» = 1520.5 en Config de Finanzas | 10 min |
 | C4 | Respaldo de Ideas (post-its) en Sheets; hoy solo viven en el teléfono | 20 min |
 | C5 | La lista de calendarios del editor de eventos sale de los eventos copiados; un calendario sin eventos en ±2 meses no aparece (atajo, `index.html` abrirEv) | 10 min |
-| C6 | Pestaña **Cam**: ver en vivo la cámara de la laptop desde el app (19 nov) | 15 min |
+| C6 | Pestaña **Cam** (HECHA 19 nov, commit ec718c3). Falta: 1) que camara.pyw arranque con Windows (no me dejaron crear el acceso directo en Inicio; Pato decide), 2) la prueba salió en negro: tapa cerrada o tapita de la cámara | 5 min |
 
 #### C6 — Cam en vivo
 - **Pasos:**
