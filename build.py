@@ -54,6 +54,38 @@ SHIM = """<script>
     } };
   } };
 })();
+/* Toda hoja de abajo se cierra deslizándola hacia abajo (desde arriba de la hoja), sin tener que atinarle a la ✕:
+   más de 90 px o un jalón rápido = se cierra; si no, regresa. */
+(function(){
+  var sh = null, y0 = 0, x0 = 0, dy = 0, t0 = 0, modo = "";
+  document.addEventListener("touchstart", function(e){
+    sh = null; modo = ""; dy = 0;
+    var s = e.target.closest && e.target.closest(".sheet.open");
+    if (!s || e.touches.length !== 1 || e.target.closest("input,textarea,select")) return;
+    sh = s; y0 = e.touches[0].clientY; x0 = e.touches[0].clientX; t0 = Date.now();
+  }, { passive:true });
+  document.addEventListener("touchmove", function(e){
+    if (!sh) return;
+    var d = e.touches[0].clientY - y0, dx = e.touches[0].clientX - x0;
+    if (!modo){
+      if (Math.abs(d) < 6 && Math.abs(dx) < 6) return;
+      modo = d > 0 && Math.abs(d) > Math.abs(dx) && sh.scrollTop <= 0 ? "baja" : "no";
+      if (modo === "baja") sh.style.transition = "none";
+    }
+    if (modo !== "baja") return;
+    dy = Math.max(0, d); sh.style.transform = "translateY(" + dy + "px)"; e.preventDefault();
+  }, { passive:false });
+  function soltar(){
+    if (!sh) return;
+    var s = sh; sh = null;
+    if (modo !== "baja") return;
+    s.style.transition = ""; s.style.transform = "";
+    var x = s.querySelector('[data-act="close"]');   // el mismo botón ✕ de la hoja (closeSheet no es global)
+    if ((dy > 90 || (dy > 40 && Date.now() - t0 < 250)) && x) x.click();
+  }
+  document.addEventListener("touchend", soltar);
+  document.addEventListener("touchcancel", soltar);
+})();
 </script>
 """
 

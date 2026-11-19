@@ -316,6 +316,8 @@ button.row.miss:active{background:color-mix(in srgb, var(--low) 15%, var(--surfa
 .rec-extra .paso svg{width:16px;height:16px;fill:none;stroke:currentColor;stroke-width:2.4;stroke-linecap:round;pointer-events:none}
 .rec-extra .paso b{min-width:30px;text-align:center;font-size:15px;font-variant-numeric:tabular-nums;border-left:1px solid var(--line);border-right:1px solid var(--line);line-height:36px}
 /* Escribe lo que comiste (Fede calcula) */
+.tx-act .tx-foto{display:inline-flex;align-items:center;justify-content:center;gap:7px;flex:none;padding-inline:18px}
+.tx-act .tx-foto svg{width:19px;height:19px}
 .tx-in{width:100%;min-width:0;min-height:86px;resize:vertical;font:inherit;font-size:16px;line-height:1.35;padding:11px 12px;border-radius:12px;background:var(--surface-2);border:1px solid var(--line);color:var(--fg)}
 .tx-in:focus,.tx-it input:focus{outline:2px solid var(--c-food);outline-offset:0;border-color:transparent}
 .tx-list{display:flex;flex-direction:column;border-radius:16px;border:1px solid var(--line);overflow:hidden}
@@ -1465,8 +1467,8 @@ function txPrompt(txt){
     + 'Si el texto no describe comida, responde {"items":[]}.';
 }
 /* Fede trabaja en la compu: se le manda el encargo (fede_analizar) y se pregunta cada 1.5 s si ya está (fede_resultado), hasta 3 min. */
-async function askFede(prompt){
-  const id = (payloadOf(await call("fede_analizar", { prompt })) || {}).id;
+async function askFede(prompt, imagen){
+  const id = (payloadOf(await call("fede_analizar", imagen ? { prompt, imagen, mime:"image/jpeg" } : { prompt })) || {}).id;
   if (!id) throw new Error("sin id");
   const hasta = Date.now() + 180000; let fallas = 0;
   while (Date.now() < hasta){
@@ -1504,6 +1506,46 @@ async function txCalc(){
     txStatus(e && e.message==="tiempo" ? "Fede no contestó a tiempo. ¿Está prendida la compu?" : "No pude calcular. Intenta de nuevo.", "err");
   }finally{ TX.busy = false; refreshSheet(); }
 }
+function fotoPrompt(ctx){
+  const mias = RECETAS.map(r => "- "+r.n+" ("+r.d+"): "+r.kcal+" kcal, "+r.prot+" g de proteína").join("\n");
+  return "Eres nutriólogo. Analiza esta foto de comida o bebida y estima calorías y proteína de lo que se ve.\n"
+    + (ctx ? 'Contexto del usuario: "'+ctx.replace(/"/g,"'")+'". Úsalo para porciones, ingredientes y preparación.\n' : "")
+    + "Comidas de siempre de Pato; si la foto es una de ellas usa EXACTO estos valores:\n" + mias + "\n"
+    + "- Cuenta aceite, salsas, aderezos y acompañamientos que se vean. Porciones y productos típicos de México.\n"
+    + '- Separa cada alimento o bebida en su renglón. comida: nombre corto en español con la cantidad, ej. "2 tacos de pastor".\n'
+    + "Responde SOLO con JSON, sin texto extra:\n"
+    + '{"items":[{"comida":"...","kcal":número,"proteina":gramos}],"supuestos":""}\n'
+    + 'Si la foto no es comida ni bebida, responde {"items":[]}.';
+}
+async function achicar(file){
+  const img = new Image(); img.src = URL.createObjectURL(file); await img.decode();
+  const k = Math.min(1, 1400 / Math.max(img.naturalWidth, img.naturalHeight)), c = document.createElement("canvas");
+  c.width = Math.round(img.naturalWidth*k); c.height = Math.round(img.naturalHeight*k);
+  c.getContext("2d").drawImage(img, 0, 0, c.width, c.height);
+  URL.revokeObjectURL(img.src);
+  return c.toDataURL("image/jpeg", 0.85).split(",")[1];
+}
+async function txFoto(file){
+  if (!file) return;
+  if (!S.mcp || S.mode!=="live"){ txStatus(S.mode==="example" ? "Vista de ejemplo: la foto no se guarda." : "Sin conexión con tus datos. Toca Reintentar arriba.", "err"); return; }
+  TX.busy = true; txStatus("Fede está viendo la foto…"); refreshSheet();
+  try{
+    const b64 = await achicar(file);
+    const r = await askFede(fotoPrompt(TX.texto.trim()), b64);
+    const items = (r && Array.isArray(r.items) ? r.items : [])
+      .map(x => ({ comida:String((x && x.comida) || "").trim(), kcal:Math.round(num(x && x.kcal)), prot:Math.round(num(x && x.proteina)) }))
+      .filter(x => x.comida);
+    if (!items.length){ txStatus("No vi comida en la foto. Intenta con otra o escríbelo.", "err"); return; }
+    const fecha = S.selected, now = new Date(), hora = fecha===todayStr() ? fmtTime(now.getHours()*60+now.getMinutes()) : "";
+    const k = items.reduce((a,x)=>a+x.kcal,0), p = items.reduce((a,x)=>a+x.prot,0);
+    TX.texto = "";
+    txStatus("Guardado de la foto: "+items.map(x=>x.comida).join(", ")+" · "+fmtNum(k)+" kcal · "+fmtNum(p)+" g de proteína. Si algo no cuadra, bórralo arriba.", "ok");
+    addFoods(items.map(x => ({ fecha, hora, comida:x.comida, kcal:x.kcal, prot:x.prot, origen:"Foto" })),
+      () => { txStatus("No se guardó la foto. Revisa tu conexión y vuelve a intentar.", "err"); refreshSheet(); });
+  }catch(e){
+    txStatus(e && e.message==="tiempo" ? "Fede no contestó a tiempo. ¿Está prendida la compu?" : "No pude analizar la foto. Intenta de nuevo.", "err");
+  }finally{ TX.busy = false; refreshSheet(); }
+}
 function txSave(){
   const items = TX.items.map(x => ({ comida:String(x.comida).trim(), kcal:Math.round(num(x.kcal)), prot:Math.round(num(x.prot)) })).filter(x => x.comida);
   if (!items.length){ txStatus("No hay nada que guardar.", "err"); return; }
@@ -1520,10 +1562,10 @@ function txSave(){
   if (fecha!==S.selected) toast("Guardado en "+diaTx(fecha)+": "+resumen);
 }
 function txHtml(){
-  if (!FEDE) return "";
+  if (!FEDE) return '<p class="hint">Para escribir o mandar foto de lo que comiste, abre Tracker desde jlpog.app.</p>';
   const tot = () => fmtNum(TX.items.reduce((s,x)=>s+num(x.kcal),0))+" kcal · "+fmtNum(TX.items.reduce((s,x)=>s+num(x.prot),0))+" g prot";
   const hay = TX.items.length > 0;
-  return '<div class="grp"><div class="grp-h"><span class="k">Escribe lo que comiste</span><span class="w">Fede lo calcula</span></div>'
+  return '<div class="grp"><div class="grp-h"><span class="k">Escribe o tómale foto</span><span class="w">Fede lo calcula</span></div>'
     + '<textarea id="txTexto" class="tx-in" rows="3" enterkeyhint="done" aria-label="Escribe lo que comiste, como se lo dirías a Claude" placeholder="Ej. Cené 2 latas de atún con elote y mayonesa y 3 paquetes de saladitas de 45 calorías">'+esc(TX.texto)+'</textarea>'
     + (hay ? '<div class="tx-list" id="txItems">'
         + TX.items.map((it,i) => '<div class="tx-it">'
@@ -1538,13 +1580,18 @@ function txHtml(){
     + '<div class="tx-act">'
     + (hay ? '<button class="btn primary full" data-tx="save">Guardar en '+esc(diaTx(TX.fecha || S.selected))+'</button>'
         + '<button class="btn" data-tx="clear">Descartar</button><button class="btn" data-tx="calc"'+(TX.busy?' disabled':'')+'>'+(TX.busy?"Calculando…":"Recalcular")+'</button>'
-      : '<button class="btn primary full" data-tx="calc"'+(TX.busy?' disabled':'')+'>'+(TX.busy?"Calculando…":"Calcular")+'</button>')
+      : '<button class="btn primary" data-tx="calc"'+(TX.busy?' disabled':'')+'>'+(TX.busy?"Calculando…":"Calcular")+'</button>'
+        + '<button class="btn tx-foto" data-tx="foto"'+(TX.busy?' disabled':'')+' aria-label="Tomar foto de la comida">'
+        + '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round"><path d="M4 8h3l2-3h6l2 3h3v11H4z"/><circle cx="12" cy="13" r="3.5"/></svg>Foto</button>')
     + '</div>'
+    + '<input type="file" id="txFotoIn" accept="image/*" hidden>'
     + '<p class="tx-st'+(TX.cls?' '+TX.cls:'')+'" id="txSt" role="status" aria-live="polite">'+esc(TX.msg)+'</p>'
     + '</div>';
 }
 function txWire(sh){
   if (!FEDE) return;
+  const fi = sh.querySelector("#txFotoIn");
+  if (fi) fi.addEventListener("change", () => txFoto(fi.files[0]));
   const ta = sh.querySelector("#txTexto");
   if (ta) ta.addEventListener("input", () => { TX.texto = ta.value; if (TX.cls==="ok" || TX.cls==="err") txStatus(""); });
   const box = sh.querySelector("#txItems");
@@ -1557,6 +1604,7 @@ function txWire(sh){
 }
 function txClick(t){
   if (t.dataset.tx==="calc"){ if (!TX.busy) txCalc(); return true; }
+  if (t.dataset.tx==="foto"){ const f = document.getElementById("txFotoIn"); if (f && !TX.busy){ f.value = ""; f.click(); } return true; }
   if (t.dataset.tx==="save"){ txSave(); return true; }
   if (t.dataset.tx==="clear"){ TX.texto = ""; TX.items = []; TX.nota = ""; TX.fecha = ""; TX.hora = ""; txStatus(""); refreshSheet(); return true; }
   if (t.dataset.txrm){
@@ -1602,7 +1650,7 @@ function buildFoodSheet(sh, keep){
           + '<div class="fv">'+fmtNum(f.kcal)+' kcal<small>'+fmtNum(f.prot)+' g prot</small></div>'
           + (f._tmp ? '<span class="xbtn" aria-hidden="true"></span>' : (confirmKey===k ? '<button class="xbtn confirm" data-del="'+i+'">Borrar</button>' : '<button class="xbtn" data-askdel="'+esc(k)+'" aria-label="Borrar '+esc(f.comida)+'">'+ICON.x+'</button>'))
           + '</div>';
-      }).join("") : '<div class="empty">Sin comidas registradas. Mándale la foto a Claude o agrégala abajo.</div>')
+      }).join("") : '<div class="empty">Sin comidas registradas. Escribe lo que comiste o tómale foto abajo.</div>')
     + '</div>'
     + txHtml()
     + '<div class="grp"><div class="grp-h"><span class="k">Mis comidas</span><span class="w">Toca para agregar</span></div><div class="recetas">'
@@ -1614,28 +1662,9 @@ function buildFoodSheet(sh, keep){
             + '<b aria-live="polite">'+saladitas+'</b><button data-sal="1" aria-label="Más Saladitas"><svg viewBox="0 0 24 24"><path d="M12 6v12M6 12h12"/></svg></button></span></div>' : '')
           + '</div>'; }).join("")
     + '</div></div>'
-    + (recents.length ? '<div class="grp"><div class="grp-h"><span class="k">Recientes</span><span class="w">Toca para llenar</span></div><div class="recent">'+recents.map((f,i)=>'<button data-recent="'+i+'">'+esc(f.comida)+' · '+fmtNum(f.kcal)+'</button>').join("")+'</div></div>' : '')
-    + '<form class="form" id="foodForm" autocomplete="off">'
-    + '<div class="field full"><label for="fName">Comida</label><input id="fName" name="comida" placeholder="Ej. pollo con arroz" value="'+esc(foodDraft.comida)+'" required></div>'
-    + '<div class="field"><label for="fKcal">Kcal</label><input id="fKcal" name="kcal" inputmode="numeric" pattern="[0-9]*" placeholder="430" value="'+esc(foodDraft.kcal)+'" required></div>'
-    + '<div class="field"><label for="fProt">Proteína (g)</label><input id="fProt" name="prot" inputmode="numeric" pattern="[0-9]*" placeholder="30" value="'+esc(foodDraft.prot)+'"></div>'
-    + '<button class="btn primary full" type="submit">+ Agregar</button>'
-    + '</form>'
-    + '<p class="hint">Lo que le mandes a Claude en foto aparece aquí. Si no lo ves, toca ↻ arriba.</p>'
+    + (recents.length ? '<div class="grp"><div class="grp-h"><span class="k">Recientes</span><span class="w">Toca para agregar</span></div><div class="recent">'+recents.map((f,i)=>'<button data-recent="'+i+'">'+esc(f.comida)+' · '+fmtNum(f.kcal)+'</button>').join("")+'</div></div>' : '')
     + '</div>';
   txWire(sh);
-  const form = sh.querySelector("#foodForm");
-  form.addEventListener("input", ()=>{ foodDraft = { comida:form.comida.value, kcal:form.kcal.value, prot:form.prot.value }; });
-  form.addEventListener("submit", ev=>{
-    ev.preventDefault();
-    const comida = form.comida.value.trim(), kcal = num(form.kcal.value), prot = num(form.prot.value);
-    if (!comida){ form.comida.focus(); return; }
-    if (!form.kcal.value.trim()){ form.kcal.focus(); return; }
-    const isToday = S.selected===todayStr(), now = new Date();
-    foodDraft = { comida:"", kcal:"", prot:"" };
-    addFood({ fecha:S.selected, hora: isToday ? fmtTime(now.getHours()*60+now.getMinutes()) : "", comida, kcal, prot, origen:"Manual" });
-    toast("Agregado: "+comida);
-  });
   sheetState = {
     click(t){
       if (txClick(t)) return true;
@@ -1651,7 +1680,11 @@ function buildFoodSheet(sh, keep){
         toast("Agregado: "+comida);
         return true;
       }
-      if (t.dataset.recent){ const f = recents[+t.dataset.recent]; foodDraft = { comida:f.comida, kcal:String(f.kcal), prot:String(f.prot) }; buildFoodSheet(sh, true); const k=sh.querySelector("#fKcal"); if (k) k.focus(); return true; }
+      if (t.dataset.recent){
+        const f = recents[+t.dataset.recent], isToday = S.selected===todayStr(), now = new Date(); if (!f) return true;
+        addFood({ fecha:S.selected, hora: isToday ? fmtTime(now.getHours()*60+now.getMinutes()) : "", comida:f.comida, kcal:num(f.kcal), prot:num(f.prot), origen:"Manual" });
+        toast("Agregado: "+f.comida); return true;
+      }
       return false;
     }
   };
