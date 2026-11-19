@@ -153,8 +153,14 @@ button.row:active{background:var(--surface-2)}
 .segs .gap{width:4px;background:none}
 /* Lo que ya no se puede ganar se pinta de rojo tenue */
 .segs i.x{background:color-mix(in srgb, var(--low) 45%, var(--track))}
-.row.miss{background:color-mix(in srgb, var(--low) 9%, var(--surface))}
-button.row.miss:active{background:color-mix(in srgb, var(--low) 14%, var(--surface))}
+/* Lo que llenas tú (se puede tocar) va en tono claro; lo que llega solo de WHOOP (fija) va en tono oscuro.
+   Si ya no se ganó, el tono claro se tiñe un poco de rojo; el oscuro solo pone el número en rojo. */
+button.row{background:color-mix(in srgb, #fff 7%, var(--surface))}
+button.row:active{background:color-mix(in srgb, #fff 12%, var(--surface))}
+.row.fija{background:color-mix(in srgb, #000 30%, var(--surface))}
+.row.fija .rtitle{color:color-mix(in srgb, var(--fg) 82%, transparent)}
+button.row.miss{background:color-mix(in srgb, var(--low) 10%, color-mix(in srgb, #fff 7%, var(--surface)))}
+button.row.miss:active{background:color-mix(in srgb, var(--low) 15%, var(--surface))}
 .row.miss .rpts b{color:var(--low)}
 
 /* Mes */
@@ -1136,7 +1142,7 @@ function renderRows(){
   $("rows").innerHTML = rows.map(x=>{
     const got = x.parts.reduce((a,p)=>a+p.got,0), max = x.parts.reduce((a,p)=>a+p.max,0);
     const miss = got===0 && x.parts.every(p=>p.closed);
-    const cls = "row" + (miss ? " miss" : "");
+    const cls = "row" + (x.info ? " fija" : "") + (miss ? " miss" : "");
     const open = x.info ? '<div class="'+cls+'" style="--c:var('+x.c+')">'
       : x.toggle ? '<button class="'+cls+'" data-toggle="'+x.k+'" aria-pressed="'+(got>0)+'" style="--c:var('+x.c+')">'
       : '<button class="'+cls+'" data-open="'+x.k+'" style="--c:var('+x.c+')">';
