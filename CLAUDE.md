@@ -39,6 +39,9 @@ Cada uno lleva quién lo destraba y una estimación de tiempo (sale del promedio
 | P5 | Inscripción MR3001B: hora real (puse 9:00 del 14 dic) | Hora, si se la dan | 2 min |
 | P6 | Atajo de Wallet/Apple Pay que anota pagos en Finanzas | Que Pato arme la automatización en el iPhone (ya tiene la guía) | — |
 | P7 | Alertas de tarjeta de BBVA en sucursal (ya está en Pendientes del app) | Que vaya a sucursal | — |
+| P8 | Impresora 3D fuera del cuarto: arrancar impresiones desde el app, cámara que la vigile y la IA avise o pause si sale mal (19 nov) | Modelo de impresora y dónde queda respecto al server | — |
+| P9 | Persiana motorizada (domingo 22 nov): plan en PDF mandado por WhatsApp. Claude debe diseñar placa motor + soporte + tapones (STL), programa del ESP32 (GPIO 25 STEP, 26 DIR, 27 EN, 32/33 finales) y botón Persiana en JLP | Ancho de la ventana y si se atornilla a techo o pared | 60 min |
+| P10 | Cyberdeck propio para las vacaciones de invierno: Raspberry Pi 5 + pantalla 7" + batería USB-C + caja impresa en 3D; radio con RTL-SDR y ESP32 (CC1101 + IR). Ya se vio uConsole como alternativa armada | Que llegue invierno; luego armar lista con links y precios | — |
 
 ### Probar en el iPhone (hecho, pero Pato no lo ha confirmado)
 - Comida por texto y por foto (Fede calcula y guarda).
@@ -59,6 +62,7 @@ Cada uno lleva quién lo destraba y una estimación de tiempo (sale del promedio
 | C4 | Respaldo de Ideas (post-its) en Sheets; hoy solo viven en el teléfono | 20 min |
 | C5 | La lista de calendarios del editor de eventos sale de los eventos copiados; un calendario sin eventos en ±2 meses no aparece (atajo, `index.html` abrirEv) | 10 min |
 | C6 | Pestaña **Cam** (HECHA 19 nov, commit ec718c3). Falta: 1) que camara.pyw arranque con Windows (no me dejaron crear el acceso directo en Inicio; Pato decide), 2) la prueba salió en negro: tapa cerrada o tapita de la cámara | 5 min |
+| C7 | Fede rápido para cosas fáciles: cerebro rápido (Haiku por API o modelo local) además del Sonnet con manos. Medido 19 nov: cerebro 1.5–5.5 s, ElevenLabs flash 0.3 s, v3 2.7 s por frase | 30 min (espera decisión de Pato) |
 
 #### C6 — Cam en vivo
 - **Pasos:**
