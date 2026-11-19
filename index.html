@@ -49,13 +49,13 @@ button{font:inherit;color:inherit}
 .anillo:active .aro{filter:brightness(1.2)}
 header{display:flex;align-items:center;gap:12px;margin:4px 0 2px}
 .logo{width:62px;height:62px;border-radius:20px;color:var(--c10);display:grid;place-items:center;font:700 19px/1 var(--display);letter-spacing:.02em}
-header p{margin:0;font:800 28px/1.05 var(--display);letter-spacing:-.02em}
+
 header p em{font-style:normal;color:var(--c10)}
 /* "Tonos": los títulos bajan de un tono al más oscuro del mismo color */
 header p,.titulo-pagina h1,.hoja>h2{padding-bottom:.1em;background:linear-gradient(180deg,var(--fg) 38%,color-mix(in srgb,var(--fg) 46%,var(--c60)));
   -webkit-background-clip:text;background-clip:text;-webkit-text-fill-color:transparent}
 header p em{background:linear-gradient(180deg,var(--c10) 38%,color-mix(in srgb,var(--c10) 58%,var(--c60)));-webkit-background-clip:text;background-clip:text}
-header small{display:block;color:var(--muted);font-size:13px;margin-bottom:6px}
+
 .quien{display:flex;align-items:center;gap:12px}
 /* el logo es el anillo de Fede (como en la compu): siempre vibra suave; tocarlo = Fede escucha */
 .hueco-logo{flex:none;width:62px;height:62px}
@@ -272,8 +272,10 @@ button.card:active{transform:scale(.98)}
 #v-pendientes.entra :is(.seccion,.renglones){animation:sube .55s cubic-bezier(.2,.8,.2,1) .18s both}
 @media (prefers-reduced-motion:reduce){#v-condotec.entra *,#v-pendientes.entra *{animation:none!important}}
 /* página Condotec */
-.titulo-pagina{margin:4px 0 16px;padding-left:66px;min-height:62px;display:flex;align-items:center} /* a la izquierda va el anillo de Fede */.titulo-pagina small{color:var(--muted);font-size:13px}
-.titulo-pagina h1{margin:4px 0 0;font:700 38px/1 var(--display);letter-spacing:-.02em}
+/* Cabecera estándar de TODAS las pestañas (igual que Inicio): a la izquierda el anillo de Fede (62 px + 12), fecha chica y abajo el nombre de la hoja */
+.titulo-pagina{margin:4px 0 16px;padding-left:74px;min-height:62px;display:flex;align-items:center}
+.titulo-pagina small,header small{display:block;color:var(--muted);font-size:13px;line-height:1.2;margin:0 0 6px}
+.titulo-pagina h1,header p{margin:0;font:800 32px/1.05 var(--display);letter-spacing:-.02em}
 
 /* Condotec · Calendario del mes: entrada verde, salida roja, pendiente azul, pago amarillo (solo el nombre del depa) */
 .cc{padding:12px 8px 10px}
@@ -611,7 +613,7 @@ header .ajustes{visibility:hidden} /* en Inicio se usa el fijo de arriba a la de
 </main></div>
 
 <div class="vista" id="v-condotec" role="tabpanel" aria-label="Condotec"><main>
-<header class="titulo-pagina"><div><small>Departamentos</small><h1>Condotec</h1></div></header>
+<header class="titulo-pagina"><div><small class="fecha-hoy"></small><h1>Condotec</h1></div></header>
 <div class="accesos">
   <a class="acceso glass" href="https://condotecmty.com" target="_blank" rel="noopener"><span class="ic"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M3 10.5 12 4l9 6.5V20H3z"/><path d="M9 20v-6h6v6"/></svg></span><span><b>Condotec</b><small>Página de promo</small></span></a>
   <a class="acceso glass" href="https://portal.condotecmty.com" target="_blank" rel="noopener"><span class="ic"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><rect x="3" y="4" width="18" height="16" rx="3"/><path d="M3 9h18M8 14h3M8 17h6"/></svg></span><span><b>Condotec Admin</b><small>Portal</small></span></a>
@@ -628,14 +630,14 @@ header .ajustes{visibility:hidden} /* en Inicio se usa el fijo de arriba a la de
 </main></div>
 
 <div class="vista" id="v-ideas" role="tabpanel" aria-label="Ideas"><main>
-<header class="titulo-pagina"><div><small>Post-its</small><h1>Ideas</h1></div></header>
+<header class="titulo-pagina"><div><small class="fecha-hoy"></small><h1>Ideas</h1></div></header>
 <p class="ideas-tip">Toca para abrir · deja picado para mover · dos toques para editar</p>
 <div class="tablero" id="tablero" data-no-deslizar><p class="ideas-vacio" id="ideasVacio">Toca + para pegar tu primera idea.</p></div>
 <button class="ideas-mas" id="ideaNueva" aria-label="Nuevo post-it"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round"><path d="M12 5v14M5 12h14"/></svg></button>
 </main></div>
 
 <div class="vista" id="v-pendientes" role="tabpanel" aria-label="Pendientes"><main>
-<header class="titulo-pagina"><div><small>Agenda</small><h1>Pendientes</h1></div></header>
+<header class="titulo-pagina"><div><small class="fecha-hoy"></small><h1>Pendientes</h1></div></header>
 <section class="tar-prog glass" aria-label="Avance de tus tareas">
   <div class="fila"><span class="hechas-n"><b class="num" id="tarHoyNum">–</b><small>de hoy</small></span><span class="sig" id="tarSig"></span></div>
   <span class="medidor"><i id="tarHoyBarra"></i></span>
@@ -672,7 +674,7 @@ header .ajustes{visibility:hidden} /* en Inicio se usa el fijo de arriba a la de
 
 
 <div class="vista" id="v-fede" role="tabpanel" aria-label="Fede"><main>
-<header class="titulo-pagina"><div><small>Su asistente, en la compu</small><h1>Fede</h1></div><span class="fede-estado" id="fedeEstado"><i></i><span>…</span></span></header>
+<header class="titulo-pagina"><div><small class="fecha-hoy"></small><h1>Fede</h1></div><span class="fede-estado" id="fedeEstado"><i></i><span>…</span></span></header>
 <div class="charla" id="charla" aria-live="polite"><div class="vacia"><b>A su servicio, señor.</b>Escríbale a Fede: lo hace en la compu de la casa y le contesta aquí.</div></div>
 <div class="atajos-fede" id="atajosFede">
   <button data-dile="Hazme el resumen del día">Resumen del día</button><button data-dile="¿Qué tengo hoy en la agenda?">Mi agenda</button>
@@ -1439,7 +1441,8 @@ $("carriles").addEventListener("click", e => {
 });
 addEventListener("keydown", e => { if (e.key === "Escape") cerrarHojas(); });
 const hoy = new Date().toLocaleDateString("sv-SE");
-$("fecha").textContent = new Date().toLocaleDateString("es-MX", { weekday:"long", day:"numeric", month:"long" });
+$("fecha").textContent = new Date().toLocaleDateString("es-MX", { weekday:"long", day:"numeric", month:"long" }).replace(/^./, c => c.toUpperCase());
+document.querySelectorAll(".fecha-hoy").forEach(el => el.textContent = $("fecha").textContent);   // misma fecha en todas las pestañas
 
 /* ---------- Condotec · Calendario del mes (como Google Calendar) ----------
    Sale todo de la hoja Inquilinos Condotec (solo lectura):

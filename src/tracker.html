@@ -965,8 +965,8 @@ function renderBanner(){
 }
 function render(){
   const today = todayStr(), sel = S.selected;
-  $("dateLabel").textContent = longDate(sel);
-  $("dayTitle").textContent = sel===today ? "Hoy" : sel===addDays(today,-1) ? "Ayer" : shortDate(sel);
+  $("dateLabel").textContent = new Date(sel+"T12:00").toLocaleDateString("es-MX", { weekday:"long", day:"numeric", month:"long" }).replace(/^./, c => c.toUpperCase());
+  $("dayTitle").textContent = "Tracker";   // el día que ves va en la fecha de arriba
   $("goToday").hidden = sel===today;
   renderSync(); renderBanner(); renderWeek(); renderHero(); renderWhoop(); renderRows(); renderMonth(); renderTrends();
 }

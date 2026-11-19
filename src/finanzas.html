@@ -1005,7 +1005,7 @@ function renderBanner(){
 }
 function render(){
   compute();
-  $("dateLabel").textContent = longDate(C.today);
+  $("dateLabel").textContent = new Date(C.today+"T12:00").toLocaleDateString("es-MX", { weekday:"long", day:"numeric", month:"long" }).replace(/^./, c => c.toUpperCase());
   renderSync(); renderBanner(); renderHero(); renderSaldos(); renderToday(); renderWeek(); renderMonth(); renderBudgets(); renderProgs(); renderRules(); renderCharts();
 }
 

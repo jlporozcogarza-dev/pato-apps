@@ -6,7 +6,7 @@ html:root:root{--j60:#0D0D0D;--j30:#9C8E82;--j10:#FFA64D;color-scheme:dark;--bg:
   --scrim:rgba(0,0,0,.55);--card-shadow:0 18px 40px -22px rgba(0,0,0,.75);
   --font-display:ui-rounded,"SF Pro Rounded",Nunito,system-ui,sans-serif;--font-body:-apple-system,BlinkMacSystemFont,"SF Pro Text",Geist,system-ui,sans-serif}
 body{-webkit-font-smoothing:antialiased}
-h1{font-size:38px!important;font-weight:800!important;letter-spacing:-.02em!important;padding-bottom:.12em;
+h1{font-size:32px!important;font-weight:800!important;letter-spacing:-.02em!important;padding-bottom:.12em;
   background:linear-gradient(180deg,var(--fg) 38%,color-mix(in srgb,var(--fg) 46%,var(--j60)));-webkit-background-clip:text;background-clip:text;-webkit-text-fill-color:transparent}
 h2,h3,.sec-head .lbl{font-weight:700!important}
 /* mismas formas que JLP: tarjetas más redondas, botones de vidrio y acentos que resplandecen */
@@ -25,7 +25,13 @@ h2,h3,.sec-head .lbl{font-weight:700!important}
 html{background:var(--j60)} html.embed,html.embed body,body{background:transparent!important}
 html:not(.embed) body{background:radial-gradient(60% 40% at 90% 0%,color-mix(in srgb,var(--j10) 16%,transparent),transparent 70%),radial-gradient(60% 40% at 0% 60%,color-mix(in srgb,var(--j30) 22%,transparent),transparent 70%),var(--j60)!important;background-attachment:fixed!important}
 html.embed body{padding-bottom:calc(104px + env(safe-area-inset-bottom))!important}
-html.embed .top-l{padding-left:66px;min-height:62px} /* a la izquierda va el anillo de Fede de JLP */
+html.embed body{padding-top:max(14px,env(safe-area-inset-top))!important} /* misma altura que las pestañas de JLP */
+html.embed .top{position:relative;align-items:center;padding-top:0;margin-top:4px}
+html.embed .top-l{padding-left:74px;min-height:62px;display:flex;flex-direction:column;justify-content:center} /* a la izquierda va el anillo de Fede de JLP */
+html.embed .top-l .eyebrow{font:400 13px/1.2 var(--font-body,-apple-system,sans-serif);letter-spacing:0;text-transform:none;color:var(--muted);margin:0 0 6px}
+html.embed .top-l h1{margin:0;font-family:var(--font-display);font-weight:800;font-size:32px;line-height:1.05;letter-spacing:-.02em}
+html.embed .top-l .title-row{margin:0}
+html.embed .sync{position:absolute;right:56px;top:50%;transform:translateY(-50%)} html.embed #syncText{display:none}
 html.embed .top{padding-right:56px} /* a la derecha va el botón de colores de JLP */
 html.embed,html.embed body{overscroll-behavior:none} /* sin rebote al jalar: en el iPhone el rebote dentro del iframe se veía blanco */
 .banner,.buds,.chart,.hero,.iconbtn,.mc,.saldos,.tot,.txs,.wd{-webkit-backdrop-filter:blur(24px) saturate(160%);backdrop-filter:blur(24px) saturate(160%);border-color:rgba(255,255,255,.10)!important;
@@ -1131,7 +1137,7 @@ function renderBanner(){
 }
 function render(){
   compute();
-  $("dateLabel").textContent = longDate(C.today);
+  $("dateLabel").textContent = new Date(C.today+"T12:00").toLocaleDateString("es-MX", { weekday:"long", day:"numeric", month:"long" }).replace(/^./, c => c.toUpperCase());
   renderSync(); renderBanner(); renderHero(); renderSaldos(); renderToday(); renderWeek(); renderMonth(); renderBudgets(); renderProgs(); renderRules(); renderCharts();
 }
 
