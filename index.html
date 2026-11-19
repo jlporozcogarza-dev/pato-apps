@@ -594,6 +594,16 @@ header .ajustes{visibility:hidden} /* en Inicio se usa el fijo de arriba a la de
 .mas-hechas{display:block;width:100%;margin-top:8px;padding:12px;border-radius:16px;border:1px solid rgba(255,255,255,.08);background:rgba(255,255,255,.03);color:var(--muted);font-size:13px;cursor:pointer}
 #v-pendientes.entra :is(.tar-prog,.tar-nueva,#tarLista){animation:sube .55s cubic-bezier(.2,.8,.2,1) .08s both}
 @media (prefers-reduced-motion:reduce){*{transition:none!important}}
+/* Acentos neón chiquitos (el brillo de la barrita de los eventos), solo en detalles para que no canse */
+.seccion h2{display:flex;align-items:center;gap:10px}
+.seccion h2::before{content:"";width:4px;height:.9em;border-radius:2px;background:var(--c10);box-shadow:0 0 10px var(--c10);flex:none}
+.titulo-pagina small::before,header small::before{content:"";display:inline-block;width:6px;height:6px;border-radius:50%;background:var(--c10);box-shadow:0 0 8px var(--c10);margin:0 8px 1px 0;vertical-align:middle}
+nav button{position:relative}
+nav button[aria-selected=true]::after{content:"";position:absolute;left:50%;top:3px;width:14px;height:3px;margin-left:-7px;border-radius:2px;background:var(--c10);box-shadow:0 0 8px var(--c10)}
+.puntos i{box-shadow:0 0 6px var(--col,var(--c10))}
+.dia.hoy{box-shadow:inset 0 0 0 1.5px var(--c10),0 0 14px -3px var(--c10)}
+.zona b{text-shadow:0 0 8px var(--c10)}
+input[type=checkbox]{accent-color:var(--c10)}
 </style></head>
 <body>
 <div class="fondo" aria-hidden="true"></div>

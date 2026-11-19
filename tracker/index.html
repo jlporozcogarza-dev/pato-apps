@@ -31,6 +31,9 @@ html.embed .top-l{padding-left:74px;min-height:62px;display:flex;flex-direction:
 html.embed .top-l .eyebrow{font:400 13px/1.2 var(--font-body,-apple-system,sans-serif);letter-spacing:0;text-transform:none;color:var(--muted);margin:0 0 6px}
 html.embed .top-l h1{margin:0;font-family:var(--font-display);font-weight:800;font-size:32px;line-height:1.05;letter-spacing:-.02em}
 html.embed .top-l .title-row{margin:0}
+html.embed .sec-title{display:flex;align-items:center;gap:10px}
+html.embed .sec-title::before{content:"";width:4px;height:.9em;border-radius:2px;background:var(--j10);box-shadow:0 0 10px var(--j10);flex:none}
+html.embed .top-l .eyebrow::before{content:"";display:inline-block;width:6px;height:6px;border-radius:50%;background:var(--j10);box-shadow:0 0 8px var(--j10);margin:0 8px 1px 0;vertical-align:middle}
 html.embed .sync{position:absolute;right:56px;top:50%;transform:translateY(-50%)} html.embed #syncText{display:none}
 html.embed .top{padding-right:56px} /* a la derecha va el botón de colores de JLP */
 html.embed,html.embed body{overscroll-behavior:none} /* sin rebote al jalar: en el iPhone el rebote dentro del iframe se veía blanco */
