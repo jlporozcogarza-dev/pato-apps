@@ -641,7 +641,7 @@ header .ajustes{visibility:hidden} /* en Inicio se usa el fijo de arriba a la de
 <div class="vista" id="v-ideas" role="tabpanel" aria-label="Ideas"><main>
 <header class="titulo-pagina"><div><small class="fecha-hoy"></small><h1>Ideas</h1></div></header>
 <p class="ideas-tip">Toca para abrir · deja picado para mover · dos toques para editar</p>
-<div class="tablero" id="tablero" data-no-deslizar><p class="ideas-vacio" id="ideasVacio">Toca + para pegar tu primera idea.</p></div>
+<div class="tablero" id="tablero"><p class="ideas-vacio" id="ideasVacio">Toca + para pegar tu primera idea.</p></div>
 <button class="ideas-mas" id="ideaNueva" aria-label="Nuevo post-it"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round"><path d="M12 5v14M5 12h14"/></svg></button>
 </main></div>
 
@@ -1840,7 +1840,7 @@ pintarFede.forzar = true; pintarFede();
     ideas.forEach(x => {
       const l = lado(x); if (ancho) x.x = Math.max(0, Math.min(x.x, ancho - l)); fondo = Math.max(fondo, x.y + l);
       const el = document.createElement("div");
-      el.className = "postit glass"; el.dataset.id = x.id; el.setAttribute("role", "button"); el.tabIndex = 0;
+      el.className = "postit glass"; el.dataset.id = x.id; el.dataset.noDeslizar = "";   // en el tablero vacío sí se cambia de pestaña deslizando; sobre un post-it no el.setAttribute("role", "button"); el.tabIndex = 0;
       el.setAttribute("aria-label", "Idea: " + (x.t || "sin título"));
       el.style.cssText = `left:${x.x}px;top:${x.y}px;width:${l}px;height:${l}px;z-index:${x.z};--tinta:${COLORES[x.c] || COLORES.amarillo}`;
       el.innerHTML = `<b>${esc(x.t || "Sin título")}</b>` + (x.d ? `<small>${esc(x.d)}</small>` : "");
