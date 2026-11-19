@@ -186,6 +186,8 @@ button.card:active{transform:scale(.98)}
 .col .val{font:500 11px/1 var(--sans);color:var(--muted)}
 .col i{display:block;width:min(22px,56%);border-radius:4px 4px 0 0;transform-origin:bottom;transition:height .6s cubic-bezier(.2,.8,.2,1);background:color-mix(in srgb,var(--fg) 32%,transparent)}
 .col.foco i{background:var(--c10);box-shadow:0 0 16px color-mix(in srgb,var(--c10) 45%,transparent)}
+.col.neg i{background:color-mix(in srgb,var(--st-crit) 70%,transparent)}
+.col.neg .val{color:var(--st-crit)}
 .col.foco .val{color:var(--fg);font:700 12px/1 var(--display)}
 .dias{display:grid;grid-template-columns:repeat(7,1fr);margin-top:8px;padding-right:22px;font-size:12px;text-align:center;color:var(--muted)}
 
@@ -618,6 +620,16 @@ header .ajustes{visibility:hidden} /* en Inicio se usa el fijo de arriba a la de
   <div class="row"><span class="t">Pasos por día</span><span class="cap">Últimos 7 días</span></div>
   <div class="barras" id="bars"></div>
   <div class="dias" id="dias"></div>
+</button>
+<button class="grafica glass card" data-ir="tracker" data-ancla="hero" aria-label="Déficit de calorías de los últimos 7 días">
+  <div class="row"><span class="t">Déficit de calorías</span><span class="cap">Últimos 7 días</span></div>
+  <div class="barras" id="barsDef"></div>
+  <div class="dias" id="diasDef"></div>
+</button>
+<button class="grafica glass card" data-ir="tracker" data-ancla="hero" aria-label="Horas de sueño de los últimos 7 días">
+  <div class="row"><span class="t">Horas de sueño</span><span class="cap">Últimos 7 días</span></div>
+  <div class="barras" id="barsSue"></div>
+  <div class="dias" id="diasSue"></div>
 </button>
 </main></div>
 
@@ -2166,23 +2178,28 @@ const num = v => typeof v === "number" ? v : parseFloat(String(v||"").replace(/[
 const fecha = v => String(v||"").replace(/^'/, "").slice(0, 10);
 const pesos = n => "$" + Math.round(n).toLocaleString("es-MX");
 
-function barras(serie){
+/* Gráficas de 7 días de Inicio (pasos, déficit, sueño): una sola serie = un solo color; el día más reciente con dato va en acento.
+   Un día sin dato no dibuja nada. La línea es la meta del Tracker. Un valor negativo (comiste más de lo que quemaste) va en rojo. */
+function grafica(id, serie, o){
   const D = ["Do","Lu","Ma","Mi","Ju","Vi","Sá"], dia = x => D[new Date(x.d + "T12:00").getDay()];
-  // Pasos por día. Una sola serie = un solo color; solo el día más reciente con dato va en acento.
-  // Un día sin dato no dibuja nada. La línea es la meta de 10,000 del Tracker.
-  const META = 10000, foco = [...serie].reverse().find(x => isFinite(x.v));
-  const tope = Math.max(META, ...serie.map(x => isFinite(x.v) ? x.v : 0)), alto = v => v / tope * 80;
-  const k = v => v >= 1000 ? (v / 1000).toFixed(1).replace(/\.0$/, "") + "k" : String(Math.round(v));
-  $("bars").innerHTML = `<span class="zona" style="bottom:${alto(META)}%"><b>10k</b></span>` +
+  const foco = [...serie].reverse().find(x => isFinite(x.v));
+  const tope = Math.max(o.meta, ...serie.map(x => isFinite(x.v) ? Math.abs(x.v) : 0)), alto = v => Math.max(3, Math.abs(v) / tope * 80);
+  $("bars" + id).innerHTML = `<span class="zona" style="bottom:${o.meta / tope * 80}%"><b>${o.corto(o.meta)}</b></span>` +
     serie.map(x => isFinite(x.v)
-      ? `<div class="col${x === foco ? " foco" : ""}"><span class="val">${k(x.v)}</span><i style="height:${alto(x.v)}%"></i></div>`
+      ? `<div class="col${x === foco ? " foco" : ""}${x.v < 0 ? " neg" : ""}"><span class="val">${o.corto(x.v)}</span><i style="height:${alto(x.v)}%"></i></div>`
       : `<div class="col"></div>`).join("");
-  $("dias").innerHTML = serie.map(x => `<span>${dia(x)}</span>`).join("");
-  $("bars").closest(".grafica").setAttribute("aria-label", "Pasos de los últimos 7 días: " +
-    serie.map(x => dia(x) + " " + (isFinite(x.v) ? Math.round(x.v).toLocaleString("es-MX") : "sin dato")).join(", ") + ". Meta de 10,000.");
+  $("dias" + id).innerHTML = serie.map(x => `<span>${dia(x)}</span>`).join("");
+  $("bars" + id).closest(".grafica").setAttribute("aria-label", o.nombre + " de los últimos 7 días: " +
+    serie.map(x => dia(x) + " " + (isFinite(x.v) ? o.largo(x.v) : "sin dato")).join(", ") + ". Meta: " + o.largo(o.meta) + ".");
 }
+const kMil = v => (v < 0 ? "−" : "") + (Math.abs(v) >= 1000 ? (Math.abs(v) / 1000).toFixed(1).replace(/\.0$/, "") + "k" : String(Math.round(Math.abs(v))));
+const barras = serie => grafica("", serie, { meta:10000, nombre:"Pasos", corto:kMil, largo:v => Math.round(v).toLocaleString("es-MX") + " pasos" });
+const barrasDef = serie => grafica("Def", serie, { meta:300, nombre:"Déficit de calorías", corto:kMil,
+  largo:v => v < 0 ? "comiste " + Math.round(-v).toLocaleString("es-MX") + " kcal de más" : Math.round(v).toLocaleString("es-MX") + " kcal de déficit" });
+const horasTxt = v => { const h = Math.floor(v), m = Math.round((v - h) * 60); return m === 60 ? (h + 1) + "h" : h + "h" + (m ? String(m).padStart(2, "0") : ""); };
+const barrasSue = serie => grafica("Sue", serie, { meta:7, nombre:"Horas de sueño", corto:v => horasTxt(v).replace(/h00$/, "h"), largo:v => horasTxt(v) });
 function ultimos7(){ return [...Array(7)].map((_, i) => { const d = new Date(); d.setDate(d.getDate() - 6 + i); return d.toLocaleDateString("sv-SE"); }); }
-barras(ultimos7().map(d => ({ d, v:NaN })));
+barras(ultimos7().map(d => ({ d, v:NaN }))); barrasDef(ultimos7().map(d => ({ d, v:NaN }))); barrasSue(ultimos7().map(d => ({ d, v:NaN })));
 
 /* Si un número no cabe en su tarjeta (p. ej. $12,345 con 3 tarjetas en fila), se achica hasta caber. */
 function ajustarNumeros(){
@@ -2207,8 +2224,8 @@ function poner(id, txt){
   el.textContent = txt; el.classList.remove("nuevo"); void el.offsetWidth; el.classList.add("nuevo");
 }
 function mostrar(r){ // { serie:[[fecha, recovery]], rec, recFecha, sueno, hrv, gastoHoy, gastoMes }
-  const v = Object.fromEntries(r.seriePasos || []);
-  barras(ultimos7().map(d => ({ d, v:v[d] == null ? NaN : v[d] })));
+  const serieDe = s => { const v = Object.fromEntries(s || []); return ultimos7().map(d => ({ d, v:v[d] == null ? NaN : v[d] })); };
+  barras(serieDe(r.seriePasos)); barrasDef(serieDe(r.serieDeficit)); barrasSue(serieDe(r.serieSueno));
   poner("rec", r.rec == null ? "–" : String(Math.round(r.rec)));
   $("recNota").textContent = !r.recFecha ? "" : r.recFecha === hoy ? "hoy" : "del " + new Date(r.recFecha + "T12:00").toLocaleDateString("es-MX", { day:"numeric", month:"short" });
   // Anillos WHOOP (la parte llena es el avance) y abajo pasos, calorías y gastos. Sin dato: no se muestra.
