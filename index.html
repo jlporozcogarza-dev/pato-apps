@@ -2098,17 +2098,30 @@ pintarFede.forzar = true; pintarFede();
   /* La voz de Fede en el app: frases cortas ya grabadas con su voz (voz/*.mp3). El iPhone solo deja sonar un audio
      que se "desbloqueó" con un toque, por eso se desbloquea al tocar el anillo y luego se reusa el mismo elemento. */
   const vozFede = new Audio(); vozFede.preload = "auto";
-  const CLIPS = { nooi:[["nooi1","No te oí nada, Pato."],["nooi2","Nel, no te caché nada. ¿Me lo repites?"],["nooi3","Uy, no se oyó nada, carnal."]],
-    cancelado:[["cancelado","Va, cancelado."]], nollego:[["nollego","No le pude llegar a la compu. ¿Está prendida?"]],
-    micro:[["micro","Necesito permiso para usar el micrófono."]] };
+  const CLIPS = {"nooi": [["nooi1", "No te oí nada, Pato."], ["nooi2", "Nel, no te caché nada. ¿Me lo repites?"], ["nooi3", "Uy, no se oyó nada, carnal."], ["nooi4", "Mmm, no te escuché nada, Pato."], ["nooi5", "Creo que no dijiste nada. ¿Le damos otra vez?"], ["nooi6", "No me llegó nada, carnal. Inténtale de nuevo."]], "cancelado": [["cancelado", "Va, cancelado."], ["cancelado2", "Sale, ya no le muevo."], ["cancelado3", "Órale, lo dejo ahí."], ["cancelado4", "Va, me callo."], ["cancelado5", "Sale, cancelado, Pato."], ["cancelado6", "Ya estuvo, lo paro."]], "nollego": [["nollego", "No le pude llegar a la compu. ¿Está prendida?"], ["nollego2", "No encuentro la compu. ¿Estará dormida?"], ["nollego3", "La compu no me contesta, Pato."], ["nollego4", "Nel, no hay señal de la compu."], ["nollego5", "Uy, no llegó tu mensaje a la compu."]], "micro": [["micro", "Necesito permiso para usar el micrófono."], ["micro2", "Dame permiso del micrófono y le damos."], ["micro3", "Ocupo el micrófono, actívalo en ajustes."], ["micro4", "Sin micrófono no te oigo, carnal."], ["micro5", "Préndeme el micrófono y ya te escucho."]]};
   function desbloquearVoz(){
     if (vozFede.dataset.ok) return;
     vozFede.src = "voz/cancelado.mp3"; vozFede.muted = true;
     vozFede.play().then(() => { vozFede.pause(); vozFede.currentTime = 0; vozFede.muted = false; vozFede.dataset.ok = "1"; })
       .catch(() => { vozFede.muted = false; });
   }
+  /* Nunca repite: cada aviso tiene 5+ versiones y salen en orden revuelto hasta usarlas todas; al revolver otra vez,
+     la primera nunca es la última que sonó. El orden pendiente se guarda en este teléfono. */
+  function siguienteClip(clave){
+    const l = CLIPS[clave]; let bolsa = {}, ultima = {};
+    try{ bolsa = JSON.parse(localStorage.getItem("jlp-voz-bolsa") || "{}"); ultima = JSON.parse(localStorage.getItem("jlp-voz-ultima") || "{}"); }catch(e){}
+    let resto = (bolsa[clave] || []).filter(i => i < l.length);
+    if (!resto.length){
+      resto = l.map((_, i) => i);
+      for (let i = resto.length - 1; i > 0; i--){ const j = Math.floor(Math.random() * (i + 1)); [resto[i], resto[j]] = [resto[j], resto[i]]; }
+      if (resto[0] === ultima[clave] && resto.length > 1) resto.push(resto.shift());
+    }
+    const k = resto.shift(); bolsa[clave] = resto; ultima[clave] = k;
+    try{ localStorage.setItem("jlp-voz-bolsa", JSON.stringify(bolsa)); localStorage.setItem("jlp-voz-ultima", JSON.stringify(ultima)); }catch(e){}
+    return l[k];
+  }
   function hablarApp(clave){   // la dice con la voz de Fede y devuelve el texto para la burbuja
-    const l = CLIPS[clave], [archivo, texto] = l[Math.floor(Math.random() * l.length)];
+    const [archivo, texto] = siguienteClip(clave);
     try{ vozFede.muted = false; vozFede.src = "voz/" + archivo + ".mp3"; vozFede.play().catch(() => {}); }catch(e){}
     return texto;
   }
