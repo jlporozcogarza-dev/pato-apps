@@ -33,7 +33,7 @@ html,body{margin:0;height:100%;overflow:hidden;background:var(--c60);color:var(-
 .vista.on{display:block}
 html,body,.vista{overscroll-behavior:none} /* sin rebote al jalar hacia abajo (dejaba un hueco y en Tracker/Finanzas se veía blanco) */
 /* las apps ya respetan la muesca del iPhone por su cuenta: el iframe va a pantalla completa */
-#v-inicio,#v-condotec,#v-pendientes,#v-ideas,#v-fede{overflow-y:auto;-webkit-overflow-scrolling:touch;padding:max(14px,env(safe-area-inset-top)) 16px calc(78px + max(4px,calc(env(safe-area-inset-bottom) - var(--franja,0px) - 12px)))}
+#v-inicio,#v-condotec,#v-pendientes,#v-ideas,#v-cam,#v-fede{overflow-y:auto;-webkit-overflow-scrolling:touch;padding:max(14px,env(safe-area-inset-top)) 16px calc(78px + max(4px,calc(env(safe-area-inset-bottom) - var(--franja,0px) - 12px)))}
 /* el Inicio cabe en una pantalla: la gráfica toma lo que sobre (si un teléfono es muy chico, se puede deslizar) */
 #v-inicio main{display:flex;flex-direction:column;min-height:100%;gap:10px}
 #v-inicio main>*{flex:none}
@@ -604,6 +604,13 @@ nav button[aria-selected=true]::after{content:"";position:absolute;left:50%;top:
 .dia.hoy{box-shadow:inset 0 0 0 1.5px var(--c10),0 0 14px -3px var(--c10)}
 .zona b{text-shadow:0 0 8px var(--c10)}
 input[type=checkbox]{accent-color:var(--c10)}
+.cam-marco{position:relative;border-radius:24px;overflow:hidden;aspect-ratio:4/3;display:grid;place-items:center;background:#000}
+.cam-marco img{position:absolute;inset:0;width:100%;height:100%;object-fit:cover}
+.cam-estado{margin:0;padding:0 24px;text-align:center;color:var(--muted);font-size:14px;line-height:1.4}
+.cam-vivo{position:absolute;top:12px;left:12px;z-index:1;display:flex;align-items:center;gap:6px;padding:5px 10px;border-radius:999px;background:rgba(0,0,0,.5);font-size:12px;font-weight:600;color:#fff;-webkit-backdrop-filter:blur(8px);backdrop-filter:blur(8px)}
+.cam-vivo::before{content:"";width:7px;height:7px;border-radius:50%;background:#ff3b30;box-shadow:0 0 8px #ff3b30;animation:camLate 1.4s ease-in-out infinite}
+@keyframes camLate{50%{opacity:.35}}
+.cam-nota{margin:12px 4px 0;font-size:12.5px;color:var(--muted);line-height:1.4}
 </style></head>
 <body>
 <div class="fondo" aria-hidden="true"></div>
@@ -666,6 +673,11 @@ input[type=checkbox]{accent-color:var(--c10)}
 <p class="nota" id="ccNota"></p></div>
 </main></div>
 
+<div class="vista" id="v-cam" role="tabpanel" aria-label="Cam"><main>
+<header class="titulo-pagina"><div><small class="fecha-hoy"></small><h1>Cam</h1></div></header>
+<div class="cam-marco glass"><img id="camImg" alt="Cámara de la laptop en vivo" hidden><span class="cam-vivo" id="camVivo" hidden>En vivo</span><p class="cam-estado" id="camEstado" role="status">Conectando…</p></div>
+<p class="cam-nota">La cámara de tu laptop solo se prende mientras tienes esta pestaña abierta, y se apaga sola unos segundos después de salir. No se graba nada.</p>
+</main></div>
 <div class="vista" id="v-ideas" role="tabpanel" aria-label="Ideas"><main>
 <header class="titulo-pagina"><div><small class="fecha-hoy"></small><h1>Ideas</h1></div></header>
 <p class="ideas-tip">Toca para abrir · deja picado para mover · dos toques para editar</p>
@@ -828,6 +840,7 @@ input[type=checkbox]{accent-color:var(--c10)}
   <button role="tab" data-ir="condotec" aria-selected="false" aria-label="Condotec"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M4 20V8l8-4 8 4v12"/><path d="M9 20v-5h6v5M9 10h.01M15 10h.01"/></svg><span>Condotec</span></button>
   <button role="tab" data-ir="pendientes" aria-selected="false" aria-label="Pendientes"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><rect x="3" y="5" width="18" height="16" rx="3"/><path d="M3 10h18M8 3v4M16 3v4M8 15l2 2 4-4"/></svg><span>Pendientes</span></button>
   <button role="tab" data-ir="ideas" aria-selected="false" aria-label="Ideas"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M9 18h6M10 21h4"/><path d="M12 3a6 6 0 0 0-3.6 10.8c.7.6 1.1 1.3 1.1 2.2h5c0-.9.4-1.6 1.1-2.2A6 6 0 0 0 12 3z"/></svg><span>Ideas</span></button>
+  <button role="tab" data-ir="cam" aria-selected="false" aria-label="Cam"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M15 10l5-3v10l-5-3"/><rect x="3" y="6" width="12" height="12" rx="3"/></svg><span>Cam</span></button>
 </nav>
 
 <script>
@@ -862,8 +875,8 @@ const PALETAS = [
   { id:"nanohana",   n:"Nanohana",   k:"苔 · 海松 · 菜の花",   c60:"#14150C", c30:"#838A2D", c10:"#F7D94C" },
   { id:"arazome",    n:"Arazome",    k:"墨 · 胡桃 · 退紅",     c60:"#1B1717", c30:"#947A6D", c10:"#F596AA" },
 ];
-const ORDEN = ["inicio", "tracker", "finanzas", "condotec", "fede", "pendientes", "ideas"], NOMBRE = { inicio:"Inicio", tracker:"Tracker", finanzas:"Finanzas", condotec:"Condotec", fede:"Fede", pendientes:"Pendientes", ideas:"Ideas" };
-const DEF = { inicio:"daidai", tracker:"torinoko", finanzas:"kanzo", condotec:"neri", fede:"daidai", pendientes:"kaki", ideas:"shu" }, LSP = "jlp-paletas";
+const ORDEN = ["inicio", "tracker", "finanzas", "condotec", "fede", "pendientes", "ideas", "cam"], NOMBRE = { inicio:"Inicio", tracker:"Tracker", finanzas:"Finanzas", condotec:"Condotec", fede:"Fede", pendientes:"Pendientes", ideas:"Ideas", cam:"Cam" };
+const DEF = { inicio:"daidai", tracker:"torinoko", finanzas:"kanzo", condotec:"neri", fede:"daidai", pendientes:"kaki", ideas:"shu", cam:"neri" }, LSP = "jlp-paletas";
 let elegidas = (() => { try{ return Object.assign({}, DEF, JSON.parse(localStorage.getItem(LSP) || "{}")); }catch(e){ return { ...DEF }; } })();
 const pal = tab => PALETAS.find(p => p.id === elegidas[tab]) || PALETAS.find(p => p.id === DEF[tab]);
 function pintar(){
@@ -1661,7 +1674,7 @@ $("ccAnt").onclick = () => moverMesCC(-1); $("ccSig").onclick = () => moverMesCC
 pintarCC(); // lo guardado en el teléfono se ve al instante
 
 /* ---------- pestañas: cada app vive en su iframe, se crea la primera vez y se queda viva ---------- */
-const vistas = { inicio:$("v-inicio"), condotec:$("v-condotec"), fede:$("v-fede"), pendientes:$("v-pendientes"), ideas:$("v-ideas") };
+const vistas = { inicio:$("v-inicio"), condotec:$("v-condotec"), fede:$("v-fede"), pendientes:$("v-pendientes"), ideas:$("v-ideas"), cam:$("v-cam") };
 let actual = "inicio";
 function vista(tab){
   if (!vistas[tab]){
@@ -1707,6 +1720,7 @@ function ir(tab, push){
   const anterior = actual; actual = tab;
   document.documentElement.dataset.tab = tab;
   pintar();
+  if (tab === "cam") camVer();
   document.querySelectorAll("nav [role=tab]").forEach(b => b.setAttribute("aria-selected", b.dataset.ir === tab));
   moverPastilla();
   const ob = ordenBarra(), v = vista(tab), dir = Math.sign(ob.indexOf(tab) - ob.indexOf(anterior)) || 1;
@@ -2206,6 +2220,25 @@ function cfg(){
   if (p.get("u") && p.get("k")) { const c = { u:p.get("u"), k:p.get("k") }; try{ localStorage.setItem(LS, JSON.stringify(c)); }catch(e){} history.replaceState(null, "", location.pathname + location.hash); return c; }
   try{ return JSON.parse(localStorage.getItem(LS) || "null"); }catch(e){ return null; }
 }
+/* Cam: mientras la pestaña está abierta (y el app a la vista) pide el último cuadro al server, que le avisa a la laptop
+   que prenda la cámara (fede/camara.pyw). Al salir deja de pedir y la laptop la apaga sola a los ~8 s. */
+var camCorre = false;   // var: ir("cam") puede correr antes de llegar aquí al abrir en #cam
+async function camVer(){
+  if (camCorre) return; camCorre = true;
+  const img = $("camImg"), est = $("camEstado"), vivo = $("camVivo"), espera = ms => new Promise(r => setTimeout(r, ms));
+  const aviso = t => { est.textContent = t; est.hidden = false; vivo.hidden = true; };
+  while (actual === "cam" && !document.hidden){
+    const c = cfg(); if (!c){ aviso("Conecta tus datos primero."); break; }
+    try{
+      const r = await api(c, "cam_ver", {});
+      if (r.jpg){ img.src = "data:image/jpeg;base64," + r.jpg; img.hidden = false; vivo.hidden = false; est.hidden = true; }
+      else { img.hidden = true; aviso(r.hace == null || r.hace > 20 ? "Prendiendo la cámara… Si no sale en unos 10 s, la laptop está apagada o dormida." : "Esperando imagen…"); await espera(600); }
+    }catch(e){ aviso("Sin conexión: " + e.message); await espera(2000); }
+    await espera(120);
+  }
+  camCorre = false;
+}
+document.addEventListener("visibilitychange", () => { if (!document.hidden && actual === "cam") camVer(); });
 async function api(c, tool, input){
   const r = await fetch(API, { method:"POST", headers:{ "Content-Type":"text/plain;charset=utf-8" }, body:JSON.stringify({ k:c.k, tool, input }) });
   const j = await r.json(); if (j.error) throw new Error(j.error); return j.result;

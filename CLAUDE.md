@@ -58,6 +58,16 @@ Cada uno lleva quién lo destraba y una estimación de tiempo (sale del promedio
 | C3 | Revisar «Gastado desde el inicio» = 1520.5 en Config de Finanzas | 10 min |
 | C4 | Respaldo de Ideas (post-its) en Sheets; hoy solo viven en el teléfono | 20 min |
 | C5 | La lista de calendarios del editor de eventos sale de los eventos copiados; un calendario sin eventos en ±2 meses no aparece (atajo, `index.html` abrirEv) | 10 min |
+| C6 | Pestaña **Cam**: ver en vivo la cámara de la laptop desde el app (19 nov) | 15 min |
+
+#### C6 — Cam en vivo
+- **Pasos:**
+  1. `puente.py`: herramientas `cam_ver` (el app pide el último cuadro y marca «alguien está viendo»), `cam_subir` (la laptop manda el cuadro) y `cam_estado`. Todo en memoria y con la clave de siempre.
+  2. `../fede/camara.pyw`: pregunta cada 2 s si alguien ve. Si sí, prende ffmpeg (dshow «Integrated Camera», 640 px, unos 4 cuadros por segundo) y sube el último cuadro. Si nadie ve por 8 s, apaga la cámara.
+  3. Arranque con Windows (acceso directo en Inicio).
+  4. `index.html`: pestaña Cam con la imagen en vivo y un aviso de «laptop apagada» cuando no llegan cuadros.
+- **Probar:** abrir la pestaña Cam en el navegador y ver que la imagen cambia. Al cerrarla, la luz de la cámara se apaga en unos 10 s.
+- **Cuidado:** solo con la clave. No se guarda ningún cuadro en disco. La cámara solo se prende mientras alguien está viendo.
 
 ## Plan (orden propuesto)
 
