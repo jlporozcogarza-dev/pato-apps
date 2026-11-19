@@ -202,6 +202,12 @@ button.card:active{transform:scale(.98)}
 .dia.hoy{box-shadow:inset 0 0 0 1.5px var(--c10)}
 .dia.sel{color:var(--c60);background:linear-gradient(180deg,color-mix(in srgb,var(--c10) 68%,#fff),var(--c10) 60%,color-mix(in srgb,var(--c10) 82%,#000));box-shadow:inset 0 1px 0 rgba(255,255,255,.7),0 0 18px color-mix(in srgb,var(--c10) 55%,transparent)}
 .puntos{display:flex;gap:2px;height:6px;align-items:center}
+.cal-filtros{display:flex;gap:6px;flex-wrap:wrap;margin:2px 2px 10px}
+.cal-filtros button{display:inline-flex;align-items:center;gap:6px;padding:6px 11px;border-radius:99px;font:600 12.5px/1 var(--sans);cursor:pointer;
+  border:1px solid color-mix(in srgb,var(--col) 55%,transparent);background:color-mix(in srgb,var(--col) 18%,transparent);color:var(--fg);transition:opacity .2s,background .2s}
+.cal-filtros button i{width:8px;height:8px;border-radius:50%;background:var(--col)}
+.cal-filtros button[aria-pressed="false"]{opacity:.45;background:none;border-color:rgba(255,255,255,.14)}
+.cal-filtros button[aria-pressed="false"] i{background:none;box-shadow:inset 0 0 0 1.5px var(--col)}
 .puntos i{width:6px;height:6px;border-radius:50%;background:var(--col,var(--c10))}
 .puntos i.pend,.puntos i.venc{border-radius:1.5px;background:color-mix(in srgb,var(--fg) 78%,var(--c60))}.puntos i.venc{background:var(--st-crit)}
 .dia.sel .puntos i{box-shadow:0 0 0 1px var(--c60)}
@@ -654,6 +660,7 @@ header .ajustes{visibility:hidden} /* en Inicio se usa el fijo de arriba a la de
 <div class="seccion"><h2>Calendario</h2></div>
 <section class="calendario glass" aria-label="Calendario">
   <div class="cal-top"><button class="cal-nav" id="mesAnt" aria-label="Mes anterior">‹</button><b id="calMes"></b><button class="cal-nav" id="mesSig" aria-label="Mes siguiente">›</button></div>
+  <div class="cal-filtros" id="calFiltros" role="group" aria-label="Qué se ve en el calendario"></div>
   <div class="cal-sem" aria-hidden="true"><span>L</span><span>M</span><span>M</span><span>J</span><span>V</span><span>S</span><span>D</span></div>
   <div class="cal-dias" id="calDias"></div>
 </section>
@@ -879,8 +886,27 @@ const LSAG = "jlp-agenda";
 let AG = null, agSel = null, agMes = null; // se llenan con hoy al pintar (hoy se define más abajo)
 const sumaDias = (s, n) => { const d = new Date(s + "T12:00"); d.setDate(d.getDate() + n); return d.toLocaleDateString("sv-SE"); };
 const corto = s => new Date(s + "T12:00").toLocaleDateString("es-MX", { day:"numeric", month:"short" });
+/* Filtros del calendario (todos prendidos al inicio; se recuerdan en el teléfono):
+   Personal (verde) = tus calendarios, tus tareas, cumpleaños, festivos, cosas de Claude; Tec (azul) = TEC, TRABAJO/Ternium y tareas de la escuela;
+   Condotec (gris) = pendientes de los depas y el calendario de mantenimiento. */
+const CATS_CAL = [["personal", "Personal", "var(--st-ok)"], ["tec", "Tec", "var(--st-info)"], ["condo", "Condotec", "var(--st-neutro)"]], LSCF = "jlp-cal-filtros";
+let filtrosCal = new Set((() => { try{ const v = JSON.parse(localStorage.getItem(LSCF) || "null"); return Array.isArray(v) ? v : null; }catch(e){ return null; } })() || CATS_CAL.map(c => c[0]));
+const verCat = k => filtrosCal.has(k), colCat = k => (CATS_CAL.find(c => c[0] === k) || CATS_CAL[0])[2];
+const catEvento = e => /condotec/i.test(e.c || "") ? "condo" : /\b(tec|trabajo|ternium)\b/i.test(e.c || "") ? "tec" : "personal";
+const catTarea = t => /\btec\b|ternium|tarea|clase|examen|parcial|proyecto|entrega|profe|materia/i.test(t.t + " " + (t.det || "")) ? "tec" : "personal";
+const tareasDe = dia => conCola(TAR || []).filter(t => t.estado !== "hecha" && t.fecha === dia && verCat(catTarea(t)));
+function pintarFiltrosCal(){
+  $("calFiltros").innerHTML = CATS_CAL.map(([k, n, col]) => `<button data-filtro="${k}" aria-pressed="${verCat(k)}" style="--col:${col}"><i></i>${n}</button>`).join("");
+}
+$("calFiltros").addEventListener("click", e => {
+  const b = e.target.closest("[data-filtro]"); if (!b) return;
+  verCat(b.dataset.filtro) ? filtrosCal.delete(b.dataset.filtro) : filtrosCal.add(b.dataset.filtro);
+  try{ localStorage.setItem(LSCF, JSON.stringify([...filtrosCal])); }catch(err){}
+  pintarFiltrosCal(); if (AG){ pintarCal(); pintarDia(); }
+});
+pintarFiltrosCal();
 function eventosDe(dia){ // los de todo el día cuentan en cada día que abarcan
-  return ((AG && AG.eventos) || []).filter(e => e.dia ? e.i.slice(0, 10) <= dia && dia < e.f.slice(0, 10) : e.i.slice(0, 10) === dia)
+  return ((AG && AG.eventos) || []).filter(e => verCat(catEvento(e))).filter(e => e.dia ? e.i.slice(0, 10) <= dia && dia < e.f.slice(0, 10) : e.i.slice(0, 10) === dia)
     .sort((a, b) => (a.dia ? "" : a.i).localeCompare(b.dia ? "" : b.i));
 }
 /* Pendientes de Condotec editables: tocar uno → Hecho, cambiar el texto o la fecha. Lo hace Fede en la hoja Inquilinos (conector de Google Sheets);
@@ -899,7 +925,7 @@ function pendientesAG(){
   return base.filter(p => !(cambiosPend[p.n] || {}).hecho).map(p => { const c = cambiosPend[p.n]; if (!c) return p;
     return { ...p, texto:c.texto ?? p.texto, fecha:c.fecha === undefined ? p.fecha : c.fecha || null }; });
 }
-const pendDe = dia => pendientesAG().filter(p => p.fecha === dia);
+const pendDe = dia => verCat("condo") ? pendientesAG().filter(p => p.fecha === dia) : [];
 function abrirPend(n){
   pendSel = pendientesAG().find(p => String(p.n) === String(n)); if (!pendSel) return;
   $("pendTitulo").textContent = "Pendiente " + pendSel.n; $("pendSub").textContent = [pendSel.depas, pendSel.estado, pendSel.prioridad].filter(Boolean).join(" · ");
@@ -954,8 +980,10 @@ function pintarCal(){
   const inicio = sumaDias(agMes + "-01", -off);
   $("calMes").textContent = primero.toLocaleDateString("es-MX", { month:"long", year:"numeric" }).replace(/^./, c => c.toUpperCase());
   $("calDias").innerHTML = [...Array(celdas)].map((_, i) => {
-    const d = sumaDias(inicio, i), ev = eventosDe(d).slice(0, 3), pe = pendDe(d);
-    const puntos = ev.map(e => `<i style="--col:${esc(e.col || "")}"></i>`).join("") + (pe.length ? `<i class="${d < hoy ? "venc" : "pend"}"></i>` : "");
+    const d = sumaDias(inicio, i), ev = eventosDe(d).slice(0, 3), pe = pendDe(d), ta = tareasDe(d);
+    const puntos = ev.map(e => `<i style="--col:${colCat(catEvento(e))}"></i>`).join("")
+      + ta.slice(0, 2).map(t => `<i style="--col:${d < hoy ? "var(--st-crit)" : colCat(catTarea(t))}"></i>`).join("")
+      + (pe.length ? `<i style="--col:${d < hoy ? "var(--st-crit)" : colCat("condo")}"></i>` : "");
     const cls = ["dia", d.slice(0, 7) !== agMes && "fuera", d === hoy && "hoy", d === agSel && "sel"].filter(Boolean).join(" ");
     return `<button class="${cls}" data-dia="${d}" aria-label="${corto(d)}${ev.length ? ", " + ev.length + " eventos" : ""}"><span>${+d.slice(8)}</span><span class="puntos">${puntos}</span></button>`;
   }).join("");
@@ -964,13 +992,15 @@ function pintarDia(){
   const fecha = new Date(agSel + "T12:00");
   $("agTitulo").textContent = agSel === hoy ? "Hoy" : agSel === sumaDias(hoy, 1) ? "Mañana" : fecha.toLocaleDateString("es-MX", { weekday:"long" }).replace(/^./, c => c.toUpperCase());
   $("agFecha").textContent = fecha.toLocaleDateString("es-MX", { day:"numeric", month:"long" });
-  const ev = eventosDe(agSel), pe = pendDe(agSel);
-  let h = ev.map(e => `<div class="evento" style="--col:${esc(e.col || "")}"><span class="barra"></span><span class="hora">${e.dia ? "Todo el día" : esc(e.i.slice(11, 16))}</span>` +
+  const ev = eventosDe(agSel), pe = pendDe(agSel), ta = tareasDe(agSel);
+  let h = ev.map(e => `<div class="evento" style="--col:${colCat(catEvento(e))}"><span class="barra"></span><span class="hora">${e.dia ? "Todo el día" : esc(e.i.slice(11, 16))}</span>` +
     `<span><b>${esc(e.t)}</b><small>${esc([e.c, e.l].filter(Boolean).join(" · "))}</small></span></div>`).join("");
+  h += ta.map(t => `<div class="evento" style="--col:${colCat(catTarea(t))}"><span class="barra"></span><span class="hora">Tarea</span>` +
+    `<span><b>${esc(t.t)}</b><small>${esc(t.det || (catTarea(t) === "tec" ? "Tec" : "Personal"))}</small></span></div>`).join("");
   h += pe.map(p => `<button class="renglon at" data-pend="${esc(p.n)}"><div class="arriba"><b>${esc(p.n)}. ${esc(p.texto)}</b><span class="marca t-${agSel < hoy ? "rojo" : "gris"}">vence</span></div>${p.depas ? `<p>${esc(p.depas)}</p>` : ""}</button>`).join("");
   if (!h) h = AG && AG.eventos == null
     ? '<p class="nota">Tu Google Calendar todavía no llega al server: falta publicar el puente en Apps Script (Implementar → Versión nueva).</p>'
-    : '<p class="nota">Nada en tu calendario este día.</p>';
+    : filtrosCal.size < CATS_CAL.length ? '<p class="nota">Nada este día con los filtros que tienes prendidos.</p>' : '<p class="nota">Nada en tu calendario este día.</p>';
   $("agDia").innerHTML = h;
 }
 function pintarPend(){
@@ -1114,7 +1144,7 @@ function cargarTareas(c){
     .then(r => {
       const v = r.values || [];
       if (v[0] && sinApostrofo(v[0][9]) !== "Fecha") apiT(c, "update_values", { spreadsheetId:TRACKER, range:HOJA_T + "!J1", values:[["Fecha"]] }).catch(() => {});
-      TAR = leerTareas(v); lsPoner(LST, TAR); pintarTareas(); return enviarCola(c);
+      TAR = leerTareas(v); lsPoner(LST, TAR); pintarTareas(); if (AG){ pintarCal(); pintarDia(); } return enviarCola(c);
     })
     .catch(() => sinConexionT("No pude cargar tus tareas. Revisa tu conexión."));
 }
