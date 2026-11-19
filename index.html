@@ -409,26 +409,25 @@ header .ajustes svg{width:20px;height:20px}
 .tablero{position:relative;min-height:70vh;border-radius:24px;background:rgba(255,255,255,.035);border:1px dashed rgba(255,255,255,.1);
   -webkit-touch-callout:none;-webkit-user-select:none;user-select:none}
 .ideas-vacio{position:absolute;inset:40% 0 auto;text-align:center;color:var(--muted);font-size:14px;margin:0}
-.postit{position:absolute;display:flex;flex-direction:column;gap:6px;padding:12px 12px 10px;border-radius:4px 4px 18px 4px;color:#1d1d1b;overflow:hidden;cursor:pointer;
-  box-shadow:0 10px 22px rgba(0,0,0,.35),inset 0 -14px 18px rgba(0,0,0,.06);transform:rotate(var(--giro,0deg));
-  transition:transform .18s,box-shadow .18s,width .25s,height .25s;-webkit-tap-highlight-color:transparent;touch-action:manipulation}
+.postit{position:absolute;display:flex;flex-direction:column;gap:6px;padding:16px 14px 12px;border-radius:22px;color:var(--fg);overflow:hidden;cursor:pointer;background:linear-gradient(155deg,color-mix(in srgb,var(--tinta) 34%,transparent),color-mix(in srgb,var(--tinta) 10%,transparent) 55%,rgba(255,255,255,.03)),linear-gradient(150deg,rgba(255,255,255,.10),rgba(255,255,255,.03) 38%,color-mix(in srgb,var(--c30) 14%,transparent));border:1px solid color-mix(in srgb,var(--tinta) 30%,rgba(255,255,255,.10));transition:transform .25s cubic-bezier(.34,1.4,.5,1),box-shadow .25s,width .25s,height .25s;-webkit-tap-highlight-color:transparent;touch-action:manipulation}
+.postit::before{content:"";position:absolute;left:14px;right:14px;top:7px;height:3px;border-radius:3px;background:var(--tinta);opacity:.85}
 .postit b{font:700 15px/1.2 var(--display);overflow-wrap:anywhere;display:-webkit-box;-webkit-line-clamp:3;-webkit-box-orient:vertical;overflow:hidden}
-.postit small{font-size:12px;line-height:1.3;opacity:.72;overflow:hidden;flex:1;overflow-wrap:anywhere;white-space:pre-line}
-.postit.levantado{transform:rotate(0) scale(1.06);box-shadow:0 22px 40px rgba(0,0,0,.5);transition:box-shadow .18s,transform .18s}
+.postit small{font-size:12px;line-height:1.35;color:var(--muted);overflow:hidden;flex:1;overflow-wrap:anywhere;white-space:pre-line}
+.postit.levantado{transform:scale(1.06);filter:brightness(1.15);box-shadow:0 30px 50px -18px rgba(0,0,0,.9),0 0 0 1px var(--tinta);transition:box-shadow .2s,transform .2s}
 .postit.oculto{visibility:hidden}
 .ideas-mas{position:fixed;right:18px;bottom:calc(96px + env(safe-area-inset-bottom));z-index:5;width:58px;height:58px;border-radius:50%;border:0;display:none;place-items:center;cursor:pointer;
   background:var(--c10);color:var(--c60);box-shadow:0 12px 28px rgba(0,0,0,.45)}
 .ideas-mas svg{width:26px;height:26px}
 html[data-tab="ideas"] .ideas-mas{display:grid}
 .idea-velo{position:fixed;inset:0;z-index:20;background:rgba(0,0,0,.55);-webkit-backdrop-filter:blur(6px);backdrop-filter:blur(6px)}
-.idea-grande{position:fixed;z-index:21;left:50%;top:50%;width:min(88vw,440px);min-height:min(56vh,440px);max-height:78vh;overflow-y:auto;transform:translate(-50%,-50%);
-  padding:26px 22px 22px;border-radius:6px 6px 30px 6px;color:#1d1d1b;box-shadow:0 30px 70px rgba(0,0,0,.55);transform-origin:top left}
+.idea-grande{position:fixed;z-index:21;left:50%;top:50%;width:min(88vw,440px);min-height:min(56vh,440px);max-height:78vh;overflow-y:auto;transform:translate(-50%,-50%);padding:30px 22px 22px;border-radius:30px;color:var(--fg);transform-origin:top left;background:linear-gradient(155deg,color-mix(in srgb,var(--tinta) 34%,transparent),color-mix(in srgb,var(--tinta) 10%,transparent) 55%,rgba(255,255,255,.03)),linear-gradient(150deg,rgba(255,255,255,.10),rgba(255,255,255,.03) 38%,color-mix(in srgb,var(--c30) 14%,transparent));border:1px solid color-mix(in srgb,var(--tinta) 30%,rgba(255,255,255,.10));background-color:color-mix(in srgb,var(--c60) 88%,transparent);-webkit-backdrop-filter:var(--blur);backdrop-filter:var(--blur);box-shadow:inset 0 1px 0 rgba(255,255,255,.22),0 40px 80px -20px rgba(0,0,0,.9)}
+.idea-grande::before{content:"";position:absolute;left:22px;right:22px;top:12px;height:4px;border-radius:4px;background:var(--tinta)}
 .idea-grande h2{margin:0 36px 12px 0;font:800 26px/1.15 var(--display);overflow-wrap:anywhere}
 .idea-grande p{margin:0;font-size:16px;line-height:1.5;white-space:pre-line;overflow-wrap:anywhere}
-.idea-grande p.vacio{opacity:.55}
+.idea-grande p{color:color-mix(in srgb,var(--fg) 82%,transparent)}.idea-grande p.vacio{color:var(--muted)}
 .idea-grande .acc{display:flex;gap:8px;margin-top:20px}
-.idea-grande .acc button{flex:1;padding:12px;border-radius:14px;border:0;background:rgba(0,0,0,.1);color:#1d1d1b;font:600 15px/1 var(--sans);cursor:pointer}
-.idea-grande .x{position:absolute;top:14px;right:14px;width:34px;height:34px;border-radius:50%;border:0;background:rgba(0,0,0,.1);color:#1d1d1b;font-size:18px;cursor:pointer}
+.idea-grande .acc button{flex:1;padding:13px;border-radius:16px;border:1px solid rgba(255,255,255,.12);background:color-mix(in srgb,var(--tinta) 22%,rgba(255,255,255,.04));color:var(--fg);font:600 15px/1 var(--sans);cursor:pointer}
+.idea-grande .x{position:absolute;top:18px;right:16px;width:34px;height:34px;border-radius:50%;border:1px solid rgba(255,255,255,.12);background:rgba(255,255,255,.08);color:var(--fg);font-size:16px;cursor:pointer}
 .idea-l{display:flex;flex-direction:column;gap:6px;margin:12px 0;font-size:12.5px;color:var(--muted)}
 .idea-l input,.idea-l textarea{font:16px/1.35 var(--sans);color:var(--fg);background:rgba(0,0,0,.28);border:1px solid rgba(255,255,255,.12);border-radius:12px;padding:10px 12px}
 .idea-l textarea{resize:vertical}
@@ -1733,14 +1732,13 @@ pintarFede.forzar = true; pintarFede();
    Dos toques = hoja para editar título, descripción, color, tamaño y capa. Se guardan en este teléfono (jlp-ideas). */
 (() => {
   const LS = "jlp-ideas", tab = $("tablero");
-  const COLORES = { amarillo:"#ffe27a", rosa:"#ffa8cc", verde:"#a6ebab", azul:"#9fd2ff", naranja:"#ffbd7a", morado:"#cdb0ff" };
+  const COLORES = { amarillo:"#f2c94c", rosa:"#ee86b0", verde:"#5fc983", azul:"#5ea8f0", naranja:"#f0924a", morado:"#a688f0" };
   const TAM = { s:["Chico", 120], m:["Mediano", 150], l:["Grande", 190], xl:["Enorme", 240] };
   const esc = x => String(x).replace(/[&<>"']/g, c => ({ "&":"&amp;", "<":"&lt;", ">":"&gt;", '"':"&quot;", "'":"&#39;" }[c]));
   let ideas = []; try{ ideas = JSON.parse(localStorage.getItem(LS) || "[]"); }catch(e){}
   const guardar = () => { try{ localStorage.setItem(LS, JSON.stringify(ideas)); }catch(e){} };
   const porId = id => ideas.find(x => x.id === id);
   const lado = x => (TAM[x.s] || TAM.m)[1];
-  const giro = id => ((parseInt(id.slice(-3), 36) % 7) - 3) * 0.6;   // cada post-it con su ladeo fijo
   const capas = () => ideas.slice().sort((a, b) => a.z - b.z).forEach((x, i) => x.z = i + 1);
 
   function pintar(){
@@ -1751,9 +1749,9 @@ pintarFede.forzar = true; pintarFede();
     ideas.forEach(x => {
       const l = lado(x); if (ancho) x.x = Math.max(0, Math.min(x.x, ancho - l)); fondo = Math.max(fondo, x.y + l);
       const el = document.createElement("div");
-      el.className = "postit"; el.dataset.id = x.id; el.setAttribute("role", "button"); el.tabIndex = 0;
+      el.className = "postit glass"; el.dataset.id = x.id; el.setAttribute("role", "button"); el.tabIndex = 0;
       el.setAttribute("aria-label", "Idea: " + (x.t || "sin título"));
-      el.style.cssText = `left:${x.x}px;top:${x.y}px;width:${l}px;height:${l}px;z-index:${x.z};background:${COLORES[x.c] || COLORES.amarillo};--giro:${giro(x.id)}deg`;
+      el.style.cssText = `left:${x.x}px;top:${x.y}px;width:${l}px;height:${l}px;z-index:${x.z};--tinta:${COLORES[x.c] || COLORES.amarillo}`;
       el.innerHTML = `<b>${esc(x.t || "Sin título")}</b>` + (x.d ? `<small>${esc(x.d)}</small>` : "");
       tab.appendChild(el);
     });
@@ -1813,14 +1811,14 @@ pintarFede.forzar = true; pintarFede();
     const x = porId(id), chico = tab.querySelector(`.postit[data-id="${id}"]`); if (!x || !chico) return;
     const velo = document.createElement("div"); velo.className = "idea-velo";
     const g = document.createElement("div"); g.className = "idea-grande"; g.setAttribute("role", "dialog"); g.setAttribute("aria-label", x.t || "Idea");
-    g.style.background = COLORES[x.c] || COLORES.amarillo;
+    g.style.setProperty("--tinta", COLORES[x.c] || COLORES.amarillo);
     g.innerHTML = `<button class="x" aria-label="Cerrar">✕</button><h2>${esc(x.t || "Sin título")}</h2>` +
       `<p class="${x.d ? "" : "vacio"}">${esc(x.d || "Sin descripción. Toca Editar para agregarla.")}</p>` +
       `<div class="acc"><button data-a="editar">Editar</button></div>`;
     document.body.append(velo, g);
     const desde = chico.getBoundingClientRect(), a = g.getBoundingClientRect();
-    const ida = [{ transform:`translate(${desde.left - a.left}px,${desde.top - a.top}px) scale(${desde.width / a.width},${desde.height / a.height})`, borderRadius:"4px" },
-      { transform:"translate(0,0) scale(1)", borderRadius:"6px 6px 30px 6px" }];
+    const ida = [{ transform:`translate(${desde.left - a.left}px,${desde.top - a.top}px) scale(${desde.width / a.width},${desde.height / a.height})`, borderRadius:"22px" },
+      { transform:"translate(0,0) scale(1)", borderRadius:"30px" }];
     g.style.left = a.left + "px"; g.style.top = a.top + "px"; g.style.transform = "none";   // fija la posición para que la animación sea en px
     chico.classList.add("oculto");
     const quieto = matchMedia("(prefers-reduced-motion:reduce)").matches;
