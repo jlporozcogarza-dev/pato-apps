@@ -14,7 +14,7 @@ function doPost(e) {
     const req = JSON.parse(e.postData.contents);
     if (!igual(String(req.k || ''), CLAVE)) throw new Error('Clave incorrecta');
     const x = req.input || {};
-    if (req.tool !== 'eventos' && HOJAS.indexOf(x.spreadsheetId) < 0) throw new Error('Hoja no permitida');
+    if (req.tool !== 'eventos' && req.tool !== 'evento' && HOJAS.indexOf(x.spreadsheetId) < 0) throw new Error('Hoja no permitida');
     out = { result: correr(req.tool, x) };
   } catch (err) {
     out = { error: String((err && err.message) || err) };
@@ -35,6 +35,7 @@ function igual(a, b) {
 
 function correr(tool, x) {
   if (tool === 'eventos') return eventos(x);
+  if (tool === 'evento') return evento(x);
   const ss = SpreadsheetApp.openById(x.spreadsheetId);
   if (tool === 'get_values') return { values: leer(rango(ss, x.range)) };
   const lock = LockService.getScriptLock();
@@ -116,8 +117,28 @@ function eventos(x) {
   CalendarApp.getAllCalendars().forEach(function (cal) {
     cal.getEvents(desde, hasta).forEach(function (ev) {
       out.push({ t: ev.getTitle(), i: f(ev.getStartTime()), f: f(ev.getEndTime()), dia: ev.isAllDayEvent(),
-                 l: ev.getLocation() || '', c: cal.getName().trim(), col: cal.getColor() });
+                 l: ev.getLocation() || '', c: cal.getName().trim(), col: cal.getColor(),
+                 id: ev.getId(), cid: cal.getId(), d: (ev.getDescription() || '').slice(0, 500), ro: /#holiday|#contacts|#weather/.test(cal.getId()) });
     });
   });
   return { eventos: out };
+}
+
+// Cambiar o borrar un evento desde JLP. x = { accion:'editar'|'borrar', cid, id, dia0 (AAAA-MM-DD donde está hoy), t, l, d, todo, fecha, ini, fin (HH:MM) }.
+// Se busca en ese día por id (así funciona también con una sola fecha de un evento que se repite).
+function evento(x) {
+  const cal = CalendarApp.getCalendarById(x.cid);
+  if (!cal) throw new Error('Calendario no encontrado');
+  const z = '-06:00', d0 = new Date(x.dia0 + 'T00:00:00' + z), d1 = new Date(d0.getTime() + 864e5);
+  const ev = cal.getEvents(d0, d1).filter(function (e) { return e.getId() === x.id; })[0];
+  if (!ev) throw new Error('No encontré el evento ese día');
+  if (x.accion === 'borrar') { ev.deleteEvent(); return { ok: true }; }
+  if (x.t != null) ev.setTitle(String(x.t));
+  if (x.l != null) ev.setLocation(String(x.l));
+  if (x.d != null) ev.setDescription(String(x.d));
+  if (x.fecha) {
+    if (x.todo) ev.setAllDayDate(new Date(x.fecha + 'T00:00:00' + z));
+    else ev.setTime(new Date(x.fecha + 'T' + x.ini + ':00' + z), new Date(x.fecha + 'T' + x.fin + ':00' + z));
+  }
+  return { ok: true };
 }

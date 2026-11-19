@@ -202,6 +202,15 @@ button.card:active{transform:scale(.98)}
 .dia.hoy{box-shadow:inset 0 0 0 1.5px var(--c10)}
 .dia.sel{color:var(--c60);background:linear-gradient(180deg,color-mix(in srgb,var(--c10) 68%,#fff),var(--c10) 60%,color-mix(in srgb,var(--c10) 82%,#000));box-shadow:inset 0 1px 0 rgba(255,255,255,.7),0 0 18px color-mix(in srgb,var(--c10) 55%,transparent)}
 .puntos{display:flex;gap:2px;height:6px;align-items:center}
+button.evento{width:100%;text-align:left;font:inherit;color:inherit;cursor:pointer}
+button.evento:active{filter:brightness(1.15)}
+.evento .ev-nota{display:block;margin-top:3px;white-space:pre-line;opacity:.8}
+.ev-todo{display:flex;align-items:center;gap:8px;margin:10px 2px;font-size:14px;color:var(--fg)}
+.ev-todo input{width:20px;height:20px;accent-color:var(--c10)}
+.ev-horas{display:grid;grid-template-columns:1fr 1fr;gap:10px}
+.ev-horas[hidden]{display:none}
+#hojaEv .caja-txt{margin-top:10px}
+.ev-borrar{color:var(--st-crit)!important}
 .cal-filtros{display:flex;gap:6px;flex-wrap:wrap;margin:2px 2px 10px}
 .cal-filtros button{display:inline-flex;align-items:center;gap:6px;padding:6px 11px;border-radius:99px;font:600 12.5px/1 var(--sans);cursor:pointer;
   border:1px solid color-mix(in srgb,var(--col) 55%,transparent);background:color-mix(in srgb,var(--col) 18%,transparent);color:var(--fg);transition:opacity .2s,background .2s}
@@ -702,6 +711,20 @@ header .ajustes{visibility:hidden} /* en Inicio se usa el fijo de arriba a la de
   <div class="fila"><button class="listo" id="uniGuardar">Guardar</button></div>
   <p class="at-estado" id="uniMsg" role="status"></p>
 </section>
+<section class="hoja" id="hojaEv" role="dialog" aria-modal="true" aria-labelledby="evTitulo" aria-hidden="true">
+  <div class="asa" aria-hidden="true"></div>
+  <button class="cerrar-hoja" data-cerrar-hoja aria-label="Cerrar"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round"><path d="M6 6l12 12M18 6L6 18"/></svg></button>
+  <h2 id="evTitulo">Evento</h2>
+  <p class="sub" id="evSub"></p>
+  <input id="evNombre" class="caja-txt" maxlength="200" aria-label="Nombre del evento">
+  <label class="otro-dia">Día<input type="date" id="evFecha"></label>
+  <label class="ev-todo"><input type="checkbox" id="evTodo"> Todo el día</label>
+  <div class="ev-horas" id="evHoras"><label class="otro-dia">Empieza<input type="time" id="evIni"></label><label class="otro-dia">Termina<input type="time" id="evFin"></label></div>
+  <input id="evLugar" class="caja-txt" maxlength="200" placeholder="Lugar" aria-label="Lugar">
+  <textarea id="evNota" class="caja-txt" rows="3" maxlength="500" placeholder="Notas" aria-label="Notas"></textarea>
+  <div class="fila"><button id="evGuardar" disabled>Guardar en Google Calendar</button><button class="ev-borrar" id="evBorrar">Borrar</button></div>
+  <p class="at-estado" id="evEstado" role="status"></p>
+</section>
 <section class="hoja" id="hojaPend" role="dialog" aria-modal="true" aria-labelledby="pendTitulo" aria-hidden="true">
   <div class="asa" aria-hidden="true"></div>
   <button class="cerrar-hoja" data-cerrar-hoja aria-label="Cerrar"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round"><path d="M6 6l12 12M18 6L6 18"/></svg></button>
@@ -976,6 +999,39 @@ async function mandarPend(hecho){
 $("pendHecho").onclick = () => mandarPend(true);
 $("pendGuardar").onclick = () => mandarPend(false);
 ["agPend", "agDia"].forEach(id => $(id).addEventListener("click", e => { const b = e.target.closest("[data-pend]"); if (b) abrirPend(b.dataset.pend); }));
+/* Editar o borrar un evento de Google Calendar desde aquí: el server lo cambia en Google (Apps Script) y vuelve a copiar el calendario. */
+let evDia = [], evSel = null;
+function abrirEv(n){
+  const e = evSel = evDia[n]; if (!e) return;
+  $("evTitulo").textContent = e.t || "Evento"; $("evSub").textContent = e.c + (e.ro ? " · solo lectura" : "");
+  $("evNombre").value = e.t || ""; $("evFecha").value = agSel; $("evTodo").checked = !!e.dia;
+  $("evIni").value = e.dia ? "09:00" : e.i.slice(11, 16); $("evFin").value = e.dia ? "10:00" : e.f.slice(11, 16);
+  $("evLugar").value = e.l || ""; $("evNota").value = e.d || ""; $("evHoras").hidden = !!e.dia;
+  $("evEstado").textContent = ""; $("evGuardar").disabled = true; $("evBorrar").disabled = false;
+  hoja($("hojaEv"), true);
+}
+["evNombre", "evFecha", "evTodo", "evIni", "evFin", "evLugar", "evNota"].forEach(id => $(id).addEventListener("input", () => {
+  $("evHoras").hidden = $("evTodo").checked; $("evGuardar").disabled = false; }));
+$("evTodo").addEventListener("change", () => { $("evHoras").hidden = $("evTodo").checked; $("evGuardar").disabled = false; });
+$("agDia").addEventListener("click", e => { const b = e.target.closest("[data-ev]"); if (b) abrirEv(+b.dataset.ev); });
+async function mandarEv(borrar){
+  const e = evSel, c = cfg(); if (!e || !c) return;
+  if (borrar && !confirm("¿Borrar «" + e.t + "» de tu Google Calendar?")) return;
+  const x = { accion:borrar ? "borrar" : "editar", cid:e.cid, id:e.id, dia0:agSel };
+  if (!borrar) Object.assign(x, { t:$("evNombre").value.trim() || e.t, l:$("evLugar").value.trim(), d:$("evNota").value.trim(),
+    fecha:$("evFecha").value || agSel, todo:$("evTodo").checked, ini:$("evIni").value || "09:00", fin:$("evFin").value || $("evIni").value || "10:00" });
+  if (!borrar && !x.todo && x.fin <= x.ini){ $("evEstado").textContent = "La hora de terminar debe ser después de la de empezar."; return; }
+  $("evGuardar").disabled = $("evBorrar").disabled = true; $("evEstado").textContent = borrar ? "Borrando…" : "Guardando en Google Calendar…";
+  try{
+    const r = await api(c, "evento", x);
+    if (r && r.agenda){ AG = r.agenda; try{ localStorage.setItem(LSAG, JSON.stringify(AG)); }catch(err){} }
+    $("evEstado").textContent = borrar ? "Listo: se borró de Google Calendar." : "Listo: ya quedó en Google Calendar.";
+    if (navigator.vibrate) navigator.vibrate(12);
+    setTimeout(() => { cerrarHojas(); pintarAgenda(); }, 700);
+  }catch(err){ $("evEstado").textContent = "No se pudo: " + err.message; $("evGuardar").disabled = $("evBorrar").disabled = false; }
+}
+$("evGuardar").onclick = () => mandarEv(false);
+$("evBorrar").onclick = () => mandarEv(true);
 function pintarCal(){
   const primero = new Date(agMes + "-01T12:00"), off = (primero.getDay() + 6) % 7;
   const enMes = new Date(primero.getFullYear(), primero.getMonth() + 1, 0).getDate(), celdas = Math.ceil((off + enMes) / 7) * 7;
@@ -995,8 +1051,10 @@ function pintarDia(){
   $("agTitulo").textContent = agSel === hoy ? "Hoy" : agSel === sumaDias(hoy, 1) ? "Mañana" : fecha.toLocaleDateString("es-MX", { weekday:"long" }).replace(/^./, c => c.toUpperCase());
   $("agFecha").textContent = fecha.toLocaleDateString("es-MX", { day:"numeric", month:"long" });
   const ev = eventosDe(agSel), pe = pendDe(agSel), ta = tareasDe(agSel);
-  let h = ev.map(e => `<div class="evento" style="--col:${colCat(catEvento(e))}"><span class="barra"></span><span class="hora">${e.dia ? "Todo el día" : esc(e.i.slice(11, 16))}</span>` +
-    `<span><b>${esc(e.t)}</b><small>${esc([e.c, e.l].filter(Boolean).join(" · "))}</small></span></div>`).join("");
+  evDia = ev;
+  let h = ev.map((e, n) => { const tag = e.id && !e.ro ? `button data-ev="${n}"` : "div";
+    return `<${tag} class="evento" style="--col:${colCat(catEvento(e))}"><span class="barra"></span><span class="hora">${e.dia ? "Todo el día" : esc(e.i.slice(11, 16))}</span>` +
+      `<span><b>${esc(e.t)}</b><small>${esc([e.c, e.l].filter(Boolean).join(" · "))}</small>${e.d ? `<small class="ev-nota">${esc(e.d)}</small>` : ""}</span></${tag.split(" ")[0]}>`; }).join("");
   h += ta.map(t => `<div class="evento" style="--col:${colCat(catTarea(t))}"><span class="barra"></span><span class="hora">Tarea</span>` +
     `<span><b>${esc(t.t)}</b><small>${esc(t.det || (catTarea(t) === "tec" ? "Tec" : "Personal"))}</small></span></div>`).join("");
   h += pe.map(p => `<button class="renglon at" data-pend="${esc(p.n)}"><div class="arriba"><b>${esc(p.n)}. ${esc(p.texto)}</b><span class="marca t-${agSel < hoy ? "rojo" : "gris"}">vence</span></div>${p.depas ? `<p>${esc(p.depas)}</p>` : ""}</button>`).join("");
