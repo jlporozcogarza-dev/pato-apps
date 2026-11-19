@@ -2120,14 +2120,18 @@ pintarFede.forzar = true; pintarFede();
     try{ localStorage.setItem("jlp-voz-bolsa", JSON.stringify(bolsa)); localStorage.setItem("jlp-voz-ultima", JSON.stringify(ultima)); }catch(e){}
     return l[k];
   }
+  /* iOS tiene dos volúmenes: el de medios (el tuyo) y el de «llamada», que usa mientras una página tiene el micrófono.
+     Se le dice a Safari qué tipo de sonido es para que la voz de Fede suene siempre con tu volumen normal de medios. */
+  function sesionAudio(tipo){ try{ if (navigator.audioSession) navigator.audioSession.type = tipo; }catch(e){} }
   function hablarApp(clave){   // la dice con la voz de Fede y devuelve el texto para la burbuja
+    sesionAudio("playback");
     const [archivo, texto] = siguienteClip(clave);
     try{ vozFede.muted = false; vozFede.src = "voz/" + archivo + ".mp3"; vozFede.play().catch(() => {}); }catch(e){}
     return texto;
   }
 
   async function empezar(){
-    desbloquearVoz();
+    sesionAudio("play-and-record"); desbloquearVoz();
     if (!cfg()) return;
     texto = ""; trozos = []; turno++; callar.hidden = true; poner("escucha", "Le escucho… toque el anillo cuando termine");
     if (navigator.vibrate) navigator.vibrate(15);
@@ -2164,7 +2168,7 @@ pintarFede.forzar = true; pintarFede();
   }
   async function terminar(){
     if (estado !== "escucha") return;
-    clearInterval(vigila); nivel = 0; poner("enviando", "Enviando a Fede…");
+    clearInterval(vigila); nivel = 0; poner("enviando", "Enviando a Fede…"); setTimeout(() => sesionAudio("playback"), 300);
     const c = cfg();
     try{
       let id;
@@ -2216,6 +2220,7 @@ pintarFede.forzar = true; pintarFede();
   });
   // Apaga el micrófono sin mandar nada
   function soltarMic(){
+    sesionAudio("playback");
     const r = rec; rec = null; if (r){ r.onend = r.onresult = null; try{ r.abort(); }catch(e){} }
     const g = grab; grab = null; clearInterval(vigila); nivel = 0;
     if (g){ g.onstop = null; try{ if (g.state !== "inactive") g.stop(); }catch(e){} g.stream.getTracks().forEach(t => t.stop()); try{ g.ac.close(); }catch(e){} }
