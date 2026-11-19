@@ -353,8 +353,13 @@ button.row.miss:active{background:color-mix(in srgb, var(--low) 14%, var(--surfa
 .rec-v{flex:none;text-align:right;font-weight:600;font-size:14px}.rec-v small{display:block;color:var(--muted);font-weight:400;font-size:12px}
 .rec-extra{display:flex;align-items:center;gap:10px;padding:8px 13px 10px;border-top:1px solid var(--line);font-size:13px}
 .rec-extra>span{flex:1}.rec-extra small{color:var(--muted)}
-.rec-extra button{width:34px;height:34px;border-radius:50%;border:1px solid var(--line);background:var(--surface);font-size:18px;line-height:1;cursor:pointer}
-.rec-extra b{min-width:18px;text-align:center;font-size:15px}
+/* contador tipo iOS: una sola pastilla [ − 0 + ] */
+.rec-extra .paso{display:flex;align-items:center;border:1px solid var(--line);border-radius:99px;background:var(--surface);overflow:hidden}
+.rec-extra .paso button{width:44px;height:36px;padding:0;margin:0;border:0;background:none;color:inherit;display:grid;place-items:center;cursor:pointer;-webkit-appearance:none;appearance:none}
+.rec-extra .paso button:active{background:rgba(255,255,255,.08)}
+.rec-extra .paso button:disabled{opacity:.35;cursor:default}
+.rec-extra .paso svg{width:16px;height:16px;fill:none;stroke:currentColor;stroke-width:2.4;stroke-linecap:round;pointer-events:none}
+.rec-extra .paso b{min-width:30px;text-align:center;font-size:15px;font-variant-numeric:tabular-nums;border-left:1px solid var(--line);border-right:1px solid var(--line);line-height:36px}
 /* Escribe lo que comiste (Fede calcula) */
 .tx-in{width:100%;min-width:0;min-height:86px;resize:vertical;font:inherit;font-size:16px;line-height:1.35;padding:11px 12px;border-radius:12px;background:var(--surface-2);border:1px solid var(--line);color:var(--fg)}
 .tx-in:focus,.tx-it input:focus{outline:2px solid var(--c-food);outline-offset:0;border-color:transparent}
@@ -1693,7 +1698,8 @@ function buildFoodSheet(sh, keep){
         return '<div class="receta"><button class="rec-btn" data-receta="'+r.k+'"><span class="rec-t"><b>'+esc(r.n)+'</b><small>'+esc(r.d)+'</small></span>'
           + '<span class="rec-v">'+fmtNum(t.kcal)+' kcal<small>'+fmtNum(t.prot)+' g prot</small></span></button>'
           + (r.extra ? '<div class="rec-extra"><span>'+esc(r.extra.n)+' <small>('+esc(r.extra.u)+')</small></span>'
-            + '<button data-sal="-1" aria-label="Menos Saladitas">−</button><b>'+saladitas+'</b><button data-sal="1" aria-label="Más Saladitas">+</button></div>' : '')
+            + '<span class="paso"><button data-sal="-1" aria-label="Menos Saladitas"'+(saladitas ? '' : ' disabled')+'><svg viewBox="0 0 24 24"><path d="M6 12h12"/></svg></button>'
+            + '<b aria-live="polite">'+saladitas+'</b><button data-sal="1" aria-label="Más Saladitas"><svg viewBox="0 0 24 24"><path d="M12 6v12M6 12h12"/></svg></button></span></div>' : '')
           + '</div>'; }).join("")
     + '</div></div>'
     + (recents.length ? '<div class="grp"><div class="grp-h"><span class="k">Recientes</span><span class="w">Toca para llenar</span></div><div class="recent">'+recents.map((f,i)=>'<button data-recent="'+i+'">'+esc(f.comida)+' · '+fmtNum(f.kcal)+'</button>').join("")+'</div></div>' : '')
