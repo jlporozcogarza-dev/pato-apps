@@ -185,7 +185,7 @@ h2,h3,.sec-head .lbl{{font-weight:700!important}}
 html{{background:var(--j60)}} html.embed,html.embed body,body{{background:transparent!important}}
 html:not(.embed) body{{background:radial-gradient(60% 40% at 90% 0%,{m(10, 16)},transparent 70%),radial-gradient(60% 40% at 0% 60%,{m(30, 22)},transparent 70%),var(--j60)!important;background-attachment:fixed!important}}
 html.embed body{{padding-bottom:calc(104px + env(safe-area-inset-bottom))!important}}
-html.embed body{{padding-top:max(14px,env(safe-area-inset-top))!important}} /* misma altura que las pestañas de JLP */
+html.embed:root{{padding-top:0!important}} html.embed body{{padding-top:max(0px,calc(env(safe-area-inset-top) - 2px))!important}} /* la app ya traía su margen de muesca en :root; dentro de JLP se quita para no sumarlo dos veces, y la cabecera queda centrada con el anillo de Fede (centro = muesca + 49 px) */
 html.embed .top{{position:relative;align-items:center;padding-top:0;margin-top:4px}}
 html.embed .top-l{{padding-left:74px;min-height:62px;display:flex;flex-direction:column;justify-content:center}} /* a la izquierda va el anillo de Fede de JLP */
 html.embed .top-l .eyebrow{{font:400 13px/1.2 var(--font-body,-apple-system,sans-serif);letter-spacing:0;text-transform:none;color:var(--muted);margin:0 0 6px}}
