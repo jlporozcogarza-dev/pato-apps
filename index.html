@@ -1906,7 +1906,6 @@ pintarFede.forzar = true; pintarFede();
   function poner(e, t){
     estado = e; clearTimeout(sigue); t ? decir(t) : volver();
     logo.setAttribute("aria-label", e === "escucha" ? "Ya acabé de hablar" : "Hablarle a Fede");
-    if (quieto) requestAnimationFrame(cuadro);
   }
   const aviso = t => { poner("reposo", t); sigue = setTimeout(volver, 2600); };
 
@@ -2005,19 +2004,20 @@ pintarFede.forzar = true; pintarFede();
     if (cv.width !== s) cv.width = cv.height = s;
     const piensa = estado === "enviando" || estado === "pensando", rgb = COLOR[estado], c = s / 2, R = s * .27, N = 64;
     nivel *= .93; hist.copyWithin(1, 0); hist[0] = estado === "escucha" ? nivel : 0;
-    giro += dt * (piensa ? 1.4 : .06);
+    giro += dt * (piensa ? 1.4 : 1.1);
+    const respira = .5 + .5 * Math.sin(t / 950);   // en reposo late suave, como si respirara
     ctx.clearRect(0, 0, s, s);
     const g = ctx.createRadialGradient(c, c - R * .2, 0, c, c, R * 1.05);
-    g.addColorStop(0, `rgba(255,255,255,${.2 + .22 * nivel})`); g.addColorStop(.65, `rgba(${rgb},.12)`); g.addColorStop(1, `rgba(${rgb},0)`);
+    g.addColorStop(0, `rgba(255,255,255,${.16 + .12 * respira + .22 * nivel})`); g.addColorStop(.65, `rgba(${rgb},.12)`); g.addColorStop(1, `rgba(${rgb},0)`);
     ctx.fillStyle = g; ctx.beginPath(); ctx.arc(c, c, R * 1.05, 0, 6.2832); ctx.fill();
     ctx.strokeStyle = `rgba(255,255,255,${.45 + .3 * nivel})`; ctx.lineWidth = Math.max(1, dpr * .8); ctx.beginPath(); ctx.arc(c, c, R * .98, 0, 6.2832); ctx.stroke();
     ctx.lineCap = "round"; ctx.lineWidth = Math.max(1.5, s * .022);
     for (let i = 0; i < N; i++){
       const a = i / N * 6.2832 - 1.5708 + giro * .12, esp = i < N / 2 ? i : N - i, h = hist[Math.min(31, Math.floor(esp / (N / 2) * 31))];
-      const ruido = .5 + .5 * Math.sin(t / 700 + i * .45) * Math.cos(t / 1100 + i * .13);
-      let largo = R * (.06 + .26 * ruido + .55 * h);
+      const ruido = .5 + .5 * Math.sin(t / 380 + i * .45) * Math.cos(t / 650 - i * .13);
+      let largo = R * (.06 + .1 * respira + .3 * ruido + .55 * h);
       if (piensa) largo += R * .3 * Math.pow(Math.max(0, Math.cos(a - giro * 2.2)), 6);
-      const k = piensa ? [255, Math.round(179 + 40 * ruido), Math.round(107 + 60 * ruido)] : tono(i / N + t / 24000);
+      const k = piensa ? [255, Math.round(179 + 40 * ruido), Math.round(107 + 60 * ruido)] : tono(i / N + t / 7000);
       ctx.strokeStyle = `rgba(${k},.9)`; ctx.beginPath();
       ctx.moveTo(c + Math.cos(a) * R * 1.1, c + Math.sin(a) * R * 1.1); ctx.lineTo(c + Math.cos(a) * (R * 1.1 + largo), c + Math.sin(a) * (R * 1.1 + largo)); ctx.stroke();
     }
@@ -2025,7 +2025,7 @@ pintarFede.forzar = true; pintarFede();
       ctx.strokeStyle = `rgba(255,190,120,${.5 * (1 - k / 12)})`; ctx.lineWidth = Math.max(1.5, s * .03);
       const a0 = giro * 2.2 - k * .07; ctx.beginPath(); ctx.arc(c, c, R * .86, a0 - .07, a0); ctx.stroke();
     }
-    if (!quieto || estado !== "reposo") requestAnimationFrame(cuadro);
+    requestAnimationFrame(cuadro);   // siempre vivo, aunque el iPhone tenga "Reducir movimiento" (lo pidió Pato)
   }
   requestAnimationFrame(cuadro);
 })();
