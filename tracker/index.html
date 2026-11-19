@@ -355,6 +355,27 @@ button.row.miss:active{background:color-mix(in srgb, var(--low) 14%, var(--surfa
 .rec-extra>span{flex:1}.rec-extra small{color:var(--muted)}
 .rec-extra button{width:34px;height:34px;border-radius:50%;border:1px solid var(--line);background:var(--surface);font-size:18px;line-height:1;cursor:pointer}
 .rec-extra b{min-width:18px;text-align:center;font-size:15px}
+/* Escribe lo que comiste (Fede calcula) */
+.tx-in{width:100%;min-width:0;min-height:86px;resize:vertical;font:inherit;font-size:16px;line-height:1.35;padding:11px 12px;border-radius:12px;background:var(--surface-2);border:1px solid var(--line);color:var(--fg)}
+.tx-in:focus,.tx-it input:focus{outline:2px solid var(--c-food);outline-offset:0;border-color:transparent}
+.tx-list{display:flex;flex-direction:column;border-radius:16px;border:1px solid var(--line);overflow:hidden}
+.tx-it{display:grid;grid-template-columns:1fr 1fr 34px;gap:6px;padding:9px 9px 9px 10px;border-bottom:1px solid var(--line)}
+.tx-it .tx-nom{grid-column:1/3}
+.tx-it input{width:100%;min-width:0;font:inherit;font-size:16px;padding:8px 10px;border-radius:10px;background:var(--surface-2);border:1px solid var(--line);color:var(--fg)}
+.tx-u{position:relative;display:block;min-width:0}
+.tx-u input{padding-right:46px;text-align:right;font-variant-numeric:tabular-nums}
+.tx-u input::-webkit-inner-spin-button,.tx-u input::-webkit-outer-spin-button{-webkit-appearance:none;margin:0}
+.tx-u input{-moz-appearance:textfield;appearance:textfield}
+.tx-u span{position:absolute;right:10px;top:50%;transform:translateY(-50%);font-size:12.5px;color:var(--muted);pointer-events:none}
+.tx-it .xbtn{align-self:center}
+.tx-tot{display:flex;justify-content:space-between;align-items:baseline;gap:10px;padding:11px 12px;font-family:var(--font-display);font-weight:600}
+.tx-tot b{font-variant-numeric:tabular-nums}
+.tx-act{display:grid;grid-template-columns:1fr 1fr;gap:8px}
+.tx-act .full{grid-column:1/-1}
+.tx-act .btn{padding:12px}
+.tx-st{margin:0;font-size:13.5px;color:var(--muted)}
+.tx-st:empty{display:none}
+.tx-st.err{color:var(--low)} .tx-st.ok{color:var(--good)}
 .recent{display:flex;gap:6px;overflow-x:auto;padding-bottom:2px;scrollbar-width:none}
 .recent::-webkit-scrollbar{display:none}
 .recent button{flex-shrink:0;font-size:13px;padding:7px 11px;border-radius:99px;background:var(--surface-2);border:1px solid var(--line);white-space:nowrap}
@@ -506,7 +527,8 @@ h1{font-weight:700;letter-spacing:-.035em}
     if (c) save(c);
     return c;
   }
-  window.claude = { use: async function(cap){
+  // jlp: true = estás en jlpog.app; el puente también sabe hablarle a Fede (fede_analizar / fede_resultado)
+  window.claude = { jlp: true, use: async function(cap){
     if (cap !== "mcp") return null;
     var c = load(); if (!c) return null;
     // u = URL completa de un puente, o id de Apps Script. Con id: primero el server de la casa (rápido) y,
@@ -919,28 +941,33 @@ function saveDay(date, patch){
     }
   });
 }
-function addFood(f){
-  f._tmp = true;
-  S.foods.push(f); pendingFoods.push(f);
+function addFood(f){ return addFoods([f]); }
+/* Varias comidas en una sola escritura (lo que escribes y calcula Fede llega en varios renglones).
+   Devuelve false si no hay conexión; onFail se llama si la escritura falla después. */
+function addFoods(fs, onFail){
+  const fuera = x => !fs.includes(x);
+  fs.forEach(f => { f._tmp = true; S.foods.push(f); pendingFoods.push(f); });
   render(); refreshSheet();
   if (S.mode!=="live"){
-    pendingFoods = pendingFoods.filter(x=>x!==f);
+    pendingFoods = pendingFoods.filter(fuera);
     if (S.mode==="example") toast("Vista de ejemplo: esto no se guarda en tu Sheet.");
-    else { S.foods = S.foods.filter(x=>x!==f); render(); refreshSheet(); toast("Sin conexión con tu Sheet. Toca Reintentar arriba."); }
-    return;
+    else { S.foods = S.foods.filter(fuera); render(); refreshSheet(); toast("Sin conexión con tu Sheet. Toca Reintentar arriba."); }
+    return false;
   }
   setBusy(1);
   enqueue(async()=>{
     try{
       await call("append_values", { spreadsheetId:SHEET_ID, range:"Comidas!A1",
-        values:[["'"+f.fecha, f.hora?"'"+f.hora:"", "'"+f.comida, f.kcal, f.prot, "'Manual"]] });
-      pendingFoods = pendingFoods.filter(x=>x!==f);
+        values:fs.map(f => ["'"+f.fecha, f.hora?"'"+f.hora:"", "'"+f.comida, f.kcal, f.prot, "'"+(f.origen||"Manual")]) });
+      pendingFoods = pendingFoods.filter(fuera);
       applyComidas(await read("Comidas!A:F"));
     }catch(e){
-      if (pendingFoods.includes(f)){ pendingFoods = pendingFoods.filter(x=>x!==f); S.foods = S.foods.filter(x=>x!==f); }
+      if (fs.some(f => pendingFoods.includes(f))){ pendingFoods = pendingFoods.filter(fuera); S.foods = S.foods.filter(fuera); }
       writeFailed(e);
+      if (onFail) onFail();
     }finally{ setBusy(-1); render(); refreshSheet(); }
   });
+  return true;
 }
 function deleteFood(f){
   const key = fkey(f);
@@ -1488,6 +1515,139 @@ const RECETAS = [
 ];
 let saladitas = 0;
 const totalReceta = r => { const n = r.extra ? saladitas : 0; return { kcal:r.kcal + n * (r.extra ? r.extra.kcal : 0), prot:r.prot + n * (r.extra ? r.extra.prot : 0), n }; };
+
+/* Escribe lo que comiste: Fede (Claude, en la compu de la casa) separa cada alimento y calcula calorías y proteína;
+   lo revisas y se guarda en el día. Mismo cálculo que «Comida escrita» de Cámara en JLP (index.html, textPrompt).
+   Solo sale en JLP (jlpog.app): ahí el puente sabe hablar con Fede. Como artefacto de Claude no aparece. */
+const FEDE = !!(window.claude && window.claude.jlp);
+const TX = { texto:"", items:[], nota:"", fecha:"", hora:"", msg:"", cls:"", busy:false };
+const diaTx = d => d===todayStr() ? "hoy" : d===addDays(todayStr(),-1) ? "ayer" : "el "+shortDate(d);
+function txStatus(msg, cls){
+  TX.msg = msg || ""; TX.cls = cls || "";
+  const el = document.getElementById("txSt"); if (el){ el.textContent = TX.msg; el.className = "tx-st" + (TX.cls ? " "+TX.cls : ""); }
+}
+function txPrompt(txt){
+  const now = new Date();
+  const mias = RECETAS.map(r => "- "+r.n+" ("+r.d+"): "+r.kcal+" kcal, "+r.prot+" g de proteína"
+    + (r.extra ? "\n- "+r.extra.n+" (1 "+r.extra.u+" galletas): "+r.extra.kcal+" kcal, "+r.extra.prot+" g de proteína" : "")).join("\n");
+  return 'Eres nutriólogo. El usuario escribió lo que comió, en español de México:\n"'+txt.replace(/"/g,"'")+'"\n'
+    + "Hoy es "+todayStr()+" y son las "+pad(now.getHours())+":"+pad(now.getMinutes())+".\n"
+    + "Separa cada alimento o bebida en su propio renglón y estima calorías y proteína.\n"
+    + "Comidas de siempre de Pato. Si menciona una (aunque sea con otras palabras, ej. «mi sándwich», «la ensalada de siempre», «el atún»), usa EXACTO estos valores por porción y multiplícalos por la cantidad:\n"
+    + mias + "\n"
+    + '- Si el usuario da calorías o proteína de algo (ej. "3 paquetes de 45 calorías"), usa sus números exactos y multiplícalos por la cantidad.\n'
+    + "- Para lo demás usa porciones y productos típicos de México (latas, paquetes, piezas, tortillas). Cuenta aceite, mayonesa, crema y salsas.\n"
+    + '- Si dice cené, desayuné, comí o snack, empieza el nombre con "Cena: ", "Desayuno: ", "Comida: " o "Snack: ".\n'
+    + '- comida: nombre corto en español con la cantidad, ej. "Cena: 2 latas de atún en agua".\n'
+    + "- ayer: true solo si dice que lo comió ayer; si no, false.\n"
+    + "- hora: HH:MM en 24 h solo si menciona la hora; si no, texto vacío.\n"
+    + "- supuestos: una frase corta con lo que tuviste que suponer; texto vacío si nada.\n"
+    + "Responde SOLO con JSON, sin texto extra:\n"
+    + '{"items":[{"comida":"...","kcal":número,"proteina":gramos}],"ayer":false,"hora":"","supuestos":""}\n'
+    + 'Si el texto no describe comida, responde {"items":[]}.';
+}
+/* Fede trabaja en la compu: se le manda el encargo (fede_analizar) y se pregunta cada 1.5 s si ya está (fede_resultado), hasta 3 min. */
+async function askFede(prompt){
+  const id = (payloadOf(await call("fede_analizar", { prompt })) || {}).id;
+  if (!id) throw new Error("sin id");
+  const hasta = Date.now() + 180000; let fallas = 0;
+  while (Date.now() < hasta){
+    await sleep(1500);
+    let r;
+    try{ r = payloadOf(await call("fede_resultado", { id })) || {}; fallas = 0; }
+    catch(e){ if (++fallas >= 4) throw e; continue; } // un tropiezo de red no tira el cálculo
+    if (r.estado === "lista"){
+      const m = String(r.respuesta || "").match(/\{[\s\S]*\}/);
+      if (!m) throw new Error("sin JSON");
+      return JSON.parse(m[0]);
+    }
+    if (r.en_linea === false) txStatus("La compu de Fede está apagada: lo calcula en cuanto se prenda…");
+  }
+  throw new Error("tiempo");
+}
+async function txCalc(){
+  const txt = TX.texto.trim();
+  if (!txt){ txStatus("Escribe qué comiste.", "err"); const el = document.getElementById("txTexto"); if (el) el.focus(); return; }
+  if (!S.mcp || S.mode==="example"){ txStatus("Sin conexión con tus datos: Fede no puede calcular. Toca Reintentar arriba.", "err"); return; }
+  TX.busy = true; txStatus("Fede está calculando…"); refreshSheet();
+  try{
+    const r = await askFede(txPrompt(txt));
+    const list = (r && Array.isArray(r.items) ? r.items : [])
+      .map(x => ({ comida:String((x && x.comida) || "").trim(), kcal:Math.round(num(x && x.kcal)), prot:Math.round(num(x && x.proteina)) }))
+      .filter(x => x.comida);
+    if (!list.length){ TX.items = []; TX.nota = ""; txStatus("No encontré comida en el texto. Escribe qué comiste y cuánto.", "err"); return; }
+    TX.items = list;
+    TX.fecha = r.ayer === true ? addDays(todayStr(),-1) : S.selected;
+    const h = parseTime(String(r.hora || ""));
+    TX.hora = h==null ? "" : fmtTime(h);
+    TX.nota = String(r.supuestos || "").trim();
+    txStatus("Revisa y guarda. Puedes corregir cualquier número.");
+  }catch(e){
+    txStatus(e && e.message==="tiempo" ? "Fede no contestó a tiempo. ¿Está prendida la compu?" : "No pude calcular. Intenta de nuevo.", "err");
+  }finally{ TX.busy = false; refreshSheet(); }
+}
+function txSave(){
+  const items = TX.items.map(x => ({ comida:String(x.comida).trim(), kcal:Math.round(num(x.kcal)), prot:Math.round(num(x.prot)) })).filter(x => x.comida);
+  if (!items.length){ txStatus("No hay nada que guardar.", "err"); return; }
+  if (S.mode!=="live"){ txStatus(S.mode==="example" ? "Vista de ejemplo: esto no se guarda." : "Sin conexión con tus datos. Toca Reintentar arriba.", "err"); return; }
+  const fecha = TX.fecha || S.selected, now = new Date();
+  const hora = TX.hora || (fecha===todayStr() ? fmtTime(now.getHours()*60+now.getMinutes()) : "");
+  const k = items.reduce((s,x)=>s+x.kcal,0), p = items.reduce((s,x)=>s+x.prot,0);
+  const antes = { texto:TX.texto, items:TX.items, nota:TX.nota, fecha:TX.fecha, hora:TX.hora };
+  const resumen = items.length+(items.length===1?" alimento":" alimentos")+" · "+fmtNum(k)+" kcal · "+fmtNum(p)+" g de proteína";
+  TX.texto = ""; TX.items = []; TX.nota = ""; TX.fecha = ""; TX.hora = "";
+  txStatus("Guardado en "+diaTx(fecha)+": "+resumen+".", "ok");
+  addFoods(items.map(x => ({ fecha, hora, comida:x.comida, kcal:x.kcal, prot:x.prot, origen:"Texto" })),
+    () => { Object.assign(TX, antes); txStatus("No se guardó. Revisa tu conexión y vuelve a tocar Guardar.", "err"); refreshSheet(); });
+  if (fecha!==S.selected) toast("Guardado en "+diaTx(fecha)+": "+resumen);
+}
+function txHtml(){
+  if (!FEDE) return "";
+  const tot = () => fmtNum(TX.items.reduce((s,x)=>s+num(x.kcal),0))+" kcal · "+fmtNum(TX.items.reduce((s,x)=>s+num(x.prot),0))+" g prot";
+  const hay = TX.items.length > 0;
+  return '<div class="grp"><div class="grp-h"><span class="k">Escribe lo que comiste</span><span class="w">Fede lo calcula</span></div>'
+    + '<textarea id="txTexto" class="tx-in" rows="3" enterkeyhint="done" aria-label="Escribe lo que comiste, como se lo dirías a Claude" placeholder="Ej. Cené 2 latas de atún con elote y mayonesa y 3 paquetes de saladitas de 45 calorías">'+esc(TX.texto)+'</textarea>'
+    + (hay ? '<div class="tx-list" id="txItems">'
+        + TX.items.map((it,i) => '<div class="tx-it">'
+          + '<input class="tx-nom" id="tx-'+i+'-comida" data-txi="'+i+'" data-k="comida" value="'+esc(it.comida)+'" aria-label="Alimento">'
+          + '<button class="xbtn" data-txrm="'+i+'" aria-label="Quitar '+esc(it.comida)+'">'+ICON.x+'</button>'
+          + '<label class="tx-u"><input id="tx-'+i+'-kcal" data-txi="'+i+'" data-k="kcal" type="number" inputmode="numeric" step="1" min="0" value="'+esc(it.kcal)+'" aria-label="Kcal de '+esc(it.comida)+'"><span>kcal</span></label>'
+          + '<label class="tx-u"><input id="tx-'+i+'-prot" data-txi="'+i+'" data-k="prot" type="number" inputmode="numeric" step="1" min="0" value="'+esc(it.prot)+'" aria-label="Proteína de '+esc(it.comida)+'"><span>g prot</span></label>'
+          + '</div>').join("")
+        + '<div class="tx-tot"><span>Total</span><b id="txTot">'+tot()+'</b></div></div>'
+        + (TX.nota ? '<p class="hint">Supuestos: '+esc(TX.nota)+'</p>' : '')
+      : '')
+    + '<div class="tx-act">'
+    + (hay ? '<button class="btn primary full" data-tx="save">Guardar en '+esc(diaTx(TX.fecha || S.selected))+'</button>'
+        + '<button class="btn" data-tx="clear">Descartar</button><button class="btn" data-tx="calc"'+(TX.busy?' disabled':'')+'>'+(TX.busy?"Calculando…":"Recalcular")+'</button>'
+      : '<button class="btn primary full" data-tx="calc"'+(TX.busy?' disabled':'')+'>'+(TX.busy?"Calculando…":"Calcular")+'</button>')
+    + '</div>'
+    + '<p class="tx-st'+(TX.cls?' '+TX.cls:'')+'" id="txSt" role="status" aria-live="polite">'+esc(TX.msg)+'</p>'
+    + '</div>';
+}
+function txWire(sh){
+  if (!FEDE) return;
+  const ta = sh.querySelector("#txTexto");
+  if (ta) ta.addEventListener("input", () => { TX.texto = ta.value; if (TX.cls==="ok" || TX.cls==="err") txStatus(""); });
+  const box = sh.querySelector("#txItems");
+  if (box) box.addEventListener("input", e => {
+    const el = e.target, it = TX.items[+el.dataset.txi]; if (!it || !el.dataset.k) return;
+    it[el.dataset.k] = el.value;
+    const t = sh.querySelector("#txTot");
+    if (t) t.textContent = fmtNum(TX.items.reduce((s,x)=>s+num(x.kcal),0))+" kcal · "+fmtNum(TX.items.reduce((s,x)=>s+num(x.prot),0))+" g prot";
+  });
+}
+function txClick(t){
+  if (t.dataset.tx==="calc"){ if (!TX.busy) txCalc(); return true; }
+  if (t.dataset.tx==="save"){ txSave(); return true; }
+  if (t.dataset.tx==="clear"){ TX.texto = ""; TX.items = []; TX.nota = ""; TX.fecha = ""; TX.hora = ""; txStatus(""); refreshSheet(); return true; }
+  if (t.dataset.txrm){
+    TX.items.splice(+t.dataset.txrm, 1);
+    if (!TX.items.length){ TX.nota = ""; txStatus("Quitaste todo. Corrige el texto y vuelve a calcular."); }
+    refreshSheet(); return true;
+  }
+  return false;
+}
 function buildFoodSheet(sh, keep){
   const focusId = keep && document.activeElement && document.activeElement.id;
   const e = evalDay(S.selected);
@@ -1520,12 +1680,13 @@ function buildFoodSheet(sh, keep){
     + '<div class="foods">'
     + (list.length ? list.map((f,i)=>{
         const k = fkey(f)+"#"+i;
-        return '<div class="food"><div><div class="fn">'+esc(f.comida)+(/claude|foto/i.test(f.origen)?'<span class="tag">FOTO</span>':'')+'</div><div class="fm">'+esc(f.hora||"")+'</div></div>'
+        return '<div class="food"><div><div class="fn">'+esc(f.comida)+(/claude|foto/i.test(f.origen)?'<span class="tag">FOTO</span>':/texto/i.test(f.origen)?'<span class="tag">TEXTO</span>':'')+'</div><div class="fm">'+esc(f.hora||"")+'</div></div>'
           + '<div class="fv">'+fmtNum(f.kcal)+' kcal<small>'+fmtNum(f.prot)+' g prot</small></div>'
           + (f._tmp ? '<span class="xbtn" aria-hidden="true"></span>' : (confirmKey===k ? '<button class="xbtn confirm" data-del="'+i+'">Borrar</button>' : '<button class="xbtn" data-askdel="'+esc(k)+'" aria-label="Borrar '+esc(f.comida)+'">'+ICON.x+'</button>'))
           + '</div>';
       }).join("") : '<div class="empty">Sin comidas registradas. Mándale la foto a Claude o agrégala abajo.</div>')
     + '</div>'
+    + txHtml()
     + '<div class="grp"><div class="grp-h"><span class="k">Mis comidas</span><span class="w">Toca para agregar</span></div><div class="recetas">'
     + RECETAS.map(r => { const t = totalReceta(r);
         return '<div class="receta"><button class="rec-btn" data-receta="'+r.k+'"><span class="rec-t"><b>'+esc(r.n)+'</b><small>'+esc(r.d)+'</small></span>'
@@ -1543,6 +1704,7 @@ function buildFoodSheet(sh, keep){
     + '</form>'
     + '<p class="hint">Lo que le mandes a Claude en foto aparece aquí. Si no lo ves, toca ↻ arriba.</p>'
     + '</div>';
+  txWire(sh);
   const form = sh.querySelector("#foodForm");
   form.addEventListener("input", ()=>{ foodDraft = { comida:form.comida.value, kcal:form.kcal.value, prot:form.prot.value }; });
   form.addEventListener("submit", ev=>{
@@ -1557,6 +1719,7 @@ function buildFoodSheet(sh, keep){
   });
   sheetState = {
     click(t){
+      if (txClick(t)) return true;
       if (t.dataset.askdel){ confirmKey = t.dataset.askdel; buildFoodSheet(sh, true); return true; }
       if (t.dataset.del){ const f = list[+t.dataset.del]; confirmKey = null; if (f) deleteFood(f); return true; }
       if (t.dataset.sal){ saladitas = Math.max(0, Math.min(10, saladitas + (+t.dataset.sal))); buildFoodSheet(sh, true); return true; }
@@ -1573,7 +1736,7 @@ function buildFoodSheet(sh, keep){
       return false;
     }
   };
-  if (focusId){ const el = sh.querySelector("#"+focusId); if (el) el.focus({preventScroll:true}); }
+  if (focusId){ const el = sh.querySelector("#"+focusId); if (el){ el.focus({preventScroll:true}); try{ const n = el.value.length; el.setSelectionRange(n, n); }catch(e){} } }
 }
 function buildSuplSheet(sh){
   const r = Object.assign(emptyRec(), S.days[S.selected]||{});

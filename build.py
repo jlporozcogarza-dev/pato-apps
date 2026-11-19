@@ -31,7 +31,8 @@ SHIM = """<script>
     if (c) save(c);
     return c;
   }
-  window.claude = { use: async function(cap){
+  // jlp: true = estás en jlpog.app; el puente también sabe hablarle a Fede (fede_analizar / fede_resultado)
+  window.claude = { jlp: true, use: async function(cap){
     if (cap !== "mcp") return null;
     var c = load(); if (!c) return null;
     // u = URL completa de un puente, o id de Apps Script. Con id: primero el server de la casa (rápido) y,
