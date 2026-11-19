@@ -1892,15 +1892,19 @@ pintarFede.forzar = true; pintarFede();
     .observe(document.documentElement, { attributes:true, attributeFilter:["data-tab"] });
 })();
 
-/* ---------- El anillo de Fede (logo): tocar = Fede escucha; tocar otra vez = ya acabé; ✕ = que se calle ----------
-   Es el anillo Aurora de la compu, en todas las pestañas. Sin pantallas: lo que pasa se ve en el anillo y en una pastilla junto a él.
-   Si el teléfono reconoce voz, manda el texto y él solo nota cuando uno deja de hablar. Si no, graba una nota
-   (corta sola tras 1.5 s de silencio) y Fede la transcribe en la compu. */
+/* ---------- El anillo de Fede (logo) ----------
+   Un toque = se prende tu micrófono y Fede solo escucha (no contesta nada mientras). Otro toque = se apaga y Fede responde.
+   Dos toques rápidos (mientras hablas o mientras Fede trabaja/contesta) = se cancela todo y vuelve a reposo, callado.
+   Si dices solo «cancela», «cállate», «olvídalo»…, no se manda nada: se queda callado. ✕ = que se calle.
+   Si el teléfono reconoce voz, manda el texto; si no, graba una nota y Fede la transcribe en la compu. */
 (() => {
   const RV = window.SpeechRecognition || window.webkitSpeechRecognition;
   const cv = $("anilloFede"), ctx = cv.getContext("2d"), dice = $("fedeDice"), callar = $("callarFede"), logo = $("logoFede");
   const quieto = matchMedia("(prefers-reduced-motion:reduce)").matches, espera = ms => new Promise(r => setTimeout(r, ms));
   let estado = "reposo", rec = null, grab = null, trozos = [], texto = "", nivel = 0, vigila = 0, sigue = 0, turno = 0;
+  let trabajando = false, ultimoToque = 0, tToque = 0;   // trabajando = Fede tiene una orden tuya sin contestar
+  const CALLAR = /^(ya |oye |no |bueno |por favor |mejor )*(c[aá]llate|c[aá]llese|silencio|cancela|cancelar|canc[eé]lalo|cancela todo|olv[ií]dalo|d[eé]jalo|basta|ya basta|ya estuvo|alto|detente|p[aá]rale|no importa|nada)( ya| por favor| gracias| fede)*$/i;
+  const limpio = t => String(t || "").toLowerCase().replace(/[.,!¡¿?«»"]/g, " ").replace(/\s+/g, " ").trim();
   const decir = t => { dice.textContent = t; dice.hidden = false; };
   const volver = () => { dice.hidden = true; };
   function poner(e, t){
@@ -1911,12 +1915,14 @@ pintarFede.forzar = true; pintarFede();
 
   async function empezar(){
     if (!cfg()) return;
-    texto = ""; trozos = []; turno++; poner("escucha", "Le escucho, señor…");
+    texto = ""; trozos = []; turno++; callar.hidden = true; poner("escucha", "Le escucho… toque el anillo cuando termine");
     if (navigator.vibrate) navigator.vibrate(15);
     if (RV){
-      const r = rec = new RV(); r.lang = "es-MX"; r.interimResults = true; r.continuous = false;
-      r.onresult = e => { texto = Array.from(e.results).map(x => x[0].transcript).join(" "); decir("«" + texto + "»"); nivel = 1; };
-      r.onend = () => { if (estado === "escucha" && rec === r) terminar(); };   // dejó de hablar: se manda solo
+      const r = rec = new RV(); r.lang = "es-MX"; r.interimResults = true; r.continuous = true;
+      let base = "";
+      r.onresult = e => { texto = (base + " " + Array.from(e.results).map(x => x[0].transcript).join(" ")).trim(); decir("«" + texto + "»"); nivel = 1; };
+      // El iPhone corta el reconocimiento tras un silencio: se vuelve a prender solo hasta que tú toques el anillo
+      r.onend = () => { if (estado === "escucha" && rec === r){ base = texto; try{ r.start(); }catch(err){ terminar(); } } };
       r.onerror = e => { if (rec === r && (e.error === "not-allowed" || e.error === "service-not-allowed")){ rec = null; grabar(); } };
       try{ r.start(); return; }catch(e){ rec = null; }
     }
@@ -1938,7 +1944,7 @@ pintarFede.forzar = true; pintarFede();
         const rms = Math.sqrt(s / buf.length) / 128, ahora = performance.now(); nivel = Math.min(1, rms * 6);
         // shortcut: umbral fijo de voz (0.04); si con ruido de fondo no corta, calibrar con los primeros 300 ms
         if (rms > .04){ hablo = true; ultimaVoz = ahora; }
-        if ((hablo && ahora - ultimaVoz > 1500) || (!hablo && ahora - t0 > 8000) || ahora - t0 > 30000) terminar();
+        if (ahora - t0 > 90000) terminar();   // solo un tope de 90 s; si no, se apaga cuando tocas el anillo
       }, 100);
     }catch(e){ aviso("Necesito permiso para el micrófono."); }
   }
@@ -1951,6 +1957,7 @@ pintarFede.forzar = true; pintarFede();
       if (rec){
         const r = rec; rec = null; try{ r.stop(); }catch(e){}
         if (!texto.trim()) return aviso("No le oí nada, señor.");
+        if (CALLAR.test(limpio(texto))) return cancelarTodo(true);
         id = (await api(c, "fede_orden", { texto:texto.trim() })).id;
       } else if (grab){
         const g = grab; grab = null;
@@ -1967,17 +1974,24 @@ pintarFede.forzar = true; pintarFede();
   // Mientras Fede trabaja y mientras lo dice en la compu, el ✕ queda a la mano.
   async function seguir(id){
     const mio = ++turno, c = cfg(), t0 = Date.now(); let hasta = 0;
+    trabajando = true;
     poner("pensando", "Fede está en eso…"); callar.hidden = false; pintarFede.forzar = true;
     while (turno === mio && Date.now() - t0 < 180000){
       try{
         FEDE = await api(c, "fede_charla", {}); pintarFede();
         const m = FEDE.mensajes.find(x => x.id === id);
-        if (turno !== mio) return;
-        if (m && m.estado === "lista"){ decir("Fede: " + String(m.respuesta || "").replace(/\s+/g, " ")); hasta = Date.now() + 5000; break; }
+        if (m && m.estado === "lista") trabajando = false;
+        if (turno !== mio) return;   // mientras te escucha (o si cancelaste) no dice nada
+        if (m && m.estado === "lista"){
+          const resp = String(m.respuesta || "").replace(/\s+/g, " ").trim();
+          if (!resp || /^cancelado/i.test(resp)){ callar.hidden = true; return poner("reposo"); }   // «cancela»: callado
+          decir("Fede: " + resp); hasta = Date.now() + 5000; break;
+        }
         decir(FEDE.en_linea ? "Fede está en eso…" : "La compu de Fede está apagada…");
       }catch(e){}
       await espera(1500);
     }
+    if (Date.now() - t0 >= 180000) trabajando = false;
     while (turno === mio && Date.now() < hasta) await espera(400);
     if (turno === mio){ callar.hidden = true; poner("reposo"); }
   }
@@ -1986,10 +2000,26 @@ pintarFede.forzar = true; pintarFede();
     e.stopPropagation(); turno++; callar.hidden = true; aviso("Cancelado.");
     try{ await api(cfg(), "fede_orden", { cancelar:true }); }catch(err){ aviso("No llegó a Fede: " + err.message); }
   });
+  // Apaga el micrófono sin mandar nada
+  function soltarMic(){
+    const r = rec; rec = null; if (r){ r.onend = r.onresult = null; try{ r.abort(); }catch(e){} }
+    const g = grab; grab = null; clearInterval(vigila); nivel = 0;
+    if (g){ g.onstop = null; try{ if (g.state !== "inactive") g.stop(); }catch(e){} g.stream.getTracks().forEach(t => t.stop()); try{ g.ac.close(); }catch(e){} }
+  }
+  // Todo a reposo y callado; si Fede estaba trabajando en una orden tuya, también se le corta en la compu
+  function cancelarTodo(dicho){
+    const corta = trabajando; trabajando = false;
+    turno++; soltarMic(); callar.hidden = true; poner("reposo");
+    if (navigator.vibrate) navigator.vibrate(dicho ? 10 : [10, 40, 10]);
+    if (corta) api(cfg(), "fede_orden", { cancelar:true }).catch(() => {});
+  }
   logo.addEventListener("click", e => {
     e.stopPropagation(); e.preventDefault();
-    if (estado === "escucha") terminar();
-    else if (estado !== "enviando"){ callar.hidden = true; empezar(); }
+    const ahora = Date.now();
+    if (ahora - ultimoToque < 350){ clearTimeout(tToque); ultimoToque = 0; return cancelarTodo(); }   // dos toques rápidos
+    ultimoToque = ahora;
+    if (estado === "escucha") tToque = setTimeout(terminar, 350);   // espera tantito por si es doble toque
+    else if (estado !== "enviando") empezar();                      // el micrófono se prende al instante (el iPhone lo pide así)
   });
 
   // El anillo Aurora de la compu: verde agua en reposo, sigue la voz al escuchar, ámbar y en giro mientras Fede piensa.
