@@ -33,7 +33,7 @@ html,body{margin:0;height:100%;overflow:hidden;background:var(--c60);color:var(-
 .vista.on{display:block}
 html,body,.vista{overscroll-behavior:none} /* sin rebote al jalar hacia abajo (dejaba un hueco y en Tracker/Finanzas se veía blanco) */
 /* las apps ya respetan la muesca del iPhone por su cuenta: el iframe va a pantalla completa */
-#v-inicio,#v-condotec,#v-pendientes,#v-camara,#v-fede{overflow-y:auto;-webkit-overflow-scrolling:touch;padding:max(14px,env(safe-area-inset-top)) 16px calc(78px + max(4px,calc(env(safe-area-inset-bottom) - var(--franja,0px) - 12px)))}
+#v-inicio,#v-condotec,#v-pendientes,#v-fede{overflow-y:auto;-webkit-overflow-scrolling:touch;padding:max(14px,env(safe-area-inset-top)) 16px calc(78px + max(4px,calc(env(safe-area-inset-bottom) - var(--franja,0px) - 12px)))}
 /* el Inicio cabe en una pantalla: la gráfica toma lo que sobre (si un teléfono es muy chico, se puede deslizar) */
 #v-inicio main{display:flex;flex-direction:column;min-height:100%;gap:10px}
 #v-inicio main>*{flex:none}
@@ -104,41 +104,6 @@ html:has(nav.oculta) .fede-flota{display:none}
 .redactar button:active{transform:scale(.9)}.redactar button:disabled{opacity:.4}
 .redactar button svg{width:20px;height:20px}
 
-/* ---------- Cámara nativa (antes era el artefacto): foto → Fede (Claude) la analiza → la revisas → se guarda ---------- */
-#v-camara [hidden]{display:none!important}
-.cam-dos{display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-bottom:12px}
-.cam-op{display:flex;flex-direction:column;align-items:center;gap:6px;padding:20px 10px;border-radius:26px;text-align:center;cursor:pointer;color:inherit;font:inherit;border:1px solid rgba(255,255,255,.10)}
-.cam-op .ic{width:44px;height:44px;border-radius:15px;display:grid;place-items:center;background:color-mix(in srgb,var(--c10) 20%,transparent);color:var(--c10)}
-.cam-op .ic svg{width:22px;height:22px}.cam-op b{font:700 20px/1.1 var(--display)}.cam-op small{color:var(--muted);font-size:12.5px}
-.cam-fila{display:flex;align-items:center;gap:8px;margin:0 2px 10px;font-size:13px;color:var(--muted)}.cam-fila span{min-width:92px}
-.cam-chico{padding:9px 14px;border-radius:14px;border:1px solid rgba(255,255,255,.12);background:linear-gradient(150deg,rgba(255,255,255,.12),rgba(255,255,255,.03));font:600 14px/1 var(--sans);cursor:pointer}
-.cam-chico.t-in{color:var(--st-ok)}.cam-chico.t-out{color:var(--st-crit)}
-.cam-tarjeta{border-radius:28px;padding:16px;margin:12px 0;display:flex;flex-direction:column;gap:12px}
-.cam-cab{display:flex;justify-content:space-between;align-items:center}.cam-cab h2{margin:0;font:700 19px/1.15 var(--display)}
-.cam-x{width:32px;height:32px;border-radius:12px;border:1px solid rgba(255,255,255,.12);background:rgba(255,255,255,.06);color:var(--muted);font-size:18px;cursor:pointer}
-.cam-shot{display:block;width:100%;max-height:300px;object-fit:contain;border-radius:18px;background:rgba(0,0,0,.3)}
-.cam-status{font-size:14px;color:var(--muted);min-height:1.2em}.cam-status.err{color:var(--st-crit)}.cam-status.ok{color:var(--st-ok)}
-.cam-status.esperando::before{content:"";display:inline-block;width:8px;height:8px;margin-right:8px;border-radius:50%;background:var(--c10);animation:latido 1s ease-in-out infinite}
-.cam-grid{display:grid;grid-template-columns:1fr 1fr;gap:10px}.cam-grid .full{grid-column:1/-1}
-.cam-l{display:flex;flex-direction:column;gap:5px;font-size:12.5px;color:var(--muted);min-width:0}
-.cam-l small{color:var(--muted)}
-#v-camara :is(input,select,textarea){font:16px/1.3 var(--sans);color:var(--fg);background:rgba(0,0,0,.28);border:1px solid rgba(255,255,255,.12);border-radius:12px;padding:10px;width:100%;min-width:0;color-scheme:dark}
-#v-camara textarea{resize:vertical}
-.cam-seg{display:grid;grid-auto-flow:column;grid-auto-columns:1fr;padding:3px;border-radius:14px;border:1px solid rgba(255,255,255,.12);background:rgba(255,255,255,.05)}
-.cam-seg button{border:0;background:none;padding:10px 4px;border-radius:11px;font-size:14px;color:var(--muted);cursor:pointer}
-.cam-seg button[aria-pressed="true"]{background:color-mix(in srgb,var(--c10) 22%,transparent);color:var(--fg);font-weight:600}
-.cam-chips{display:flex;flex-wrap:wrap;gap:6px;margin-top:8px}
-.cam-chips button{border:1px solid rgba(255,255,255,.12);background:rgba(255,255,255,.06);border-radius:99px;padding:7px 12px;font-size:14px;cursor:pointer}
-.cam-chips button[aria-pressed="true"]{border-color:var(--c10);color:var(--c10)}
-.cam-btns{display:flex;gap:10px}
-.cam-go{flex:1;padding:14px;border-radius:16px;border:0;font:700 16px/1 var(--display);color:var(--c60);cursor:pointer;
-  background:linear-gradient(180deg,color-mix(in srgb,var(--c10) 68%,#fff),var(--c10) 58%,color-mix(in srgb,var(--c10) 82%,#000));box-shadow:0 0 22px color-mix(in srgb,var(--c10) 45%,transparent)}
-.cam-go:disabled{opacity:.45;cursor:default}
-.cam-items{display:flex;flex-direction:column;gap:8px}
-.cam-item{display:grid;grid-template-columns:1fr 1fr 32px;gap:8px;align-items:end;padding:10px;border-radius:16px;background:rgba(255,255,255,.05);border:1px solid rgba(255,255,255,.07)}
-.cam-item .iname{grid-column:1/3}
-.cam-total{display:flex;justify-content:space-between;padding-top:10px;border-top:1px solid rgba(255,255,255,.1);font-weight:600;font-variant-numeric:tabular-nums}
-.cam-dia{display:flex;flex-direction:column;gap:3px;padding:12px;border-radius:16px;background:rgba(255,255,255,.05);font-size:14px}.cam-dia span{color:var(--muted)}
 
 /* hoja de Pendientes y Depas (como en Fede) */
 .accesos{display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-bottom:6px}
@@ -303,10 +268,7 @@ button.card:active{transform:scale(.98)}
 /* página Condotec */
 .titulo-pagina{margin:4px 0 16px;padding-left:66px;min-height:62px;display:flex;align-items:center} /* a la izquierda va el anillo de Fede */.titulo-pagina small{color:var(--muted);font-size:13px}
 .titulo-pagina h1{margin:4px 0 0;font:700 38px/1 var(--display);letter-spacing:-.02em}
-#v-camara.entra :is(.titulo-pagina,.cam-dos,.cam-fila,.cam-tarjeta){animation:sube .55s cubic-bezier(.2,.8,.2,1) both}
-#v-camara.entra .cam-dos{animation-delay:.06s}#v-camara.entra .cam-fila{animation-delay:.12s}#v-camara.entra .cam-tarjeta{animation-delay:.18s}
 
-@media (prefers-reduced-motion:reduce){#v-camara.entra *{animation:none!important}}
 /* Condotec · Calendario del mes: entrada verde, salida roja, pendiente azul, pago amarillo (solo el nombre del depa) */
 .cc{padding:12px 8px 10px}
 .cc-cal{display:grid;grid-template-columns:repeat(7,minmax(0,1fr));border-top:1px solid rgba(255,255,255,.08)}
@@ -658,70 +620,6 @@ header .ajustes{visibility:hidden} /* en Inicio se usa el fijo de arriba a la de
 <div class="renglones" id="agPend"></div>
 </main></div>
 
-<div class="vista" id="v-camara" role="tabpanel" aria-label="Cámara"><main>
-<header class="titulo-pagina"><div><small>Comida y tickets</small><h1>Cámara</h1></div></header>
-<div class="cam-dos">
-  <button class="cam-op glass card" data-cam="comida"><span class="ic" aria-hidden="true"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M12 3c1 3 4.5 5 4.5 9.5a4.5 4.5 0 0 1-9 0c0-2 1-3.2 2-4.2.2 2 1 3 2 3 .2-3-1-5 .5-8.3z"/></svg></span><b>Comida</b><small>Calorías y proteína</small></button>
-  <button class="cam-op glass card" data-cam="ticket"><span class="ic" aria-hidden="true"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M6 3h12v18l-3-2-3 2-3-2-3 2z"/><path d="M9 8h6M9 12h6"/></svg></span><b>Ticket</b><small>Concepto y monto</small></button>
-</div>
-<div class="cam-fila"><span>Desde galería</span><button class="cam-chico" data-gal="comida">Comida</button><button class="cam-chico" data-gal="ticket">Ticket</button></div>
-<div class="cam-fila"><span>Sin foto</span><button class="cam-chico t-in" data-manual="ingreso">+ Ingreso</button><button class="cam-chico t-out" data-manual="egreso">− Egreso</button></div>
-<input id="camIn" type="file" accept="image/*" capture="environment" hidden><input id="galIn" type="file" accept="image/*" hidden>
-
-<section id="cFoto" class="cam-tarjeta glass" hidden>
-  <div class="cam-cab"><h2 id="cFotoT">Foto</h2><button class="cam-x" id="cFotoX" aria-label="Cerrar">×</button></div>
-  <img id="cShot" class="cam-shot" alt="Foto tomada">
-  <div id="cCtxBox" hidden><label class="cam-l">Contexto de la comida (opcional)<textarea id="cCtx" rows="2" placeholder="Ej. plato chico, frito, 2 tortillas de harina"></textarea></label>
-    <button class="cam-chico" id="cCalc">Calcular</button></div>
-  <div id="cStatus" class="cam-status"></div>
-  <div id="cFood" class="cam-grid" hidden>
-    <label class="cam-l full">Comida<input id="fComida"></label>
-    <label class="cam-l">Kcal<input id="fKcal" type="number" inputmode="decimal" step="any"></label>
-    <label class="cam-l">Proteína (g)<input id="fProt" type="number" inputmode="decimal" step="any"></label>
-    <label class="cam-l">Fecha<input id="fFecha" type="date"></label><label class="cam-l">Hora<input id="fHora" type="time"></label>
-  </div>
-  <div id="cMoney" class="cam-grid" hidden>
-    <div class="cam-l full">Tipo<div class="cam-seg" id="pTipo"><button type="button" data-t="auto">Auto</button><button type="button" data-t="egreso">Egreso</button><button type="button" data-t="ingreso">Ingreso</button></div><small id="pTipoHint"></small></div>
-    <div class="cam-l full"><span id="pPayLbl">Forma de pago</span><div id="pPay"></div></div>
-    <label class="cam-l full">Concepto<input id="pConcepto"></label>
-    <label class="cam-l">Monto<input id="pMonto" type="number" inputmode="decimal" step="any"></label>
-    <label class="cam-l">Categoría<select id="pCat"></select></label>
-    <label class="cam-l">Fecha<input id="pFecha" type="date"></label><label class="cam-l">Hora<input id="pHora" type="time"></label>
-    <label class="cam-l full">Nota (opcional)<input id="pNota"></label>
-  </div>
-  <div class="cam-btns"><button class="cam-chico" id="cOtra">Otra foto</button><button class="cam-go" id="cSave" disabled>Guardar</button></div>
-</section>
-
-<section id="cManual" class="cam-tarjeta glass" hidden>
-  <div class="cam-cab"><h2>Movimiento manual</h2><button class="cam-x" id="cManualX" aria-label="Cerrar">×</button></div>
-  <div class="cam-seg" id="mTipo"><button type="button" data-t="egreso">Egreso</button><button type="button" data-t="ingreso">Ingreso</button></div>
-  <label class="cam-l">Concepto<input id="mConcepto" placeholder="Ej. Renta depa 3 de octubre"></label>
-  <div class="cam-grid"><label class="cam-l">Monto<input id="mMonto" type="number" inputmode="decimal" step="any" placeholder="0.00"></label><label class="cam-l">Fecha<input id="mFecha" type="date"></label></div>
-  <div class="cam-l"><span id="mPayLbl">Forma de pago</span><div id="mPay"></div></div>
-  <label class="cam-l">Categoría<select id="mCat"></select></label>
-  <label class="cam-l">Nota (opcional)<input id="mNota"></label>
-  <div id="mStatus" class="cam-status"></div>
-  <div class="cam-btns"><button class="cam-go" id="mSave">Guardar en Finanzas</button></div>
-</section>
-
-<section class="cam-tarjeta glass" aria-labelledby="tT">
-  <div class="cam-cab"><h2 id="tT">Comida escrita</h2></div>
-  <div class="cam-l">Mis comidas: toca para agregar</div>
-  <div class="cam-chips" id="tMias"></div>
-  <label class="cam-l">Escribe lo que comiste, como se lo dirías a Claude<textarea id="tTexto" rows="3" placeholder="Ej. Cené 2 latas de atún con elote y mayonesa y 3 paquetes de saladitas de 45 calorías"></textarea></label>
-  <div class="cam-btns"><button class="cam-go" id="tCalc">Calcular</button></div>
-  <div id="tRes" hidden>
-    <div id="tItems" class="cam-items"></div>
-    <div class="cam-total"><span>Total</span><span id="tTotal"></span></div>
-    <p id="tNote" class="nota" hidden></p>
-    <div class="cam-grid"><label class="cam-l">Fecha<input id="tFecha" type="date"></label><label class="cam-l">Hora<input id="tHora" type="time"></label></div>
-    <div class="cam-btns"><button class="cam-chico" id="tClear">Descartar</button><button class="cam-go" id="tSave" disabled>Guardar en Tracker</button></div>
-  </div>
-  <div id="tStatus" class="cam-status"></div>
-  <div id="tDay" class="cam-dia" hidden></div>
-</section>
-<p class="nota">Las fotos las analiza Fede (Claude, en la compu de la casa): tiene que estar prendida.</p>
-</main></div>
 
 <div class="vista" id="v-fede" role="tabpanel" aria-label="Fede"><main>
 <header class="titulo-pagina"><div><small>Su asistente, en la compu</small><h1>Fede</h1></div><span class="fede-estado" id="fedeEstado"><i></i><span>…</span></span></header>
@@ -810,7 +708,6 @@ header .ajustes{visibility:hidden} /* en Inicio se usa el fijo de arriba a la de
   <button role="tab" data-ir="finanzas" aria-selected="false" aria-label="Finanzas"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><rect x="3" y="6" width="18" height="13" rx="3"/><path d="M3 10h18M16 15h2"/></svg><span>Finanzas</span></button>
   <button role="tab" data-ir="condotec" aria-selected="false" aria-label="Condotec"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M4 20V8l8-4 8 4v12"/><path d="M9 20v-5h6v5M9 10h.01M15 10h.01"/></svg><span>Condotec</span></button>
   <button role="tab" data-ir="pendientes" aria-selected="false" aria-label="Pendientes"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><rect x="3" y="5" width="18" height="16" rx="3"/><path d="M3 10h18M8 3v4M16 3v4M8 15l2 2 4-4"/></svg><span>Pendientes</span></button>
-  <button role="tab" data-ir="camara" aria-selected="false" aria-label="Cámara"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M4 8h3l2-3h6l2 3h3v11H4z"/><circle cx="12" cy="13" r="3.5"/></svg><span>Cámara</span></button>
 </nav>
 
 <script>
@@ -845,8 +742,8 @@ const PALETAS = [
   { id:"nanohana",   n:"Nanohana",   k:"苔 · 海松 · 菜の花",   c60:"#14150C", c30:"#838A2D", c10:"#F7D94C" },
   { id:"arazome",    n:"Arazome",    k:"墨 · 胡桃 · 退紅",     c60:"#1B1717", c30:"#947A6D", c10:"#F596AA" },
 ];
-const ORDEN = ["inicio", "tracker", "finanzas", "condotec", "fede", "pendientes", "camara"], NOMBRE = { inicio:"Inicio", tracker:"Tracker", finanzas:"Finanzas", condotec:"Condotec", fede:"Fede", pendientes:"Pendientes", camara:"Cámara" };
-const DEF = { inicio:"daidai", tracker:"torinoko", finanzas:"kanzo", condotec:"neri", fede:"daidai", pendientes:"kaki", camara:"shu" }, LSP = "jlp-paletas";
+const ORDEN = ["inicio", "tracker", "finanzas", "condotec", "fede", "pendientes"], NOMBRE = { inicio:"Inicio", tracker:"Tracker", finanzas:"Finanzas", condotec:"Condotec", fede:"Fede", pendientes:"Pendientes" };
+const DEF = { inicio:"daidai", tracker:"torinoko", finanzas:"kanzo", condotec:"neri", fede:"daidai", pendientes:"kaki" }, LSP = "jlp-paletas";
 let elegidas = (() => { try{ return Object.assign({}, DEF, JSON.parse(localStorage.getItem(LSP) || "{}")); }catch(e){ return { ...DEF }; } })();
 const pal = tab => PALETAS.find(p => p.id === elegidas[tab]) || PALETAS.find(p => p.id === DEF[tab]);
 function pintar(){
@@ -1568,7 +1465,7 @@ $("ccAnt").onclick = () => moverMesCC(-1); $("ccSig").onclick = () => moverMesCC
 pintarCC(); // lo guardado en el teléfono se ve al instante
 
 /* ---------- pestañas: cada app vive en su iframe, se crea la primera vez y se queda viva ---------- */
-const vistas = { inicio:$("v-inicio"), condotec:$("v-condotec"), fede:$("v-fede"), pendientes:$("v-pendientes"), camara:$("v-camara") };
+const vistas = { inicio:$("v-inicio"), condotec:$("v-condotec"), fede:$("v-fede"), pendientes:$("v-pendientes") };
 let actual = "inicio";
 function vista(tab){
   if (!vistas[tab]){
@@ -1773,354 +1670,6 @@ $("fedeTexto").addEventListener("keydown", e => { if (e.key === "Enter" && !e.sh
 $("fedeTexto").addEventListener("input", e => { e.target.style.height = "auto"; e.target.style.height = Math.min(120, e.target.scrollHeight) + "px"; });
 $("atajosFede").addEventListener("click", e => { const b = e.target.closest("[data-dile]"); if (b) mandarFede(b.dataset.dile); });
 pintarFede.forzar = true; pintarFede();
-
-/* ---------- Cámara (igual que el artefacto «Captura de fotos», pero dentro de JLP) ----------
-   La foto se achica en el teléfono, viaja al server (fede_analizar) y Fede la analiza con Claude en la compu;
-   la app espera el JSON (fede_resultado), lo muestra para revisar y lo guarda por el puente (append_values). */
-(() => {
-  const TRACK_ID = TRACKER, PASTA_ID = FIN;
-  let ACCOUNTS = [{nombre:"BBVA",tipo:"debito"},{nombre:"NU",tipo:"debito"},{nombre:"Revolut",tipo:"debito"},{nombre:"Plata",tipo:"debito"},
-    {nombre:"Tarjeta BBVA",tipo:"credito"},{nombre:"Efectivo",tipo:"efectivo"}];
-  let CATS = { egreso:["Súper","Comida fuera","Gasolina","Transporte","Salidas","Suscripciones","Salud","Aseo y cuidado personal","Ropa","Escuela","Casa","Regalos","Otros gastos"],
-    ingreso:["Rentas","Pago de trabajo","Reembolso","Otros ingresos"] };
-  const OTHER = { egreso:"Otros gastos", ingreso:"Otros ingresos" };
-  const p2 = n => String(n).padStart(2, "0");
-  const today = () => { const d = new Date(); return d.getFullYear() + "-" + p2(d.getMonth() + 1) + "-" + p2(d.getDate()); };
-  const nowHM = () => { const d = new Date(); return p2(d.getHours()) + ":" + p2(d.getMinutes()); };
-  const norm = s => String(s || "").normalize("NFD").replace(/[̀-ͯ]/g, "").toLowerCase().trim();
-  const esc = s => String(s).replace(/[&<>"']/g, c => ({ "&":"&amp;", "<":"&lt;", ">":"&gt;", '"':"&quot;", "'":"&#39;" }[c]));
-  const money = n => (n < 0 ? "−" : "+") + "$" + Math.abs(n).toLocaleString("es-MX", { minimumFractionDigits:2, maximumFractionDigits:2 });
-  const lsGet = k => { try{ return localStorage.getItem("cap_" + k); }catch(e){ return null; } };
-  const lsSet = (k, v) => { try{ localStorage.setItem("cap_" + k, v); }catch(e){} };
-  const isDate = s => /^\d{4}-\d{2}-\d{2}$/.test(String(s || ""));
-  const isTime = s => /^\d{1,2}:\d{2}$/.test(String(s || ""));
-  const pressed = (seg, val) => seg.querySelectorAll("button").forEach(b => b.setAttribute("aria-pressed", String(b.dataset.t === val)));
-  const newId = p => p + Date.now().toString(36) + Math.random().toString(36).slice(2, 5);
-  const setStatus = (el, msg, cls) => { el.textContent = msg; el.className = "cam-status" + (cls ? " " + cls : ""); };
-  const conf = () => { const c = cfg(); if (!c) throw new Error("Falta la clave de JLP"); return c; };
-  const leerH = (sheet, range) => api(conf(), "get_values", { spreadsheetId:sheet, range }).then(r => (r && r.values) || []);
-  const anexar = (sheet, range, values) => api(conf(), "append_values", { spreadsheetId:sheet, range, values, valueInputOption:"USER_ENTERED" });
-
-  /* Lo que en el artefacto hacía Claude (sample.json): ahora lo hace Fede en la compu. */
-  const blobB64 = b => new Promise((res, rej) => { const r = new FileReader(); r.onload = () => res(String(r.result).split(",")[1]); r.onerror = rej; r.readAsDataURL(b); });
-  async function askJSON(prompt, blob, statusEl){
-    const datos = { prompt };
-    if (blob){ datos.imagen = await blobB64(blob); datos.mime = "image/jpeg"; }
-    const { id } = await api(conf(), "fede_analizar", datos);
-    const hasta = Date.now() + 180000;
-    while (Date.now() < hasta){
-      await new Promise(r => setTimeout(r, 1500));
-      const r = await api(conf(), "fede_resultado", { id });
-      if (r.estado === "lista"){
-        const m = String(r.respuesta || "").match(/\{[\s\S]*\}/);
-        if (!m) throw new Error("respuesta sin JSON");
-        return JSON.parse(m[0]);
-      }
-      if (statusEl && r.en_linea === false) setStatus(statusEl, "La compu de Fede está apagada: lo hace en cuanto se prenda…", "esperando");
-    }
-    throw new Error("tiempo");
-  }
-
-  async function loadPasta(){
-    try{
-      const acc = await leerH(PASTA_ID, "Cuentas!A2:B20");
-      const list = acc.filter(r => r && r[0] && ["debito","credito","efectivo"].includes(norm(r[1]))).map(r => ({ nombre:String(r[0]).trim(), tipo:norm(r[1]) }));
-      if (list.length) ACCOUNTS = list;
-    }catch(e){}
-    try{
-      const cf = await leerH(PASTA_ID, "Config!E2:F60"), eg = [], ing = [];
-      cf.forEach(r => { if (!r || !r[0]) return; const t = norm(r[1]); if (t === "egreso") eg.push(String(r[0]).trim()); else if (t === "ingreso") ing.push(String(r[0]).trim()); });
-      if (eg.length) CATS.egreso = eg; if (ing.length) CATS.ingreso = ing;
-    }catch(e){}
-    photoPay.redraw(); manualPay.redraw();
-  }
-
-  function Pay(root){
-    const st = { metodo:"", cuenta:"" };
-    root.innerHTML = '<div class="cam-seg"><button type="button" data-t="efectivo">Efectivo</button><button type="button" data-t="debito">Débito</button><button type="button" data-t="credito">Crédito</button></div><div class="cam-chips" hidden></div>';
-    const seg = root.querySelector(".cam-seg"), chips = root.querySelector(".cam-chips");
-    const ofType = m => ACCOUNTS.filter(a => a.tipo === m);
-    function draw(){
-      pressed(seg, st.metodo);
-      const list = st.metodo ? ofType(st.metodo) : [];
-      const show = list.length > 1 || (list.length === 1 && norm(list[0].nombre) !== st.metodo);
-      chips.hidden = !show;
-      chips.innerHTML = show ? list.map(a => '<button type="button" data-c="' + esc(a.nombre) + '" aria-pressed="' + (a.nombre === st.cuenta) + '">' + esc(a.nombre) + "</button>").join("") : "";
-    }
-    function pick(m){
-      st.metodo = m; const list = ofType(m);
-      if (!list.some(a => a.nombre === st.cuenta)){ const last = lsGet("acc_" + m); const hit = list.find(a => a.nombre === last) || list[0]; st.cuenta = hit ? hit.nombre : ""; }
-      draw();
-    }
-    seg.onclick = e => { const b = e.target.closest("button"); if (b) pick(b.dataset.t); };
-    chips.onclick = e => { const b = e.target.closest("button"); if (b){ st.cuenta = b.dataset.c; lsSet("acc_" + st.metodo, st.cuenta); draw(); } };
-    return { get:() => ({ ...st }), set:m => { if (m) pick(m); else { st.metodo = ""; st.cuenta = ""; draw(); } }, redraw:() => { if (st.metodo) pick(st.metodo); else draw(); } };
-  }
-  const photoPay = Pay($("pPay")), manualPay = Pay($("mPay"));
-
-  function fillCats(sel, dir, chosen, withAuto){
-    const list = CATS[dir] || [];
-    const val = withAuto && !chosen ? "" : (list.includes(chosen) ? chosen : OTHER[dir]);
-    sel.innerHTML = (withAuto ? '<option value="">Que la elija Claude</option>' : "") + list.map(c => "<option" + (c === val ? " selected" : "") + ">" + esc(c) + "</option>").join("");
-    if (withAuto && !chosen) sel.value = "";
-  }
-
-  function photoPrompt(ctx){
-    return `Analiza esta foto y responde SOLO con un objeto JSON, sin texto extra.
-${ctx ? 'Contexto del usuario sobre la foto: "' + ctx.replace(/"/g, "'") + '". Úsalo para ajustar porciones, preparación e ingredientes.\n' : ""}
-Casos:
-1) Comida o bebida: {"tipo":"comida","comida":"nombre corto en español","kcal":número,"proteina":gramos}
-   Estima las porciones que se ven. Cuenta aceite, salsas y acompañamientos.
-   ${miasTxt()}2) Ticket, recibo o factura de una compra: {"tipo":"ticket","concepto":"...","monto":número,"fecha":"...","hora":"...","metodo":"...","cat_egreso":"...","cat_ingreso":"..."}
-3) Comprobante de transferencia, depósito o pago bancario: {"tipo":"transferencia","direccion":"egreso" si el usuario envió el dinero o "ingreso" si lo recibió,"concepto":"...","monto":número,"fecha":"...","hora":"...","metodo":"...","cat_egreso":"...","cat_ingreso":"..."}
-4) Cualquier otra cosa: {"tipo":"otro"}
-Campos de 2 y 3:
-- concepto: comercio o persona y qué fue, corto. Ej. "OXXO (leche y pan)".
-- monto: total pagado, número positivo sin signo.
-- fecha: "YYYY-MM-DD" si aparece, si no "".
-- hora: "HH:MM" en 24 h si aparece, si no "".
-- metodo: "efectivo", "debito" o "credito" si el ticket lo dice, si no "".
-- cat_egreso: una de ${JSON.stringify(CATS.egreso)}.
-- cat_ingreso: una de ${JSON.stringify(CATS.ingreso)}.`;
-  }
-
-  /* ---------- foto ---------- */
-  let mode = "", blob = null, draft = null, pTipo = "auto";
-  const openPicker = (id, m) => { mode = m; $(id).value = ""; $(id).click(); };
-  document.querySelectorAll("#v-camara [data-cam]").forEach(b => b.onclick = () => openPicker("camIn", b.dataset.cam));
-  document.querySelectorAll("#v-camara [data-gal]").forEach(b => b.onclick = () => openPicker("galIn", b.dataset.gal));
-  $("cOtra").onclick = () => openPicker("camIn", mode || "ticket");
-  $("cFotoX").onclick = () => { $("cFoto").hidden = true; };
-
-  async function shrink(file){
-    const img = new Image(); img.src = URL.createObjectURL(file); await img.decode();
-    const k = Math.min(1, 1400 / Math.max(img.naturalWidth, img.naturalHeight)), c = document.createElement("canvas");
-    c.width = Math.round(img.naturalWidth * k); c.height = Math.round(img.naturalHeight * k);
-    c.getContext("2d").drawImage(img, 0, 0, c.width, c.height);
-    return new Promise((res, rej) => c.toBlob(b => b ? res(b) : rej(new Error("blob")), "image/jpeg", 0.85));
-  }
-  async function handleFile(f){
-    if (!f) return;
-    $("cManual").hidden = true; $("cFoto").hidden = false; $("cFood").hidden = true; $("cMoney").hidden = true;
-    $("cSave").disabled = true; $("cCtx").value = ""; $("cFotoT").textContent = mode === "comida" ? "Comida" : "Ticket"; draft = null;
-    setStatus($("cStatus"), "Preparando foto…");
-    try{ blob = await shrink(f); $("cShot").src = URL.createObjectURL(blob); }
-    catch(e){ setStatus($("cStatus"), "No pude abrir la foto. Intenta con otra.", "err"); return; }
-    $("cFoto").scrollIntoView({ behavior:"smooth", block:"start" });
-    if (mode === "comida"){ $("cCtxBox").hidden = false; $("cCalc").textContent = "Calcular"; setStatus($("cStatus"), "Agrega contexto si quieres y toca Calcular."); }
-    else { $("cCtxBox").hidden = true; analyze(); }
-  }
-  $("camIn").onchange = () => handleFile($("camIn").files[0]);
-  $("galIn").onchange = () => handleFile($("galIn").files[0]);
-  $("cCalc").onclick = () => analyze();
-
-  async function analyze(){
-    if (!blob) return;
-    $("cSave").disabled = true; $("cCalc").disabled = true;
-    setStatus($("cStatus"), "Fede está viendo la foto…", "esperando");
-    try{ draft = await askJSON(photoPrompt($("cCtx").value.trim()), blob, $("cStatus")); draft.tipo = norm(draft.tipo || "otro"); showDraft(); }
-    catch(e){ setStatus($("cStatus"), e.message === "tiempo" ? "Fede no contestó a tiempo. ¿Está prendida la compu?" : "No pude analizar la foto. Intenta de nuevo.", "err"); }
-    finally{ $("cCalc").disabled = false; }
-  }
-  const autoDir = () => draft && draft.tipo === "transferencia" && norm(draft.direccion) === "ingreso" ? "ingreso" : "egreso";
-  const curDir = () => pTipo === "auto" ? autoDir() : pTipo;
-  function drawTipo(){
-    pressed($("pTipo"), pTipo);
-    const d = curDir();
-    $("pTipoHint").textContent = pTipo === "auto" ? (draft.tipo === "transferencia" ? "Auto: " + d + " (transferencia " + (d === "ingreso" ? "recibida" : "enviada") + ")." : "Auto: egreso (ticket de compra).") : "";
-    $("pPayLbl").textContent = d === "ingreso" ? "Entró a" : "Forma de pago";
-    const want = d === "ingreso" ? draft.cat_ingreso : draft.cat_egreso, cur = $("pCat").value;
-    fillCats($("pCat"), d, (CATS[d] || []).includes(cur) && $("pCat").dataset.dir === d ? cur : want, false);
-    $("pCat").dataset.dir = d;
-  }
-  $("pTipo").onclick = e => { const b = e.target.closest("button"); if (b && draft){ pTipo = b.dataset.t; drawTipo(); } };
-  function showDraft(){
-    const t = draft.tipo;
-    if (t === "comida"){
-      $("cFotoT").textContent = "Comida"; $("cMoney").hidden = true; $("cFood").hidden = false; $("cCtxBox").hidden = false; $("cCalc").textContent = "Recalcular con contexto";
-      $("fComida").value = draft.comida || ""; $("fKcal").value = Math.round(Number(draft.kcal) || 0); $("fProt").value = Math.round(Number(draft.proteina) || 0);
-      $("fFecha").value = today(); $("fHora").value = nowHM();
-      $("cSave").textContent = "Guardar en Tracker"; $("cSave").disabled = false;
-      setStatus($("cStatus"), mode === "ticket" ? "La foto parece comida. Se guarda en Tracker." : "Revisa y guarda.");
-    } else if (t === "ticket" || t === "transferencia"){
-      $("cFotoT").textContent = t === "ticket" ? "Ticket" : "Transferencia"; $("cFood").hidden = true; $("cCtxBox").hidden = true; $("cMoney").hidden = false;
-      pTipo = "auto"; $("pCat").dataset.dir = "";
-      $("pConcepto").value = draft.concepto || ""; $("pMonto").value = Math.abs(Number(draft.monto) || 0) || "";
-      $("pFecha").value = isDate(draft.fecha) ? draft.fecha : today(); $("pHora").value = isTime(draft.hora) ? draft.hora.padStart(5, "0") : nowHM(); $("pNota").value = "";
-      const m = norm(draft.metodo); photoPay.set(["efectivo","debito","credito"].includes(m) ? m : "");
-      drawTipo(); $("cSave").textContent = "Guardar en Finanzas"; $("cSave").disabled = false;
-      setStatus($("cStatus"), mode === "comida" ? "La foto parece " + (t === "ticket" ? "un ticket" : "una transferencia") + ". Se guarda en Finanzas." : "Revisa y guarda.");
-    } else {
-      $("cFood").hidden = true; $("cMoney").hidden = true;
-      setStatus($("cStatus"), "No reconocí comida, ticket ni transferencia. Toma otra foto.", "err");
-    }
-  }
-  async function saveMov(statusEl, m){
-    await anexar(PASTA_ID, "Movimientos!A1", [[m.fecha, m.hora || "", m.concepto, m.cat, m.cuenta, Math.round(m.monto * 100) / 100, m.nota || "", m.origen, newId(m.origen === "Foto" ? "f" : "q")]]);
-    lsSet("acc_" + m.metodo, m.cuenta);
-    setStatus(statusEl, "Guardado en Finanzas: " + m.concepto + " · " + m.cat + " · " + money(m.monto) + " · " + m.cuenta + ".", "ok");
-  }
-  function checkMoney(statusEl, v){
-    if (!(v.amt > 0)){ setStatus(statusEl, "Escribe el monto.", "err"); return false; }
-    if (!v.pay.metodo){ setStatus(statusEl, "Elige la forma de pago.", "err"); return false; }
-    if (!v.pay.cuenta){ setStatus(statusEl, "No encontré una cuenta de " + v.pay.metodo + " en Finanzas.", "err"); return false; }
-    if (!isDate(v.fecha)){ setStatus(statusEl, "Elige la fecha.", "err"); return false; }
-    return true;
-  }
-  $("cSave").onclick = async () => {
-    if (!draft) return;
-    const st = $("cStatus"); $("cSave").disabled = true;
-    try{
-      if (draft.tipo === "comida"){
-        setStatus(st, "Guardando…");
-        await anexar(TRACK_ID, "Comidas!A1", [["'" + ($("fFecha").value || today()), "'" + ($("fHora").value || nowHM()), "'" + $("fComida").value.trim(), Number($("fKcal").value) || 0, Number($("fProt").value) || 0, "'Foto"]]);
-        setStatus(st, "Guardado en Tracker: " + $("fComida").value.trim() + " · " + (Number($("fKcal").value) || 0) + " kcal · " + (Number($("fProt").value) || 0) + " g de proteína.", "ok");
-      } else {
-        const dir = curDir(), v = { amt:Math.abs(Number($("pMonto").value)), pay:photoPay.get(), fecha:$("pFecha").value };
-        if (!checkMoney(st, v)){ $("cSave").disabled = false; return; }
-        setStatus(st, "Guardando…");
-        await saveMov(st, { fecha:v.fecha, hora:$("pHora").value, concepto:$("pConcepto").value.trim() || $("pCat").value, cat:$("pCat").value,
-          cuenta:v.pay.cuenta, metodo:v.pay.metodo, monto:dir === "ingreso" ? v.amt : -v.amt, nota:$("pNota").value.trim(), origen:"Foto" });
-      }
-    }catch(e){ setStatus(st, "No se guardó. Revisa tu conexión y vuelve a intentar.", "err"); $("cSave").disabled = false; }
-  };
-
-  /* ---------- movimiento manual ---------- */
-  let mTipo = "egreso";
-  function drawManual(){
-    pressed($("mTipo"), mTipo); $("mPayLbl").textContent = mTipo === "ingreso" ? "Entró a" : "Forma de pago";
-    const cur = $("mCat").value; fillCats($("mCat"), mTipo, (CATS[mTipo] || []).includes(cur) ? cur : "", true);
-  }
-  document.querySelectorAll("#v-camara [data-manual]").forEach(b => b.onclick = () => {
-    mTipo = b.dataset.manual; $("cFoto").hidden = true; $("cManual").hidden = false;
-    if (!$("mFecha").value) $("mFecha").value = today();
-    $("mCat").value = ""; drawManual(); setStatus($("mStatus"), "");
-    $("cManual").scrollIntoView({ behavior:"smooth", block:"start" }); $("mConcepto").focus();
-  });
-  $("mTipo").onclick = e => { const b = e.target.closest("button"); if (b){ mTipo = b.dataset.t; drawManual(); } };
-  $("cManualX").onclick = () => { $("cManual").hidden = true; };
-  $("mSave").onclick = async () => {
-    const st = $("mStatus"), raw = $("mConcepto").value.trim();
-    if (!raw){ setStatus(st, "Escribe el concepto.", "err"); return; }
-    let amt = Math.abs(Number($("mMonto").value)), cat = $("mCat").value;
-    const v = { amt:amt || 1, pay:manualPay.get(), fecha:$("mFecha").value };
-    if (!checkMoney(st, v)) return;
-    $("mSave").disabled = true;
-    try{
-      if (!cat || !amt){
-        setStatus(st, "Fede está acomodando el movimiento…", "esperando");
-        const r = await askJSON(`Clasifica este movimiento de dinero de tipo ${mTipo}. Texto del usuario: "${raw.replace(/"/g, "'")}".
-Responde SOLO JSON: {"categoria":"una de ${JSON.stringify(CATS[mTipo])}","monto":número positivo si el texto menciona una cantidad, si no 0}`, null, st);
-        if (!cat) cat = (CATS[mTipo] || []).includes(r && r.categoria) ? r.categoria : OTHER[mTipo];
-        if (!amt) amt = Math.abs(Number(r && r.monto)) || 0;
-      }
-      if (!(amt > 0)){ setStatus(st, "Escribe el monto.", "err"); return; }
-      setStatus(st, "Guardando…");
-      await saveMov(st, { fecha:v.fecha, hora:nowHM(), concepto:raw.charAt(0).toUpperCase() + raw.slice(1), cat, cuenta:v.pay.cuenta, metodo:v.pay.metodo,
-        monto:mTipo === "ingreso" ? amt : -amt, nota:$("mNota").value.trim(), origen:"Manual" });
-      $("mConcepto").value = ""; $("mMonto").value = ""; $("mNota").value = ""; $("mCat").value = "";
-    }catch(e){ setStatus(st, "No se guardó. Revisa tu conexión y vuelve a intentar.", "err"); }
-    finally{ $("mSave").disabled = false; }
-  };
-
-  /* ---------- comida escrita ---------- */
-  const GOAL = { deficit:300, prot:120 }; // comida: déficit de 300 kcal o más contra lo quemado (WHOOP); proteína: 120 g o más
-  const fmt = n => Math.round(Number(n) || 0).toLocaleString("es-MX");
-  const numero = v => Number(String(v == null ? "" : v).replace(/[^\d.-]/g, "")) || 0;
-  const sumOf = (list, k) => list.reduce((s, x) => s + (Number(x[k]) || 0), 0);
-  let tItems = [];
-  /* Mis comidas: los mismos valores que en Tracker (src/tracker.html, RECETAS). Si cambias uno, cambia los dos. */
-  const MIAS = [
-    { n:"Sandwich fit", d:"1 pan de 45 kcal, 1 rebanada de panela FUD, 1 de jamón de pavo HCF", kcal:166, prot:10 },
-    { n:"Ensalada", d:"50 g de feta Laclette, lata de elote, lata de garbanzos, puño de espinacas", kcal:527, prot:28 },
-    { n:"Atún con elote", d:"lata de atún Tuny doble y lata de elote", kcal:390, prot:53 },
-    { n:"Saladitas", d:"1 sobre de 3 galletas", kcal:50, prot:1 }];
-  const miasTxt = () => "Comidas de siempre de Pato. Si menciona una (aunque sea con otras palabras, ej. «mi sándwich», «la ensalada de siempre», «el atún»), usa EXACTO estos valores por porción y multiplícalos por la cantidad:\n" +
-    MIAS.map(m => `- ${m.n} (${m.d}): ${m.kcal} kcal, ${m.prot} g de proteína`).join("\n") + "\n";
-  $("tMias").innerHTML = MIAS.map((m, i) => '<button type="button" data-mia="' + i + '">' + esc(m.n) + " · " + m.kcal + "</button>").join("");
-  $("tMias").onclick = e => {
-    const b = e.target.closest("[data-mia]"); if (!b) return; const m = MIAS[b.dataset.mia];
-    const ya = m.n === "Saladitas" && tItems.find(x => x.sal);
-    if (ya){ ya.n++; ya.comida = ya.n + " sobres de Saladitas"; ya.kcal = m.kcal * ya.n; ya.prot = m.prot * ya.n; }
-    else tItems.push({ comida:m.n === "Saladitas" ? "1 sobre de Saladitas" : m.n, kcal:m.kcal, prot:m.prot, sal:m.n === "Saladitas", n:1 });
-    if ($("tRes").hidden){ $("tFecha").value = today(); $("tHora").value = nowHM(); $("tNote").hidden = true; $("tRes").hidden = false; }
-    drawItems(); setStatus($("tStatus"), "Revisa y guarda. Puedes agregar más o corregir.");
-  };
-  function textPrompt(txt){
-    const d = new Date(), y = new Date(d.getTime() - 864e5), ymd = x => x.getFullYear() + "-" + p2(x.getMonth() + 1) + "-" + p2(x.getDate());
-    return `Eres nutriólogo. El usuario escribió lo que comió, en español de México:
-"${txt.replace(/"/g, "'")}"
-Hoy es ${ymd(d)} y son las ${nowHM()}.
-Separa cada alimento o bebida en su propio renglón y estima calorías y proteína.
-${miasTxt()}- Si el usuario da calorías o proteína de algo (ej. "3 paquetes de 45 calorías"), usa sus números exactos y multiplícalos por la cantidad.
-- Para lo demás usa porciones y productos típicos de México (latas, paquetes, piezas, tortillas). Cuenta aceite, mayonesa, crema y salsas.
-- Si dice cené, desayuné, comí o snack, empieza el nombre con "Cena: ", "Desayuno: ", "Comida: " o "Snack: ".
-- comida: nombre corto en español con la cantidad, ej. "Cena: 2 latas de atún en agua".
-- fecha: ${ymd(y)} si dice ayer; si no, ${ymd(d)}.
-- hora: HH:MM en 24 h solo si menciona la hora; si no, texto vacío.
-- supuestos: una frase corta con lo que tuviste que suponer; texto vacío si nada.
-Responde SOLO con JSON, sin texto extra:
-{"items":[{"comida":"...","kcal":número,"proteina":gramos}],"fecha":"YYYY-MM-DD","hora":"","supuestos":""}
-Si el texto no describe comida, responde {"items":[]}.`;
-  }
-  const drawTotal = () => { $("tTotal").textContent = fmt(sumOf(tItems, "kcal")) + " kcal · " + fmt(sumOf(tItems, "prot")) + " g proteína"; $("tSave").disabled = !tItems.length; };
-  function drawItems(){
-    $("tItems").innerHTML = tItems.map((it, i) => '<div class="cam-item"><input class="iname" data-i="' + i + '" data-k="comida" value="' + esc(it.comida) + '" aria-label="Alimento">' +
-      '<button class="cam-x" type="button" data-rm="' + i + '" aria-label="Quitar ' + esc(it.comida) + '">×</button>' +
-      '<label class="cam-l">Kcal<input data-i="' + i + '" data-k="kcal" type="number" inputmode="decimal" step="any" value="' + it.kcal + '"></label>' +
-      '<label class="cam-l">Proteína (g)<input data-i="' + i + '" data-k="prot" type="number" inputmode="decimal" step="any" value="' + it.prot + '"></label></div>').join("");
-    drawTotal();
-  }
-  function resetTexto(clear){ tItems = []; $("tRes").hidden = true; $("tItems").innerHTML = ""; $("tCalc").textContent = "Calcular"; if (clear) $("tTexto").value = ""; }
-  $("tItems").addEventListener("input", e => { const el = e.target, it = tItems[Number(el.dataset.i)]; if (!el.dataset.k || !it) return; it[el.dataset.k] = el.dataset.k === "comida" ? el.value : (Number(el.value) || 0); drawTotal(); });
-  $("tItems").addEventListener("click", e => { const b = e.target.closest("[data-rm]"); if (!b) return; tItems.splice(Number(b.dataset.rm), 1);
-    if (tItems.length) drawItems(); else { resetTexto(false); setStatus($("tStatus"), "Quitaste todo. Corrige el texto y vuelve a calcular."); } });
-  $("tClear").onclick = () => { resetTexto(true); setStatus($("tStatus"), ""); $("tDay").hidden = true; };
-  $("tCalc").onclick = async () => {
-    const st = $("tStatus"), txt = $("tTexto").value.trim(); $("tDay").hidden = true;
-    if (!txt){ setStatus(st, "Escribe qué comiste.", "err"); return; }
-    $("tCalc").disabled = true; $("tSave").disabled = true; setStatus(st, "Fede está calculando…", "esperando");
-    try{
-      const r = await askJSON(textPrompt(txt), null, st);
-      const list = (r && Array.isArray(r.items) ? r.items : []).map(x => ({ comida:String((x && x.comida) || "").trim(), kcal:Math.round(Number(x && x.kcal) || 0), prot:Math.round(Number(x && x.proteina) || 0) })).filter(x => x.comida);
-      if (!list.length){ resetTexto(false); setStatus(st, "No encontré comida en el texto. Escribe qué comiste y cuánto.", "err"); return; }
-      tItems = list; drawItems();
-      $("tFecha").value = isDate(r.fecha) ? r.fecha : today(); $("tHora").value = isTime(r.hora) ? String(r.hora).padStart(5, "0") : nowHM();
-      const sup = String(r.supuestos || "").trim(); $("tNote").textContent = sup ? "Supuestos: " + sup : ""; $("tNote").hidden = !sup;
-      $("tRes").hidden = false; $("tCalc").textContent = "Recalcular"; setStatus(st, "Revisa y guarda. Puedes corregir cualquier número.");
-    }catch(e){ setStatus(st, e.message === "tiempo" ? "Fede no contestó a tiempo. ¿Está prendida la compu?" : "No pude calcular. Intenta de nuevo.", "err"); }
-    finally{ $("tCalc").disabled = false; }
-  };
-  $("tSave").onclick = async () => {
-    const st = $("tStatus"), items = tItems.map(x => ({ comida:String(x.comida).trim(), kcal:Number(x.kcal) || 0, prot:Number(x.prot) || 0 })).filter(x => x.comida);
-    if (!items.length){ setStatus(st, "No hay nada que guardar.", "err"); return; }
-    const fecha = isDate($("tFecha").value) ? $("tFecha").value : today(), hora = $("tHora").value || "";
-    $("tSave").disabled = true; $("tCalc").disabled = true; setStatus(st, "Guardando…");
-    try{ await anexar(TRACK_ID, "Comidas!A1", items.map(x => ["'" + fecha, hora ? "'" + hora : "", "'" + x.comida, x.kcal, x.prot, "'Texto"])); }
-    catch(e){ setStatus(st, "No se guardó. Revisa tu conexión y vuelve a intentar.", "err"); $("tSave").disabled = false; $("tCalc").disabled = false; return; }
-    setStatus(st, "Guardado en Tracker: " + items.length + (items.length === 1 ? " alimento" : " alimentos") + " · " + fmt(sumOf(items, "kcal")) + " kcal · " + fmt(sumOf(items, "prot")) + " g de proteína.", "ok");
-    resetTexto(true); $("tCalc").disabled = false; showDay(fecha);
-  };
-  async function showDay(fecha){
-    const box = $("tDay"); box.hidden = true; box.textContent = "";
-    try{
-      const [rows, wh] = await Promise.all([leerH(TRACK_ID, "Comidas!A2:F"), leerH(TRACK_ID, "Whoop!A2:K").catch(() => [])]); let k = 0, p = 0;
-      rows.forEach(r => { if (r && String(r[0] || "").replace(/^'/, "").trim() === fecha){ k += numero(r[3]); p += numero(r[4]); } });
-      const w = wh.find(r => r && String(r[0] || "").replace(/^'/, "").trim() === fecha), quemado = w ? numero(w[10]) : 0;
-      const head = (fecha === today() ? "Hoy llevas " : "Ese día llevas ") + fmt(k) + " kcal · " + fmt(p) + " g de proteína";
-      // Meta de comida: déficit de 300 kcal o más contra lo quemado según WHOOP
-      const kTxt = !quemado ? "Todavía no llega de WHOOP lo que quemaste ese día."
-        : k <= quemado - GOAL.deficit ? "Déficit de " + fmt(quemado - k) + " kcal (quemaste " + fmt(quemado) + "): meta cumplida."
-        : "Para tu déficit de " + GOAL.deficit + " te pasaste por " + fmt(k - (quemado - GOAL.deficit)) + " kcal (quemaste " + fmt(quemado) + ").";
-      const pTxt = p >= GOAL.prot ? "Proteína cumplida: " + fmt(p) + " g de " + GOAL.prot + " g." : "Te faltan " + fmt(GOAL.prot - p) + " g de proteína para llegar a " + GOAL.prot + " g.";
-      [head, kTxt, pTxt].forEach((t, i) => { const el = document.createElement(i ? "span" : "strong"); el.textContent = t; box.appendChild(el); });
-      box.hidden = false;
-    }catch(e){}
-  }
-
-  if (cfg()) loadPasta();
-})();
-
 
 /* ---------- El anillo de Fede (logo): tocar = Fede escucha; tocar otra vez = ya acabé; ✕ = que se calle ----------
    Es el anillo Aurora de la compu, en todas las pestañas. Sin pantallas: lo que pasa se ve en el anillo y en una pastilla junto a él.
