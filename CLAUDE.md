@@ -61,7 +61,7 @@ Cada uno lleva quién lo destraba y una estimación de tiempo (sale del promedio
 | C3 | Revisar «Gastado desde el inicio» = 1520.5 en Config de Finanzas | 10 min |
 | C4 | Respaldo de Ideas (post-its) en Sheets; hoy solo viven en el teléfono | 20 min |
 | C5 | La lista de calendarios del editor de eventos sale de los eventos copiados; un calendario sin eventos en ±2 meses no aparece (atajo, `index.html` abrirEv) | 10 min |
-| C6 | Pestaña **Cam** (HECHA 19 nov, commit ec718c3). Falta: 1) que camara.pyw arranque con Windows (no me dejaron crear el acceso directo en Inicio; Pato decide), 2) la prueba salió en negro: tapa cerrada o tapita de la cámara | 5 min |
+| C6 | **HECHA 20 nov:** Pestaña Cam funcionando. camara.pyw arranca con Windows (acceso directo «Pato cam JLP» en Inicio); probado con cuadro real | — |
 | C7 | Fede rápido para cosas fáciles: cerebro rápido (Haiku por API o modelo local) además del Sonnet con manos. Medido 19 nov: cerebro 1.5–5.5 s, ElevenLabs flash 0.3 s, v3 2.7 s por frase | 30 min (espera decisión de Pato) |
 | C8 | **HECHA 19 nov (commit 1c45294):** Condotec › Edificio: al tocar un depa se abre su ficha con inquilino y responsable de pago (tocar el nombre abre su WhatsApp; si no hay teléfono, dice «Faltante»), renta, día de pago, entrada, salida, meses pagados, meses que faltan y la lista de pendientes de ese depa (19 nov) | 25 min |
 
@@ -167,4 +167,5 @@ Hoy, al tocar un depa, solo cambia el cuadrito de abajo (`detalleUni` en `index.
 - Se quitó el calendario semanal.
 
 **Otros**
+- 20 nov: WHOOP se copia cada 15 min (antes cada hora); Cam arranca sola con Windows.
 - Suscripciones investigadas: unos $6,079 al mes en total (falta P2).
