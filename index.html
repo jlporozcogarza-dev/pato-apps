@@ -239,6 +239,12 @@ button.evento:active{filter:brightness(1.15)}
 .evento .ev-cuerpo b{display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;overflow:hidden}
 .evento .ev-cuerpo small{white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
 .evento .ev-cuerpo .ev-nota{white-space:normal;display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;overflow:hidden}
+.ev-tarea{cursor:pointer;transition:opacity .25s,transform .25s}
+.ev-tarea.se-va{opacity:0;transform:translateX(24px)}
+.ev-chk{flex:none;width:30px;height:30px;margin:-3px 0 0;border-radius:50%;padding:0;display:grid;place-items:center;cursor:pointer;
+  border:2px solid var(--col);background:transparent;color:transparent}
+.ev-chk svg{width:16px;height:16px;fill:none;stroke:currentColor;stroke-width:2.6;stroke-linecap:round;stroke-linejoin:round}
+.ev-chk:active{background:var(--col);color:#111}
 .evento::after{content:"›";align-self:center;color:var(--muted);font-size:20px;flex:none;margin-left:-4px}
 #v-pendientes,#v-inicio{overflow-x:hidden}
 /* ficha de un evento: toda la info */
@@ -1113,6 +1119,28 @@ const verCat = k => filtrosCal.has(k), colCat = k => (CATS_CAL.find(c => c[0] ==
 const catEvento = e => /condotec/i.test(e.c || "") ? "condo" : /\b(tec|trabajo|ternium)\b/i.test(e.c || "") ? "tec" : "personal";
 const catTarea = t => /\btec\b|ternium|tarea|clase|examen|parcial|proyecto|entrega|profe|materia/i.test(t.t + " " + (t.det || "")) ? "tec" : "personal";
 const tareasDe = dia => conCola(TAR || []).filter(t => t.estado !== "hecha" && t.fecha === dia && verCat(catTarea(t)));
+/* Colores del calendario: cumpleaños rosa · rutinas (Ternium, Tec, lo que se repite) azul · tareas urgentes rojo · tareas normales amarillo ·
+   Condotec gris · lo demás verde. Los filtros (Personal/Tec/Condotec) siguen igual. */
+const COL = { cumple:"#FF5FA2", rutina:"var(--st-info)", urgente:"var(--st-crit)", tarea:"#F7C948", condo:"var(--st-neutro)", otro:"var(--st-ok)" };
+let rutinasMemo = { ref:null, set:new Set() };
+function esRutina(e){
+  const lista = (AG && AG.eventos) || [];
+  if (rutinasMemo.ref !== lista){   // un título que sale en 3 días distintos o más = rutina
+    const dias = new Map();
+    lista.forEach(x => { const k = (x.t || "").trim().toLowerCase(); if (!dias.has(k)) dias.set(k, new Set()); dias.get(k).add(x.i.slice(0, 10)); });
+    rutinasMemo = { ref:lista, set:new Set([...dias].filter(([, d]) => d.size >= 3).map(([k]) => k)) };
+  }
+  return rutinasMemo.set.has((e.t || "").trim().toLowerCase());
+}
+function colEvento(e){
+  if (/cumplea|birthday/i.test((e.c || "") + " " + (e.t || "")) || /#contacts/.test(e.cid || "")) return COL.cumple;
+  const k = catEvento(e);
+  if (k === "condo") return COL.condo;
+  if (k === "tec" || esRutina(e)) return COL.rutina;
+  return COL.otro;
+}
+const tareaUrgente = t => (t.fecha && t.fecha <= hoy) || /urgente/i.test((t.t || "") + " " + (t.det || ""));
+const colTarea = t => tareaUrgente(t) ? COL.urgente : COL.tarea;
 function pintarFiltrosCal(){
   $("calFiltros").innerHTML = CATS_CAL.map(([k, n, col]) => `<button data-filtro="${k}" aria-pressed="${verCat(k)}" style="--col:${col}"><i></i>${n}</button>`).join("");
 }
@@ -1242,6 +1270,12 @@ function verEv(n){
 $("evVerEditar").onclick = () => { const n = evVerN; cerrarHojas(); setTimeout(() => abrirEv(n), 250); };
 $("agDia").addEventListener("click", e => {
   const b = e.target.closest("[data-ev]"); if (b) return verEv(+b.dataset.ev);
+  const ok = e.target.closest("[data-cal-hecha]");
+  if (ok){   // palomita en el calendario: se va al instante; la hoja y Google se actualizan por detrás
+    const fila = ok.closest(".evento"); fila.classList.add("se-va"); if (navigator.vibrate) navigator.vibrate(12);
+    setTimeout(() => { cambiarTarea(ok.dataset.calHecha, "hecha"); pintarTareas(true); }, 260);
+    return;
+  }
   const t = e.target.closest("[data-tarea-cal]"); if (t && typeof abrirTarea === "function") abrirTarea(t.dataset.tareaCal);
 });
 /* Editar y borrar se ven AL INSTANTE: el cambio se aplica en el teléfono (jlp-ev-local) y Google Calendar se actualiza por detrás.
@@ -1310,9 +1344,9 @@ function pintarCal(){
   $("calMes").textContent = primero.toLocaleDateString("es-MX", { month:"long", year:"numeric" }).replace(/^./, c => c.toUpperCase());
   $("calDias").innerHTML = [...Array(celdas)].map((_, i) => {
     const d = sumaDias(inicio, i), ev = eventosDe(d).slice(0, 3), pe = pendDe(d), ta = tareasDe(d);
-    const puntos = ev.map(e => `<i style="--col:${colCat(catEvento(e))}"></i>`).join("")
-      + ta.slice(0, 2).map(t => `<i style="--col:${d < hoy ? "var(--st-crit)" : colCat(catTarea(t))}"></i>`).join("")
-      + (pe.length ? `<i style="--col:${d < hoy ? "var(--st-crit)" : colCat("condo")}"></i>` : "");
+    const puntos = ev.map(e => `<i style="--col:${colEvento(e)}"></i>`).join("")
+      + ta.slice(0, 2).map(t => `<i style="--col:${colTarea(t)}"></i>`).join("")
+      + (pe.length ? `<i style="--col:${d <= hoy || pe.some(p => /alta/i.test(p.prioridad || "")) ? COL.urgente : COL.tarea}"></i>` : "");
     const cls = ["dia", d.slice(0, 7) !== agMes && "fuera", d === hoy && "hoy", d === agSel && "sel"].filter(Boolean).join(" ");
     return `<button class="${cls}" data-dia="${d}" aria-label="${corto(d)}${ev.length ? ", " + ev.length + " eventos" : ""}"><span>${+d.slice(8)}</span><span class="puntos">${puntos}</span></button>`;
   }).join("");
@@ -1324,10 +1358,11 @@ function pintarDia(){
   const ev = eventosDe(agSel), pe = pendDe(agSel), ta = tareasDe(agSel);
   evDia = ev;
   let h = ev.map((e, n) => { const tag = `button data-ev="${n}"`;   // todos se abren; los de solo lectura no traen Editar
-    return `<${tag} class="evento" style="--col:${colCat(catEvento(e))}"><span class="barra"></span><span class="hora">${e.dia ? "Todo el día" : esc(e.i.slice(11, 16))}</span>` +
+    return `<${tag} class="evento" style="--col:${colEvento(e)}"><span class="barra"></span><span class="hora">${e.dia ? "Todo el día" : esc(e.i.slice(11, 16))}</span>` +
       `<span class="ev-cuerpo"><b>${esc(e.t)}</b><small>${esc([e.c, lugarCorto(e.l)].filter(Boolean).join(" · "))}</small>${e.d ? `<small class="ev-nota">${esc(sinUrls(e.d))}</small>` : ""}</span></${tag.split(" ")[0]}>`; }).join("");
-  h += ta.map(t => `<button class="evento" data-tarea-cal="${esc(t.id)}" style="--col:${colCat(catTarea(t))}"><span class="barra"></span><span class="hora">Tarea</span>` +
-    `<span class="ev-cuerpo"><b>${esc(t.t)}</b><small>${esc(t.det || (catTarea(t) === "tec" ? "Tec" : "Personal"))}</small></span></button>`).join("");
+  h += ta.map(t => `<div class="evento ev-tarea" role="button" tabindex="0" data-tarea-cal="${esc(t.id)}" style="--col:${colTarea(t)}"><span class="barra"></span>` +
+    `<button class="ev-chk" data-cal-hecha="${esc(t.id)}" aria-label="Marcar como hecha: ${esc(t.t)}"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M5 12.5l4.5 4.5L19 7.5"/></svg></button>` +
+    `<span class="ev-cuerpo"><b>${esc(t.t)}</b><small>${esc((tareaUrgente(t) ? "Urgente · " : "Tarea · ") + (t.det || (catTarea(t) === "tec" ? "Tec" : "Personal")))}</small></span></div>`).join("");
   h += pe.map(p => `<button class="renglon at" data-pend="${esc(p.n)}"><div class="arriba"><b>${esc(p.n)}. ${esc(p.texto)}</b><span class="marca t-${agSel < hoy ? "rojo" : "gris"}">vence</span></div>${p.depas ? `<p>${esc(p.depas)}</p>` : ""}</button>`).join("");
   if (!h) h = AG && AG.eventos == null
     ? '<p class="nota">Tu Google Calendar todavía no llega al server: falta publicar el puente en Apps Script (Implementar → Versión nueva).</p>'
@@ -1515,8 +1550,8 @@ function encolar(op){
   colaT = colaT.filter(o => !(o.id === op.id && tipoOp(o) === tipoOp(op) && tipoOp(op) !== "nueva")).concat(op); lsPoner(LSTC, colaT);
   const c = cfg(); if (c) enviarCola(c);
 }
-function cambiarTarea(id, estado){ encolar({ tipo:"estado", id, estado, hecha:estado === "hecha" ? ahoraTxt() : "" }); }
-function ponerFecha(id, fecha){ encolar({ tipo:"fecha", id, fecha:fecha || "" }); pintarTareas(true); }
+function cambiarTarea(id, estado){ encolar({ tipo:"estado", id, estado, hecha:estado === "hecha" ? ahoraTxt() : "" }); if (AG){ pintarCal(); pintarDia(); } }
+function ponerFecha(id, fecha){ encolar({ tipo:"fecha", id, fecha:fecha || "" }); pintarTareas(true); if (AG){ pintarCal(); pintarDia(); } }
 
 /* Agregar: el título basta; la descripción es para que Fede sepa qué tan pesada es y la acomode (nivel 1-5). */
 let fechaNueva = "";
