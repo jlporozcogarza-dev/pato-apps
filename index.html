@@ -267,6 +267,24 @@ button.evento:active{filter:brightness(1.15)}
 .uni[data-e=duda]::after{content:"?";color:var(--muted)}
 .uni:active{transform:scale(.9)}
 .uni.sel{box-shadow:0 0 0 2px var(--c60),0 0 0 4px var(--fg)}
+#hojaDepa .marca{font-size:12px}
+.dp-caja{margin-top:12px;padding:12px 14px;border-radius:16px;background:rgba(255,255,255,.05);border:1px solid rgba(255,255,255,.08);display:flex;flex-direction:column;gap:8px}
+.dp-fila{display:flex;justify-content:space-between;align-items:baseline;gap:12px;font-size:15px}
+.dp-fila>span{color:var(--muted);font-size:13px;flex:none}
+.dp-fila b{font-weight:600;text-align:right}
+.dp-wa{color:var(--c10);font-weight:600;text-align:right;text-decoration:none}
+.dp-wa::after{content:" ↗";font-size:12px;opacity:.7}
+.dp-falta{color:var(--muted);font-style:normal;font-size:13px;padding:2px 8px;border-radius:999px;border:1px dashed rgba(255,255,255,.2)}
+.dp-datos{display:grid;grid-template-columns:1fr 1fr;gap:10px 14px}
+.dp-datos div{display:flex;flex-direction:column;gap:2px}
+.dp-datos span,.dp-nec span{color:var(--muted);font-size:12px}
+.dp-datos b{font-size:15px;font-weight:600;font-variant-numeric:tabular-nums}
+.dp-nec{margin:0;font-size:14px;line-height:1.4;display:flex;flex-direction:column;gap:2px}
+.dp-t{margin:18px 2px 6px;font:700 16px var(--display)}
+.dp-pend{margin:0;padding:0;list-style:none;display:flex;flex-direction:column;gap:8px}
+.dp-pend li{padding:10px 12px;border-radius:14px;background:rgba(255,255,255,.04);border:1px solid rgba(255,255,255,.07);display:flex;flex-direction:column;gap:2px;font-size:14px}
+.dp-pend small{color:var(--muted)}
+#hojaDepa .uni-botones{margin-top:14px}
 .uni-detalle{margin-top:12px;padding:12px 14px;border-radius:16px;background:rgba(255,255,255,.05);border:1px solid rgba(255,255,255,.08);min-height:62px}
 .uni-detalle .arriba{display:flex;justify-content:space-between;align-items:center;gap:10px}
 .uni-detalle b{font:700 20px/1 var(--display)}
@@ -737,6 +755,12 @@ input[type=checkbox]{accent-color:var(--c10)}
 </div>
 <button class="colores-flota glass" id="abrirColores2" aria-label="Colores de esta pestaña" title="Colores de esta pestaña"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><circle cx="12" cy="12" r="9"/><circle cx="8.5" cy="9.5" r="1.4" fill="currentColor"/><circle cx="12.5" cy="7.5" r="1.4" fill="currentColor"/><circle cx="16" cy="10.5" r="1.4" fill="currentColor"/><path d="M12 21a2.5 2.5 0 0 1 0-5h2a3 3 0 0 0 3-3"/></svg></button>
 <div class="velo" id="velo"></div>
+<section class="hoja" id="hojaDepa" role="dialog" aria-modal="true" aria-labelledby="depaTitulo" aria-hidden="true">
+  <div class="asa" aria-hidden="true"></div>
+  <button class="cerrar-hoja" data-cerrar-hoja aria-label="Cerrar"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round"><path d="M6 6l12 12M18 6L6 18"/></svg></button>
+  <h2 id="depaTitulo"></h2>
+  <div id="depaCuerpo"></div>
+</section>
 <section class="hoja" id="hojaUni" role="dialog" aria-modal="true" aria-labelledby="uniTitulo" aria-hidden="true">
   <div class="asa" aria-hidden="true"></div>
   <button class="cerrar-hoja" data-cerrar-hoja aria-label="Cerrar"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round"><path d="M6 6l12 12M18 6L6 18"/></svg></button>
@@ -1418,6 +1442,51 @@ function detalleUni(u){
       ? `<div class="uni-pregunta"><b>¿Esta información está bien?</b><div class="uni-botones"><button data-uni-ok="${esc(u.d)}">Sí, está bien</button><button data-uni-cambiar="${esc(u.d)}">Hay que cambiarla</button></div></div>`
       : `<div class="uni-botones"><button data-uni-cambiar="${esc(u.d)}">Cambiar info o estado</button></div>`);
 }
+/* Ficha de un depa al tocarlo: inquilino y responsable de pago (tocar = su WhatsApp), renta, día de pago, entrada,
+   salida, meses que lleva y que faltan, y sus pendientes. Los datos los arma el server (herramienta «depa»). */
+const fichas = {};
+const fechaCorta = iso => iso ? new Date(iso + "T12:00").toLocaleDateString("es-MX", { day:"numeric", month:"short", year:"numeric" }) : "—";
+const contacto = (rol, nombre, wa) => `<div class="dp-fila"><span>${rol}</span>` + (nombre
+  ? (wa ? `<a class="dp-wa" href="https://wa.me/${esc(wa)}" target="_blank" rel="noopener">${esc(nombre)}</a>` : `<b>${esc(nombre)}</b> <i class="dp-falta">Falta su WhatsApp</i>`)
+  : `<i class="dp-falta">Faltante</i>`) + `</div>`;
+function pintarFicha(d, f){
+  const u = aplicarUni((PANEL && PANEL.unidades) || []).find(x => x.d === d) || { d, e:"", q:[] };
+  const nombreE = (ESTADOS.find(e => e[0] === u.e) || [, u.e])[1];
+  let h = `<p class="sub"><span class="marca" data-e="${esc(u.e)}">${esc(nombreE || "")}</span></p>`;
+  if (!f){ $("depaCuerpo").innerHTML = h + '<p class="nota">Cargando la ficha…</p>'; return; }
+  const ps = f.personas.filter(x => x.nombre && !/disponible/i.test(x.estado));
+  if (!ps.length && !f.contactos.length) h += '<p class="nota">Sin inquilino.</p>';
+  // contactos: de la pestaña Inquilinos; si un inquilino de Depas no está ahí, sale con «Falta su WhatsApp»
+  const cs = f.contactos.length ? f.contactos : ps.map(x => ({ nombre:x.nombre, wa:"", responsable:"", wa_resp:"" }));
+  cs.forEach(c => { h += `<div class="dp-caja">${contacto("Inquilino", c.nombre, c.wa)}${contacto("Responsable de pago", c.responsable, c.wa_resp)}</div>`; });
+  ps.forEach(x => {
+    h += `<div class="dp-caja">${ps.length > 1 ? `<div class="dp-fila"><span>Inquilino</span><b>${esc(x.nombre)}</b></div>` : ""}` +
+      `<div class="dp-datos">` +
+      `<div><span>Renta</span><b>${x.renta ? pesos(x.renta) + "/mes" : "—"}</b></div>` +
+      `<div><span>Día de pago</span><b>${esc(x.dia_pago || "—")}</b></div>` +
+      `<div><span>Entró</span><b>${fechaCorta(x.entrada)}</b></div>` +
+      `<div><span>Sale</span><b>${fechaCorta(x.salida)}</b></div>` +
+      `<div><span>Meses que lleva</span><b>${x.lleva ?? "—"}</b></div>` +
+      `<div><span>Meses que faltan</span><b>${x.faltan ?? "—"}</b></div></div>` +
+      (x.necesidades ? `<p class="dp-nec"><span>Necesidades</span>${esc(x.necesidades)}</p>` : "") + `</div>`;
+  });
+  h += `<h3 class="dp-t">Pendientes del depa</h3>` + (f.pendientes.length
+    ? `<ul class="dp-pend">${f.pendientes.map(p => `<li><b>${esc(p.texto)}</b>${[p.prioridad, p.fecha, p.estado].filter(Boolean).length ? `<small>${esc([p.prioridad, p.fecha, p.estado].filter(Boolean).join(" · "))}</small>` : ""}</li>`).join("")}</ul>`
+    : '<p class="nota">Sin pendientes abiertos.</p>');
+  h += `<div class="uni-botones">${u.e === "duda" ? `<button data-uni-ok="${esc(d)}">Sí, la info está bien</button>` : ""}<button data-uni-cambiar="${esc(d)}">Cambiar info o estado</button></div>` +
+    `<p class="nota">«Meses que lleva» cuenta desde la entrada; la hoja no tiene registro de pagos por depa.</p>`;
+  $("depaCuerpo").innerHTML = h;
+}
+async function abrirDepa(d){
+  $("depaTitulo").textContent = d; pintarFicha(d, fichas[d]); hoja($("hojaDepa"), true);
+  const c = cfg(); if (!c) return;
+  try{ fichas[d] = await api(c, "depa", { depa:d, hoy }); if ($("depaTitulo").textContent === d) pintarFicha(d, fichas[d]); }
+  catch(e){ if (!fichas[d]) $("depaCuerpo").insertAdjacentHTML("beforeend", `<p class="nota">No pude cargar la ficha: ${esc(e.message)}</p>`); }
+}
+$("depaCuerpo").addEventListener("click", e => {
+  const ok = e.target.closest("[data-uni-ok]"); if (ok){ cerrarHojas(); return confirmarUni(ok.dataset.uniOk); }
+  const cam = e.target.closest("[data-uni-cambiar]"); if (cam){ cerrarHojas(); return setTimeout(() => abrirUni(cam.dataset.uniCambiar), 250); }
+});
 /* Confirmar o cambiar la info de un depa: lo hace Fede en Inquilinos › Depas (conector de Google Sheets); mientras, se ve en el teléfono
    (jlp-uni-cambios) y se olvida cuando el server ya lo trae o a los 2 días. */
 const LSUC = "jlp-uni-cambios";
@@ -1538,10 +1607,11 @@ $("panelCuerpo").addEventListener("click", e => {
   const ok = e.target.closest("[data-uni-ok]"); if (ok) return confirmarUni(ok.dataset.uniOk);
   const cam = e.target.closest("[data-uni-cambiar]"); if (cam) return abrirUni(cam.dataset.uniCambiar);
   const b = e.target.closest("[data-uni]"); if (!b || !PANEL) return;
-  uniSel = uniSel === b.dataset.uni ? null : b.dataset.uni; // solo cambia la selección: no se redibuja el mapa
+  uniSel = b.dataset.uni; // tocar un depa lo marca y abre su ficha (no se redibuja el mapa)
   $("panelCuerpo").querySelectorAll(".uni").forEach(x => x.classList.toggle("sel", x.dataset.uni === uniSel));
   $("uniDetalle").innerHTML = detalleUni(aplicarUni(PANEL.unidades || []).find(u => u.d === uniSel));
   panelPintado = JSON.stringify(PANEL) + "|" + uniSel;
+  if (uniSel) abrirDepa(uniSel);
 });
 function cargarPanel(c){
   return api(c, "panel", { hoy }).then(p => { pintarPanel(p); try{ localStorage.setItem(LSPANEL, JSON.stringify(p)); }catch(e){} })
