@@ -278,6 +278,8 @@ button.evento:active{filter:brightness(1.15)}
 .dp-datos{display:grid;grid-template-columns:1fr 1fr;gap:10px 14px}
 .dp-datos div{display:flex;flex-direction:column;gap:2px}
 .dp-datos span,.dp-nec span{color:var(--muted);font-size:12px}
+.dp-meses{font:400 12px var(--sans);color:var(--muted)}
+.dp-si{color:#5fd38d}.dp-no{color:#f0a24a}
 .dp-datos b{font-size:15px;font-weight:600;font-variant-numeric:tabular-nums}
 .dp-nec{margin:0;font-size:14px;line-height:1.4;display:flex;flex-direction:column;gap:2px}
 .dp-t{margin:18px 2px 6px;font:700 16px var(--display)}
@@ -1445,6 +1447,7 @@ function detalleUni(u){
 /* Ficha de un depa al tocarlo: inquilino y responsable de pago (tocar = su WhatsApp), renta, día de pago, entrada,
    salida, meses que lleva y que faltan, y sus pendientes. Los datos los arma el server (herramienta «depa»). */
 const fichas = {};
+const mesCorto = ym => new Date(ym + "-15T12:00").toLocaleDateString("es-MX", { month:"short", year:"2-digit" });
 const fechaCorta = iso => iso ? new Date(iso + "T12:00").toLocaleDateString("es-MX", { day:"numeric", month:"short", year:"numeric" }) : "—";
 const contacto = (rol, nombre, wa) => `<div class="dp-fila"><span>${rol}</span>` + (nombre
   ? (wa ? `<a class="dp-wa" href="https://wa.me/${esc(wa)}" target="_blank" rel="noopener">${esc(nombre)}</a>` : `<b>${esc(nombre)}</b> <i class="dp-falta">Falta su WhatsApp</i>`)
@@ -1455,6 +1458,7 @@ function pintarFicha(d, f){
   let h = nombreE ? `<p class="sub"><span class="marca" data-e="${esc(u.e)}">${esc(nombreE)}</span></p>` : "";
   if (!f){ $("depaCuerpo").innerHTML = h + '<p class="nota">Cargando la ficha…</p>'; return; }
   const ps = f.personas.filter(x => x.nombre && !/disponible/i.test(x.estado));
+  const pg = f.pagos || { meses:[], este_mes:false, desde:null };
   if (!ps.length && !f.contactos.length) h += '<p class="nota">Sin inquilino.</p>';
   // contactos: de la pestaña Inquilinos; si un inquilino de Depas no está ahí, sale con «Falta su WhatsApp»
   const cs = f.contactos.length ? f.contactos : ps.map(x => ({ nombre:x.nombre, wa:"", responsable:"", wa_resp:"" }));
@@ -1466,15 +1470,17 @@ function pintarFicha(d, f){
       `<div><span>Día de pago</span><b>${esc(x.dia_pago || "—")}</b></div>` +
       `<div><span>Entró</span><b>${fechaCorta(x.entrada)}</b></div>` +
       `<div><span>Sale</span><b>${fechaCorta(x.salida)}</b></div>` +
-      `<div><span>Meses que lleva</span><b>${x.lleva ?? "—"}</b></div>` +
-      `<div><span>Meses que faltan</span><b>${x.faltan ?? "—"}</b></div></div>` +
+      `<div><span>Meses pagados</span><b>${pg.meses.length}${pg.meses.length ? ` <small class="dp-meses">${esc(pg.meses.map(mesCorto).join(", "))}</small>` : ""}</b></div>` +
+      `<div><span>¿Pagó este mes?</span><b class="${pg.este_mes ? "dp-si" : "dp-no"}">${pg.este_mes ? "Sí" : "Todavía no"}</b></div>` +
+      `<div><span>Meses que faltan</span><b>${x.faltan ?? "—"}</b></div>` +
+      `<div><span>Meses que lleva</span><b>${x.lleva ?? "—"}</b></div></div>` +
       (x.necesidades ? `<p class="dp-nec"><span>Necesidades</span>${esc(x.necesidades)}</p>` : "") + `</div>`;
   });
   h += `<h3 class="dp-t">Pendientes del depa</h3>` + (f.pendientes.length
     ? `<ul class="dp-pend">${f.pendientes.map(p => `<li><b>${esc(p.texto)}</b>${[p.prioridad, p.fecha, p.estado].filter(Boolean).length ? `<small>${esc([p.prioridad, p.fecha, p.estado].filter(Boolean).join(" · "))}</small>` : ""}</li>`).join("")}</ul>`
     : '<p class="nota">Sin pendientes abiertos.</p>');
   h += `<div class="uni-botones">${u.e === "duda" ? `<button data-uni-ok="${esc(d)}">Sí, la info está bien</button>` : ""}<button data-uni-cambiar="${esc(d)}">Cambiar info o estado</button></div>` +
-    `<p class="nota">«Meses que lleva» cuenta desde la entrada; la hoja no tiene registro de pagos por depa.</p>`;
+    `<p class="nota">Pagos: los que marcas en Fede${pg.desde ? ", registrados desde " + esc(mesCorto(pg.desde)) : ""}. «Meses que lleva» cuenta desde la entrada.</p>`;
   $("depaCuerpo").innerHTML = h;
 }
 async function abrirDepa(d){
