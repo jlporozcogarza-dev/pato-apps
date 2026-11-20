@@ -247,6 +247,12 @@ button.evento:active{filter:brightness(1.15)}
 .ev-ver-meta i{font-style:normal;width:22px;flex:none;text-align:center}
 .ev-ver-nota{white-space:pre-wrap;overflow-wrap:anywhere;font-size:15px;line-height:1.5;margin:0 0 16px;padding:14px;border-radius:16px;background:rgba(255,255,255,.05);border:1px solid rgba(255,255,255,.08)}
 .ev-ver-nota a{color:var(--c10)}
+#avisoFlota{position:fixed;left:16px;right:16px;bottom:calc(96px + env(safe-area-inset-bottom));z-index:400;display:flex;align-items:center;gap:12px;
+  padding:12px 12px 12px 18px;border-radius:18px;background:rgba(30,30,30,.92);color:#fff;font-size:14.5px;box-shadow:0 10px 30px rgba(0,0,0,.4);
+  -webkit-backdrop-filter:blur(20px);backdrop-filter:blur(20px);transform:translateY(20px);opacity:0;pointer-events:none;transition:transform .25s,opacity .25s}
+#avisoFlota.on{transform:none;opacity:1;pointer-events:auto}
+#avisoFlota span{flex:1}
+#avisoFlota button{border:0;background:none;color:var(--c10);font:600 14.5px/1 inherit;padding:8px 6px;cursor:pointer}
 /* página Condotec: ocupación + mapa del edificio */
 /* rentado es lo normal y va en neutro; solo lo que pide atención lleva color de estado, siempre con una marca además del color */
 [data-e=rentado]{--e:color-mix(in srgb,var(--fg) 78%,var(--c60))}[data-e=vence]{--e:var(--st-warn)}[data-e=vencido]{--e:var(--st-crit)}[data-e=duda]{--e:var(--st-neutro)}[data-e=libre]{--e:var(--st-info)}
@@ -1119,7 +1125,7 @@ $("calFiltros").addEventListener("click", e => {
 });
 pintarFiltrosCal();
 function eventosDe(dia){ // los de todo el día cuentan en cada día que abarcan
-  return ((AG && AG.eventos) || []).filter(e => verCat(catEvento(e))).filter(e => e.dia ? e.i.slice(0, 10) <= dia && dia < e.f.slice(0, 10) : e.i.slice(0, 10) === dia)
+  return evConLocal((AG && AG.eventos) || []).filter(e => verCat(catEvento(e))).filter(e => e.dia ? e.i.slice(0, 10) <= dia && dia < e.f.slice(0, 10) : e.i.slice(0, 10) === dia)
     .sort((a, b) => (a.dia ? "" : a.i).localeCompare(b.dia ? "" : b.i));
 }
 /* Pendientes de Condotec editables: tocar uno → Hecho, cambiar el texto o la fecha. Lo hace Fede en la hoja Inquilinos (conector de Google Sheets);
@@ -1245,23 +1251,62 @@ $("agDia").addEventListener("click", e => {
   const b = e.target.closest("[data-ev]"); if (b) return verEv(+b.dataset.ev);
   const t = e.target.closest("[data-tarea-cal]"); if (t && typeof abrirTarea === "function") abrirTarea(t.dataset.tareaCal);
 });
-async function mandarEv(borrar){
-  const e = evSel, c = cfg(); if (!e || !c) return;
-  if (borrar && !confirm("¿Borrar «" + e.t + "» de tu Google Calendar?")) return;
-  const x = { accion:borrar ? "borrar" : "editar", cid:e.cid, id:e.id, dia0:agSel };
-  if (!borrar) Object.assign(x, { t:$("evNombre").value.trim() || e.t, l:$("evLugar").value.trim(), d:$("evNota").value.trim(),
-    fecha:$("evFecha").value || agSel, todo:$("evTodo").checked, ini:$("evIni").value || "09:00", fin:$("evFin").value || $("evIni").value || "10:00" });
-  if (!borrar && evRecTocado) x.rec = evRec;
-  if (!borrar && $("evCal").value && $("evCal").value !== e.cid) x.cid2 = $("evCal").value;
-  if (!borrar && !x.todo && x.fin <= x.ini){ $("evEstado").textContent = "La hora de terminar debe ser después de la de empezar."; return; }
-  $("evGuardar").disabled = $("evBorrar").disabled = true; $("evEstado").textContent = borrar ? "Borrando…" : "Guardando en Google Calendar…";
+/* Editar y borrar se ven AL INSTANTE: el cambio se aplica en el teléfono (jlp-ev-local) y Google Calendar se actualiza por detrás.
+   Borrar espera 4 s por si tocas «Deshacer»; si sales del app antes, se manda en ese momento. Solo si Google falla se avisa y se regresa. */
+const LSEV = "jlp-ev-local";
+let evLocal = (() => { try{ return JSON.parse(localStorage.getItem(LSEV) || "{}") || {}; }catch(e){ return {}; } })();
+evLocal.b = evLocal.b || {}; evLocal.e = evLocal.e || {};
+const guardarEvLocal = () => { try{ localStorage.setItem(LSEV, JSON.stringify(evLocal)); }catch(e){} };
+function evConLocal(lista){
+  const ahora = Date.now();
+  [evLocal.b, evLocal.e].forEach(m => Object.keys(m).forEach(k => { if (ahora - (m[k].t || 0) > 864e5) delete m[k]; }));   // a las 24 h se olvida
+  return lista.filter(e => !evLocal.b[e.id]).map(e => evLocal.e[e.id] ? { ...e, ...evLocal.e[e.id].p } : e);
+}
+function aviso(txt, deshacer){
+  let el = $("avisoFlota");
+  if (!el){ el = document.createElement("div"); el.id = "avisoFlota"; el.setAttribute("role", "status"); document.body.appendChild(el); }
+  el.innerHTML = `<span>${esc(txt)}</span>` + (deshacer ? '<button type="button">Deshacer</button>' : "");
+  if (deshacer) el.querySelector("button").onclick = () => { el.classList.remove("on"); deshacer(); };
+  el.classList.add("on"); clearTimeout(aviso.t); aviso.t = setTimeout(() => el.classList.remove("on"), deshacer ? 4000 : 3500);
+}
+const evPorMandar = new Map();   // id → { x, timer } (borrados esperando el «Deshacer»)
+async function evMandar(x){
+  const c = cfg(); if (!c) return;
   try{
     const r = await api(c, "evento", x);
     if (r && r.agenda){ AG = r.agenda; try{ localStorage.setItem(LSAG, JSON.stringify(AG)); }catch(err){} }
-    $("evEstado").textContent = borrar ? "Listo: se borró de Google Calendar." : "Listo: ya quedó en Google Calendar.";
-    if (navigator.vibrate) navigator.vibrate(12);
-    setTimeout(() => { cerrarHojas(); pintarAgenda(); }, 700);
-  }catch(err){ $("evEstado").textContent = "No se pudo: " + err.message; $("evGuardar").disabled = $("evBorrar").disabled = false; }
+    delete evLocal.b[x.id]; delete evLocal.e[x.id]; guardarEvLocal(); pintarAgenda();
+  }catch(err){
+    delete evLocal.b[x.id]; delete evLocal.e[x.id]; guardarEvLocal(); pintarAgenda();
+    aviso((x.accion === "borrar" ? "No se pudo borrar: " : "No se pudo guardar: ") + err.message);
+  }
+}
+function evSoltarBorrados(){ evPorMandar.forEach(({ x, timer }) => { clearTimeout(timer); evMandar(x); }); evPorMandar.clear(); }
+document.addEventListener("visibilitychange", () => { if (document.hidden) evSoltarBorrados(); });
+function mandarEv(borrar){
+  const e = evSel; if (!e || !cfg()) return;
+  const x = { accion:borrar ? "borrar" : "editar", cid:e.cid, id:e.id, dia0:agSel };
+  if (borrar){
+    evLocal.b[e.id] = { t:Date.now() }; guardarEvLocal();
+    cerrarHojas(); pintarAgenda(); if (navigator.vibrate) navigator.vibrate(12);
+    const timer = setTimeout(() => { evPorMandar.delete(e.id); evMandar(x); }, 4200);
+    evPorMandar.set(e.id, { x, timer });
+    aviso("Evento borrado", () => { clearTimeout(timer); evPorMandar.delete(e.id); delete evLocal.b[e.id]; guardarEvLocal(); pintarAgenda(); });
+    return;
+  }
+  Object.assign(x, { t:$("evNombre").value.trim() || e.t, l:$("evLugar").value.trim(), d:$("evNota").value.trim(),
+    fecha:$("evFecha").value || agSel, todo:$("evTodo").checked, ini:$("evIni").value || "09:00", fin:$("evFin").value || $("evIni").value || "10:00" });
+  if (evRecTocado) x.rec = evRec;
+  if ($("evCal").value && $("evCal").value !== e.cid) x.cid2 = $("evCal").value;
+  if (!x.todo && x.fin <= x.ini){ $("evEstado").textContent = "La hora de terminar debe ser después de la de empezar."; return; }
+  // lo que se ve ya cambiado mientras Google lo guarda
+  const sel = $("evCal").selectedOptions[0];
+  evLocal.e[e.id] = { t:Date.now(), p:{ t:x.t, l:x.l, d:x.d, dia:x.todo,
+    i:x.todo ? x.fecha : x.fecha + "T" + x.ini + ":00", f:x.todo ? sumaDias(x.fecha, 1) : x.fecha + "T" + x.fin + ":00",
+    ...(x.rec ? { rec:x.rec } : {}), ...(x.cid2 && sel ? { cid:x.cid2, c:sel.textContent } : {}) } };
+  guardarEvLocal();
+  cerrarHojas(); pintarAgenda(); if (navigator.vibrate) navigator.vibrate(12);
+  evMandar(x);
 }
 $("evGuardar").onclick = () => mandarEv(false);
 $("evBorrar").onclick = () => mandarEv(true);
