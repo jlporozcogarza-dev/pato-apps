@@ -832,8 +832,7 @@ input[type=checkbox]{accent-color:var(--c10)}
 </section>
 <div class="seccion"><h2 id="agTitulo">Hoy</h2><span id="agFecha"></span></div>
 <div class="renglones" id="agDia"><p class="nota">Cargando…</p></div>
-<div class="seccion"><h2>De Condotec</h2><span id="pendCuenta"></span></div>
-<div class="renglones" id="agPend"></div>
+
 </main></div>
 
 
@@ -1155,22 +1154,19 @@ const pendCambio = () => $("pendTexto").value.trim() !== pendSel.texto || $("pen
 $("pendTexto").addEventListener("input", () => $("pendGuardar").disabled = !pendCambio());
 $("pendFecha").addEventListener("change", () => $("pendGuardar").disabled = !pendCambio());
 const dma = f => f ? f.slice(8) + "/" + f.slice(5, 7) + "/" + f.slice(0, 4) : "";
-async function mandarPend(hecho){
-  const p = pendSel, c = cfg(); if (!p || !c) return;
+/* Instantáneo: el cambio se ve al momento y se manda por detrás (WhatsApp → server; hoja → Fede). Solo si falla avisa y regresa. */
+function mandarPend(hecho, pIn){
+  const p = pIn || pendSel, c = cfg(); if (!p || !c) return;
   if (p.estado === "WhatsApp"){ // sale de tus chats (pato-server), no de la hoja de Inquilinos: solo se puede cerrar
     if (!hecho){ $("pendEstado").textContent = "Este pendiente salió de WhatsApp: solo se puede marcar como hecho."; return; }
-    $("pendHecho").disabled = true; $("pendEstado").textContent = "Cerrando…";
-    try{
-      await api(c, "wa_hecho", { id:String(p.n).slice(1) });
-      AG.pendientes = AG.pendientes.filter(x => x.n !== p.n);
-      $("pendEstado").textContent = "Listo: ya no vuelve a salir.";
-      if (navigator.vibrate) navigator.vibrate(12);
-      setTimeout(() => { cerrarHojas(); pintarAgenda(); }, 900);
-    }catch(err){ $("pendEstado").textContent = "No se pudo cerrar: " + err.message; }
-    finally{ $("pendHecho").disabled = false; }
+    const antes = AG.pendientes;
+    AG.pendientes = AG.pendientes.filter(x => x.n !== p.n);
+    try{ localStorage.setItem(LSAG, JSON.stringify(AG)); }catch(e){}
+    cerrarHojas(); pintarAgenda(); if (navigator.vibrate) navigator.vibrate(12);
+    api(c, "wa_hecho", { id:String(p.n).slice(1) }).catch(err => { AG.pendientes = antes; pintarAgenda(); aviso("No se pudo cerrar: " + err.message); });
     return;
   }
-  const texto = $("pendTexto").value.trim(), fecha = $("pendFecha").value, cambios = [];
+  const texto = pIn ? p.texto : $("pendTexto").value.trim(), fecha = pIn ? (p.fecha || "") : $("pendFecha").value, cambios = [];
   if (!hecho){
     if (texto && texto !== p.texto) cambios.push(`la columna Pendiente a "${texto}"`);
     if (fecha !== (p.fecha || "")) cambios.push(fecha ? `la Fecha límite a ${dma(fecha)}` : "deja la Fecha límite vacía");
@@ -1179,20 +1175,17 @@ async function mandarPend(hecho){
   const orden = `Condotec · en la hoja Inquilinos Condotec, pestaña Pendientes, el renglón # ${p.n} ("${p.texto}"): ` +
     (hecho ? `márcalo como Hecho (columna Estado = Hecho) y anota en Notas que se cerró hoy desde la app.` : `cambia ${cambios.join(" y ")}.`) +
     ` Usa el conector de Google Sheets (en el server es solo lectura). Antes de escribir, lee el renglón para no pisar otro.`;
-  $("pendGuardar").disabled = $("pendHecho").disabled = true; $("pendEstado").textContent = "Enviando a Fede…";
-  try{
-    await api(c, "fede_orden", { texto:orden });
-    cambiosPend[p.n] = hecho ? { hecho:true, t:Date.now() } : { texto:texto !== p.texto ? texto : undefined, fecha:fecha !== (p.fecha || "") ? fecha : undefined, t:Date.now() };
-    guardarPE();
-    $("pendEstado").textContent = hecho ? "Listo: Fede lo marca como hecho en la hoja." : "Listo: Fede lo cambia en la hoja.";
-    if (navigator.vibrate) navigator.vibrate(12);
-    setTimeout(() => { cerrarHojas(); pintarAgenda(); }, 900);
-  }catch(err){ $("pendEstado").textContent = "No llegó a Fede: " + err.message; }
-  finally{ $("pendHecho").disabled = false; $("pendGuardar").disabled = !pendCambio(); }
+  const antes = cambiosPend[p.n];
+  cambiosPend[p.n] = hecho ? { hecho:true, t:Date.now() } : { texto:texto !== p.texto ? texto : undefined, fecha:fecha !== (p.fecha || "") ? fecha : undefined, t:Date.now() };
+  guardarPE(); cerrarHojas(); pintarAgenda(); if (navigator.vibrate) navigator.vibrate(12);
+  api(c, "fede_orden", { texto:orden }).catch(err => {
+    if (antes) cambiosPend[p.n] = antes; else delete cambiosPend[p.n];
+    guardarPE(); pintarAgenda(); aviso("No llegó a Fede: " + err.message);
+  });
 }
 $("pendHecho").onclick = () => mandarPend(true);
 $("pendGuardar").onclick = () => mandarPend(false);
-["agPend", "agDia"].forEach(id => $(id).addEventListener("click", e => { const b = e.target.closest("[data-pend]"); if (b) abrirPend(b.dataset.pend); }));
+$("agDia").addEventListener("click", e => { const b = e.target.closest("[data-pend]"); if (b) abrirPend(b.dataset.pend); });
 /* Editar o borrar un evento de Google Calendar desde aquí: el server lo cambia en Google (Apps Script) y vuelve a copiar el calendario. */
 let evDia = [], evSel = null, evRec = [], evRecTocado = false;
 const AVISOS = [[0,"Al empezar"],[10,"10 min antes"],[30,"30 min antes"],[60,"1 hora antes"],[180,"3 horas antes"],[1440,"1 día antes"],[2880,"2 días antes"],[10080,"1 semana antes"]];
@@ -1344,12 +1337,8 @@ function pintarDia(){
 function pintarPend(){
   const rango = p => p.fecha && p.fecha < hoy ? 0 : p.fecha ? 1 : 2, prio = p => ({ alta:0, media:1, baja:2 })[(p.prioridad || "").toLowerCase()] ?? 3;
   const lista = pendientesAG().slice().sort((a, b) => rango(a) - rango(b) || (a.fecha || "").localeCompare(b.fecha || "") || prio(a) - prio(b));
-  $("pendCuenta").textContent = lista.length ? lista.length + " abiertos" : "";
-  $("agPend").innerHTML = lista.map(p => {
-    const marca = p.fecha ? (p.fecha < hoy ? ["rojo", "vencido " + corto(p.fecha)] : ["gris", corto(p.fecha)]) : [prio(p) === 0 ? "ambar" : "gris", p.prioridad || "Sin fecha"];
-    return `<button class="renglon at" data-pend="${esc(p.n)}"><div class="arriba"><b>${esc(p.n)}. ${esc(p.texto)}</b><span class="marca t-${marca[0]}">${esc(marca[1])}</span></div>` +
-      `<p>${esc([p.estado, p.depas].filter(Boolean).join(" · "))}</p></button>`;
-  }).join("") || '<p class="nota">Sin pendientes abiertos.</p>';
+  void lista;
+  pintarTareas(true);   // los de Condotec van en la misma lista que tus tareas
 }
 function pintarAgenda(){ agSel = agSel || hoy; agMes = agMes || hoy.slice(0, 7); if (AG){ pintarCal(); pintarDia(); pintarPend(); } }
 function cargarAgenda(c){
@@ -1428,10 +1417,13 @@ const LSGT = "jlp-tareas-cerradas";
 let gruposCerrados = new Set((() => { try{ return JSON.parse(localStorage.getItem(LSGT) || '["hechas"]'); }catch(e){ return ["hechas"]; } })());
 function pintarTareas(forzar){
   if (!TAR){ return; }
-  const lista = conCola(TAR), firma = JSON.stringify(lista) + "|" + verTodasHechas + "|" + hoy;
+  const lista = conCola(TAR), firma = JSON.stringify(lista) + "|" + verTodasHechas + "|" + hoy + "|" + JSON.stringify(AG && pendientesAG());
   if (!forzar && (tarOcupado || firma === tarPintado)) return; // sin cambios o a media animación: no se redibuja
   tarPintado = firma;
-  const pend = lista.filter(x => x.estado !== "hecha").sort(ordenTareas);
+  const prioNv = p => ({ alta:2, media:3, baja:4 })[(p.prioridad || "").toLowerCase()] || 3;
+  const cond = (typeof pendientesAG === "function" && AG ? pendientesAG() : []).map(p => ({ id:"cond-" + p.n, cond:p, t:p.texto,
+    det:["Condotec", p.estado === "WhatsApp" ? "WhatsApp" : "", p.depas].filter(Boolean).join(" · "), nv:prioNv(p), tiempo:"", orden:999, estado:"pendiente", fecha:p.fecha || "" }));
+  const pend = [...lista.filter(x => x.estado !== "hecha"), ...cond].sort(ordenTareas);
   const hechas = lista.filter(x => x.estado === "hecha").sort((a, b) => (b.hecha || "").localeCompare(a.hecha || ""));
   const total = lista.length;
   // Hoy: lo que tiene fecha de hoy o ya venció, más lo que se hizo hoy de eso. Se llena al terminar todo lo del día; mañana empieza de nuevo.
@@ -1449,6 +1441,10 @@ function pintarTareas(forzar){
     : pend.length ? `Sigue<b>${esc(pend[0].t)}</b>` : "<b>Todo listo</b>No queda ninguna pendiente.";
   const fila = x => {
     const et = etiquetaFecha(x.fecha), vence = et && et[1] === "rojo";
+    if (x.cond) return `<div class="tarea cond${vence ? " vence" : ""}" data-pend="${esc(x.cond.n)}">` +
+      `<button class="chk" data-pend-hecho="${esc(x.cond.n)}" aria-label="Marcar como hecho: ${esc(x.t)}"><i><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M5 12.5l4.5 4.5L19 7.5"/></svg></i></button>` +
+      `<span class="txt"><b>${esc(x.t)}</b><small>${esc(x.det)}</small></span>` +
+      (et ? `<span class="cuando ${et[1]}">${vence ? "! " : ""}${esc(et[0])}</span>` : "") + `</div>`;
     return `<div class="tarea${vence ? " vence" : ""}" data-tarea="${esc(x.id)}">` +
       `<button class="chk" data-palomear="${esc(x.id)}" aria-label="Marcar como hecha: ${esc(x.t)}"><i><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M5 12.5l4.5 4.5L19 7.5"/></svg></i></button>` +
       `<span class="txt"><b>${esc(x.t)}</b><small>Nivel ${x.nv}${x.tiempo ? " · " + esc(x.tiempo) : ""}${x.det ? " · " + esc(x.det) : ""}</small></span>` +
@@ -1652,6 +1648,16 @@ $("tfEnl").addEventListener("click", e => { const a = e.target.closest("[data-in
 $("tfFecha").onclick = () => { const id = tareaFicha; cerrarHojas(); setTimeout(() => abrirFecha(id), 250); };
 $("tfHecha").onclick = () => { const id = tareaFicha; cerrarHojas(); if (navigator.vibrate) navigator.vibrate(12); cambiarTarea(id, "hecha"); pintarTareas(true); };
 $("tarLista").addEventListener("click", e => {
+  const ph = e.target.closest("[data-pend-hecho]");
+  if (ph){
+    const row = ph.closest(".tarea"), p = pendientesAG().find(x => String(x.n) === ph.dataset.pendHecho);
+    if (!p || row.classList.contains("lista")) return;
+    row.classList.add("lista"); if (navigator.vibrate) navigator.vibrate(12);
+    setTimeout(() => mandarPend(true, p), 380);   // se ve la palomita y luego se va
+    return;
+  }
+  const rp = e.target.closest(".tarea[data-pend]");
+  if (rp && !e.target.closest(".chk")){ if (Date.now() - tocarLargo >= 700) abrirPend(rp.dataset.pend); return; }
   if (e.target.closest("[data-palomear]") || Date.now() - tocarLargo < 700) return;
   const row = e.target.closest(".tarea[data-tarea]"); if (row) abrirTarea(row.dataset.tarea);
 });

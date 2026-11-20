@@ -172,4 +172,5 @@ Hoy, al tocar un depa, solo cambia el cuadrito de abajo (`detalleUni` en `index.
 - 20 nov: tocar una tarea en Pendientes abre su ficha con el texto completo y enlaces de dónde revisarlo (chat de WhatsApp, pedido y pagos de Amazon, Gmail, Cloudflare, BBVA, Canvas, pestaña del app…). Dejar picada sigue siendo la fecha.
 - 20 nov: eventos del calendario en Pendientes salen en resumen (título 2 renglones, lugar sin URL, nota 2 renglones) y nunca se salen del ancho; tocar abre la ficha completa con links, Mapas, WhatsApp y botón Editar.
 - 20 nov: editar y borrar eventos es instantáneo (jlp-ev-local): se ve al momento y Google Calendar se actualiza por detrás; borrar trae «Deshacer» 4 s; solo si falla avisa y regresa.
+- 20 nov: Pendientes es una sola lista: tareas + pendientes de Condotec (hoja y WhatsApp), por fecha y nivel, con «Condotec · Loft X». Se quitó la sección «De Condotec». Palomear o editar los de Condotec es instantáneo (Fede/server por detrás).
 - Suscripciones investigadas: unos $6,079 al mes en total (falta P2).
