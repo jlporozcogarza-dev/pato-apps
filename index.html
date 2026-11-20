@@ -273,6 +273,21 @@ button.evento:active{filter:brightness(1.15)}
 .dp-fila>span{color:var(--muted);font-size:13px;flex:none}
 .dp-fila b{font-weight:600;text-align:right}
 .dp-wa{color:var(--c10);font-weight:600;text-align:right;text-decoration:none}
+/* Ficha de una tarea: texto completo + enlaces a donde hay que meterse */
+.tf-txt{font-size:17px;line-height:1.4;margin:0 0 10px;white-space:pre-wrap;overflow-wrap:anywhere}
+.tf-meta{display:flex;flex-wrap:wrap;gap:6px;margin:0 0 16px}
+.tf-meta span{padding:4px 10px;border-radius:999px;background:rgba(255,255,255,.08);font-size:12.5px;color:var(--muted)}
+.tf-enl{display:grid;gap:8px}
+.tf-enl a{display:flex;align-items:center;gap:12px;min-height:50px;padding:8px 14px;border-radius:16px;text-decoration:none;color:var(--fg);
+  border:1px solid rgba(255,255,255,.12);background:rgba(255,255,255,.06)}
+.tf-enl a:active{transform:scale(.98);background:rgba(255,255,255,.1)}
+.tf-enl a i{font-style:normal;font-size:20px;width:26px;text-align:center;flex:none}
+.tf-enl a b{display:block;font-weight:500;font-size:15px}
+.tf-enl a small{display:block;color:var(--muted);font-size:12px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.tf-enl a span{flex:1;min-width:0}
+.tf-enl a::after{content:"↗";color:var(--muted);font-size:14px}
+.tf-enl a[data-interno]::after{content:"›";font-size:20px}
+.tf-sin{color:var(--muted);font-size:13.5px;margin:0}
 .dp-wa::after{content:" ↗";font-size:12px;opacity:.7}
 .dp-falta{color:var(--muted);font-style:normal;font-size:13px;padding:2px 8px;border-radius:999px;border:1px dashed rgba(255,255,255,.2)}
 .dp-datos{display:grid;grid-template-columns:1fr 1fr;gap:10px 14px}
@@ -902,6 +917,16 @@ input[type=checkbox]{accent-color:var(--c10)}
     <button data-z="top">Hasta arriba</button><button data-z="up">Subir</button><button data-z="down">Bajar</button><button data-z="bottom">Hasta abajo</button></div></div>
   <button class="idea-borrar" id="ideaBorrar">Borrar post-it</button>
 </section>
+<section class="hoja" id="hojaTarea" role="dialog" aria-modal="true" aria-labelledby="tfTitulo" aria-hidden="true">
+  <div class="asa" aria-hidden="true"></div>
+  <button class="cerrar-hoja" data-cerrar-hoja aria-label="Cerrar"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round"><path d="M6 6l12 12M18 6L6 18"/></svg></button>
+  <h2 id="tfTitulo">Pendiente</h2>
+  <p class="tf-txt" id="tfTxt"></p>
+  <div class="tf-meta" id="tfMeta"></div>
+  <h3>Dónde revisarlo</h3>
+  <div class="tf-enl" id="tfEnl"></div>
+  <div class="fila"><button id="tfFecha">Cambiar fecha</button><button class="listo" id="tfHecha">Hecha ✓</button></div>
+</section>
 <section class="hoja" id="hojaFecha" role="dialog" aria-modal="true" aria-labelledby="fechaTitulo" aria-hidden="true">
   <div class="asa" aria-hidden="true"></div>
   <button class="cerrar-hoja" data-cerrar-hoja aria-label="Cerrar"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round"><path d="M6 6l12 12M18 6L6 18"/></svg></button>
@@ -1441,7 +1466,7 @@ async function calificar(tarea){ // Fede (Claude en la compu) decide qué tan pe
 }
 
 /* Dejar picada una tarea: ¿cuándo? (hoy, mañana, otro día o pendiente sin fecha) */
-let tareaFecha = "", tocarTimer = 0;
+let tareaFecha = "", tocarTimer = 0, tocarLargo = 0;
 function abrirFecha(id){
   const x = conCola(TAR).find(t => t.id === id); if (!x) return;
   tareaFecha = id; $("fechaTarea").textContent = x.t; $("fechaOtro").value = x.fecha || "";
@@ -1453,7 +1478,7 @@ function abrirFecha(id){
 $("tarLista").addEventListener("pointerdown", e => {
   const row = e.target.closest(".tarea"); if (!row || e.target.closest(".chk")) return;
   const x0 = e.clientX, y0 = e.clientY; clearTimeout(tocarTimer);
-  tocarTimer = setTimeout(() => abrirFecha(row.dataset.tarea), 480);
+  tocarTimer = setTimeout(() => { tocarLargo = Date.now(); abrirFecha(row.dataset.tarea); }, 480);
   const mover = ev => { if (Math.abs(ev.clientX - x0) > 10 || Math.abs(ev.clientY - y0) > 10) soltar(); };
   const soltar = () => { clearTimeout(tocarTimer); removeEventListener("pointermove", mover); removeEventListener("pointerup", soltar); removeEventListener("pointercancel", soltar); };
   addEventListener("pointermove", mover); addEventListener("pointerup", soltar); addEventListener("pointercancel", soltar);
@@ -1471,6 +1496,74 @@ $("hojaFecha").addEventListener("click", e => {
 });
 $("fechaOtro").addEventListener("change", e => { if (tareaFecha && e.target.value){ ponerFecha(tareaFecha, e.target.value); cerrarHojas(); } });
 
+/* Tocar una tarea abre su ficha: el texto completo y enlaces a donde hay que meterse (el chat de WhatsApp, el pedido de Amazon,
+   Gmail, la pestaña del app…). Se sacan del texto de la tarea; no se guarda nada nuevo. */
+const ENLACES = [
+  // [busca en el texto, ícono, título, url]  ({1} = lo que atrapó el paréntesis)
+  [/\b(\d{3}-\d{7}-\d{7})\b/, "📦", "Ver el pedido en Amazon", "https://www.amazon.com.mx/gp/your-account/order-details?orderID={1}"],
+  [/amazon/i, "💳", "Métodos de pago de Amazon", "https://www.amazon.com.mx/cpe/yourpayments/wallet"],
+  [/cloudflare|jlpog\.app|dominio/i, "☁️", "Facturación de Cloudflare", "https://dash.cloudflare.com/?to=/:account/billing"],
+  [/bbva/i, "🏦", "BBVA en línea", "https://www.bbva.mx/"],
+  [/canvas|\btec\b|evidencia|entrega|inscripci/i, "🎓", "Canvas del Tec", "https://experiencia21.tec.mx/"],
+  [/spotify/i, "🎵", "Cuenta de Spotify", "https://www.spotify.com/mx/account/overview/"],
+  [/elevenlabs/i, "🗣️", "Suscripción de ElevenLabs", "https://elevenlabs.io/app/subscription"],
+  [/starlink/i, "🛰️", "Cuenta de Starlink", "https://www.starlink.com/account/home"],
+  [/izzi/i, "📶", "Mi izzi", "https://www.izzi.mx/"],
+  [/whoop/i, "⌚", "WHOOP", "https://app.whoop.com/"],
+  [/chat de claude|claude/i, "✳️", "Abrir Claude", "https://claude.ai/"],
+  [/calendar|calendario|evento/i, "📅", "Google Calendar", "https://calendar.google.com/"],
+];
+const INTERNOS = [
+  [/loft|depa|condotec|inquilin|renta\b/i, "🏢", "Condotec en JLP", "condotec"],
+  [/pago|tarjeta|cobro|suscrip|factura|\$\s?\d/i, "💰", "Finanzas en JLP", "finanzas"],
+  [/comida|prote[ií]na|peso|whoop|sueño/i, "📈", "Tracker en JLP", "tracker"],
+];
+function waDe(txt){
+  const m = String(txt).match(/(?:\+?52\s*1?\s*)?(?:\(?\d{2,3}\)?[\s.-]*)\d{3,4}[\s.-]*\d{4}/); if (!m) return "";
+  let d = m[0].replace(/\D/g, ""); if (d.startsWith("521") && d.length === 13) d = "52" + d.slice(3);
+  if (d.length === 10) d = "52" + d; return d.length === 12 ? d : "";
+}
+function enlacesDe(x){
+  const txt = x.t + " " + (x.det || ""), out = [];
+  const sinIds = v => String(v || "").replace(/\b\d{3}-\d{7}-\d{7}\b/g, " ");   // que un número de pedido no parezca teléfono
+  const wa = /whatsapp|\+52|\btel/i.test(txt) ? (waDe(sinIds(x.det)) || waDe(sinIds(x.t))) : "";
+  if (wa) out.push({ i:"💬", t:"Abrir el chat de WhatsApp", u:"https://wa.me/" + wa, sub:"+" + wa });
+  (txt.match(/https?:\/\/[^\s)]+/g) || []).forEach(u => out.push({ i:"🔗", t:"Abrir el enlace", u, sub:u }));
+  let marca = false;
+  ENLACES.forEach(([re, i, t, u]) => { const m = txt.match(re); if (m && !/claude|calendar/.test(u)) marca = true; if (m) out.push({ i, t, u:u.replace("{1}", encodeURIComponent(m[1] || "")), sub:new URL(u.replace("{1}", m[1] || "")).hostname.replace(/^www\./, "") }); });
+  const id = (txt.match(/\b\d{3}-\d{7}-\d{7}\b/) || [])[0];
+  const clave = id || x.t.replace(/[^\p{L}\p{N} ]/gu, " ").split(/\s+/).filter(w => w.length > 3).slice(0, 4).join(" ");
+  if (clave && (id || marca)) out.push({ i:"✉️", t:"Buscar en Gmail", u:"https://mail.google.com/mail/u/0/#search/" + encodeURIComponent(clave), sub:clave });
+  INTERNOS.forEach(([re, i, t, tab]) => { if (re.test(txt)) out.push({ i, t, interno:tab, sub:"Pestaña " + (NOMBRE[tab] || tab) }); });
+  const visto = new Set(); return out.filter(e => { const k = e.u || e.interno; if (visto.has(k)) return false; visto.add(k); return true; });
+}
+let tareaFicha = "";
+function abrirTarea(id){
+  const x = conCola(TAR).find(t => t.id === id); if (!x) return;
+  tareaFicha = id;
+  $("tfTitulo").textContent = x.estado === "hecha" ? "Hecha" : "Pendiente";
+  $("tfTxt").textContent = x.t;
+  const et = etiquetaFecha(x.fecha);
+  $("tfMeta").innerHTML = [`Nivel ${x.nv}`, x.tiempo, et ? et[0] : "Sin fecha", x.det].filter(Boolean).map(v => `<span>${esc(v)}</span>`).join("");
+  const es = enlacesDe(x);
+  $("tfEnl").innerHTML = es.length ? es.map(e => e.interno
+      ? `<a href="#${esc(e.interno)}" data-interno="${esc(e.interno)}"><i>${e.i}</i><span><b>${esc(e.t)}</b><small>${esc(e.sub)}</small></span></a>`
+      : `<a href="${esc(e.u)}" target="_blank" rel="noopener"><i>${e.i}</i><span><b>${esc(e.t)}</b><small>${esc(e.sub)}</small></span></a>`).join("")
+    : '<p class="tf-sin">No encontré a dónde mandarte; es algo para hacer tú.</p>';
+  $("tfHecha").hidden = x.estado === "hecha"; $("tfFecha").hidden = x.estado === "hecha";
+  hoja($("hojaTarea"), true); $("hojaTarea").scrollTop = 0;
+}
+$("tfEnl").addEventListener("click", e => { const a = e.target.closest("[data-interno]"); if (!a) return; e.preventDefault(); cerrarHojas(); ir(a.dataset.interno); });
+$("tfFecha").onclick = () => { const id = tareaFicha; cerrarHojas(); setTimeout(() => abrirFecha(id), 250); };
+$("tfHecha").onclick = () => { const id = tareaFicha; cerrarHojas(); if (navigator.vibrate) navigator.vibrate(12); cambiarTarea(id, "hecha"); pintarTareas(true); };
+$("tarLista").addEventListener("click", e => {
+  if (e.target.closest("[data-palomear]") || Date.now() - tocarLargo < 700) return;
+  const row = e.target.closest(".tarea[data-tarea]"); if (row) abrirTarea(row.dataset.tarea);
+});
+$("tarHechas").addEventListener("click", e => {
+  if (e.target.closest("[data-regresar],[data-ver-hechas]")) return;
+  const row = e.target.closest(".tarea[data-tarea]"); if (row) abrirTarea(row.dataset.tarea);
+});
 $("tarLista").addEventListener("click", e => {
   const b = e.target.closest("[data-palomear]"); if (!b) return;
   const row = b.closest(".tarea"); if (row.classList.contains("lista")) return;

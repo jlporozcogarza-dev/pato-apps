@@ -169,4 +169,5 @@ Hoy, al tocar un depa, solo cambia el cuadrito de abajo (`detalleUni` en `index.
 **Otros**
 - 20 nov: WHOOP se copia cada 15 min (antes cada hora); Cam arranca sola con Windows; Cam en grande con zoom de pellizco y HD (1280 px) mientras está en grande.
 - 20 nov: **Vigilancia en Cam**: la laptop detecta movimiento (OpenCV, `fede/camara.pyw`), Claude Haiku (`claude -p --model haiku`) dice si es persona, aviso por Web Push (`sw.js`, llaves en `fede/cam_vapid.json`, suscripciones en `/opt/pato-puente/cam.json`). Cajas naranja neón siguen lo que se mueve. Silenciar con rueda de horas/min. Máx. 1 aviso cada 2 min y 1 revisión de IA por minuto. Herramientas del puente: cam_vig, cam_evento, cam_aviso_foto, cam_sub_quitar.
+- 20 nov: tocar una tarea en Pendientes abre su ficha con el texto completo y enlaces de dónde revisarlo (chat de WhatsApp, pedido y pagos de Amazon, Gmail, Cloudflare, BBVA, Canvas, pestaña del app…). Dejar picada sigue siendo la fecha.
 - Suscripciones investigadas: unos $6,079 al mes en total (falta P2).
