@@ -636,6 +636,48 @@ input[type=checkbox]{accent-color:var(--c10)}
 #camFull .cam-vivo{top:max(20px,calc(env(safe-area-inset-top) + 6px));left:16px}
 #camFull .zoom{position:absolute;bottom:max(18px,env(safe-area-inset-bottom));left:50%;transform:translateX(-50%);z-index:2;padding:5px 12px;border-radius:999px;background:rgba(0,0,0,.5);color:#fff;font-size:12.5px;font-weight:600;opacity:0;transition:opacity .3s}
 #camFull .zoom.ver{opacity:1}
+#camFull .lienzo{position:absolute;left:50%;top:50%;transform-origin:50% 50%;will-change:transform}
+#camFull .lienzo img{position:absolute;inset:0;width:100%;height:100%;object-fit:fill;pointer-events:none;-webkit-user-select:none;user-select:none;-webkit-touch-callout:none}
+/* cajas naranja neón sobre lo que se mueve (las calcula la laptop) */
+.cam-cajas{position:absolute;inset:0;pointer-events:none;z-index:1}
+.cam-caja{position:absolute;border:calc(2px / var(--s,1)) solid #FF6A00;border-radius:calc(6px / var(--s,1));
+  box-shadow:0 0 calc(8px / var(--s,1)) #FF6A00,0 0 calc(20px / var(--s,1)) rgba(255,106,0,.55),inset 0 0 calc(10px / var(--s,1)) rgba(255,106,0,.45);
+  transition:left .25s linear,top .25s linear,width .25s linear,height .25s linear,opacity .3s}
+.cam-caja.sale{opacity:0}
+/* Vigilancia */
+.vig{margin-top:16px;border-radius:24px;padding:16px}
+.vig-fila{display:flex;align-items:center;justify-content:space-between;gap:12px}
+.vig-fila+.vig-fila{margin-top:14px}
+.vig h2{margin:0;font-size:19px;font-weight:600}
+.vig small{display:block;color:var(--muted);font-size:13px;line-height:1.35;margin-top:3px}
+.vig .vig-txt{flex:1;min-width:0}
+.interruptor{position:relative;flex:none;width:52px;height:32px;border-radius:999px;border:0;padding:0;cursor:pointer;background:rgba(255,255,255,.16);transition:background .25s}
+.interruptor::after{content:"";position:absolute;top:3px;left:3px;width:26px;height:26px;border-radius:50%;background:#fff;box-shadow:0 2px 6px rgba(0,0,0,.35);transition:transform .25s cubic-bezier(.34,1.4,.5,1)}
+.interruptor[aria-checked=true]{background:#FF6A00;box-shadow:0 0 14px rgba(255,106,0,.5)}
+.interruptor[aria-checked=true]::after{transform:translateX(20px)}
+.interruptor:disabled{opacity:.5}
+.vig-botones{display:flex;gap:10px;margin-top:14px}
+.vig-botones button{flex:1;min-height:44px;border-radius:14px;border:1px solid rgba(255,255,255,.12);background:rgba(255,255,255,.07);color:var(--fg);font-size:14.5px;cursor:pointer}
+.vig-botones button.fuerte{background:#FF6A00;border-color:transparent;color:#1a0d00;font-weight:600}
+.vig-botones button[hidden]{display:none}
+.vig-ult{display:flex;gap:12px;align-items:center;margin-top:14px;padding-top:14px;border-top:1px solid rgba(255,255,255,.08)}
+.vig-ult img{width:84px;height:47px;border-radius:10px;object-fit:cover;flex:none;background:#000;cursor:zoom-in}
+.vig-ult[hidden],.vig-ult img[hidden]{display:none}
+.vig-ult .vig-txt{font-size:13.5px;line-height:1.35}
+.vig-msg{margin:10px 0 0;font-size:12.5px;color:var(--muted)}
+.vig-msg:empty{display:none}
+/* Silenciar: rueda de horas y minutos como el temporizador del Reloj */
+.ruedas{position:relative;display:flex;justify-content:center;gap:4px;height:200px;margin:8px 0 4px}
+.ruedas::before{content:"";position:absolute;left:8px;right:8px;top:80px;height:40px;border-radius:12px;background:rgba(255,255,255,.09);pointer-events:none}
+.rueda-c{position:relative;display:flex;align-items:center}
+.rueda{width:84px;height:200px;overflow-y:scroll;scroll-snap-type:y mandatory;scrollbar-width:none;padding:80px 0;box-sizing:border-box;
+  -webkit-mask-image:linear-gradient(transparent,#000 30%,#000 70%,transparent);mask-image:linear-gradient(transparent,#000 30%,#000 70%,transparent)}
+.rueda::-webkit-scrollbar{display:none}
+.rueda div{height:40px;line-height:40px;text-align:right;padding-right:10px;font-size:24px;font-variant-numeric:tabular-nums;scroll-snap-align:center}
+.rueda-c span{font-size:16px;font-weight:600;width:52px}
+.chips{display:flex;flex-wrap:wrap;gap:8px;justify-content:center;margin:10px 0 0}
+.chips button{min-height:36px;padding:0 14px;border-radius:999px;border:1px solid rgba(255,255,255,.14);background:rgba(255,255,255,.07);color:var(--fg);font-size:14px;cursor:pointer}
+.hoja .fila .naranja{background:#FF6A00;color:#1a0d00;border-color:transparent;font-weight:600}
 .cam-marco img{position:absolute;inset:0;width:100%;height:100%;object-fit:cover}
 .cam-estado{margin:0;padding:0 24px;text-align:center;color:var(--muted);font-size:14px;line-height:1.4}
 .cam-vivo{position:absolute;top:12px;left:12px;z-index:1;display:flex;align-items:center;gap:6px;padding:5px 10px;border-radius:999px;background:rgba(0,0,0,.5);font-size:12px;font-weight:600;color:#fff;-webkit-backdrop-filter:blur(8px);backdrop-filter:blur(8px)}
@@ -707,8 +749,16 @@ input[type=checkbox]{accent-color:var(--c10)}
 
 <div class="vista" id="v-cam" role="tabpanel" aria-label="Cam"><main>
 <header class="titulo-pagina"><div><small class="fecha-hoy"></small><h1>Cam</h1></div></header>
-<div class="cam-marco glass"><img id="camImg" alt="Cámara de la laptop en vivo" hidden><span class="cam-vivo" id="camVivo" hidden>En vivo</span><button class="cam-grande" id="camGrande" aria-label="Ver en grande" hidden><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M15 3h6v6M9 21H3v-6M21 3l-7 7M3 21l7-7"/></svg></button><p class="cam-estado" id="camEstado" role="status">Conectando…</p></div>
-<p class="cam-nota">Toca la imagen para verla en grande. Ahí pellizca para hacer zoom, arrastra para moverte y toca dos veces para acercar o alejar.<br>La cámara de tu laptop solo se prende mientras tienes esta pestaña abierta, y se apaga sola unos segundos después de salir. No se graba nada.</p>
+<div class="cam-marco glass"><img id="camImg" alt="Cámara de la laptop en vivo" hidden><div class="cam-cajas" id="camCajas" aria-hidden="true"></div><span class="cam-vivo" id="camVivo" hidden>En vivo</span><button class="cam-grande" id="camGrande" aria-label="Ver en grande" hidden><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M15 3h6v6M9 21H3v-6M21 3l-7 7M3 21l7-7"/></svg></button><p class="cam-estado" id="camEstado" role="status">Conectando…</p></div>
+<p class="cam-nota">Toca la imagen para verla en grande. Ahí pellizca para hacer zoom, arrastra para moverte y toca dos veces para acercar o alejar.<br>La cámara de tu laptop solo se prende mientras tienes esta pestaña abierta o la vigilancia está activa. No se graba nada.</p>
+<section class="vig glass" aria-label="Vigilancia">
+  <div class="vig-fila"><div class="vig-txt"><h2>Vigilancia</h2><small id="vigEstado">Cargando…</small></div><button class="interruptor" id="vigOn" role="switch" aria-checked="false" aria-label="Vigilancia"></button></div>
+  <div class="vig-fila"><div class="vig-txt">Solo personas<small>La IA revisa la foto y no te avisa por los gatos</small></div><button class="interruptor" id="vigPers" role="switch" aria-checked="true" aria-label="Avisar solo si es una persona"></button></div>
+  <div class="vig-botones"><button id="vigSil">Silenciar…</button><button class="fuerte" id="vigQuitar" hidden>Quitar silencio</button></div>
+  <div class="vig-botones"><button id="vigNotif" hidden>Activar notificaciones</button></div>
+  <p class="vig-msg" id="vigMsg" role="status"></p>
+  <div class="vig-ult" id="vigUlt" hidden><img id="vigFoto" alt="Foto del último aviso" hidden><div class="vig-txt" id="vigUltTxt"></div></div>
+</section>
 </main></div>
 <div class="vista" id="v-ideas" role="tabpanel" aria-label="Ideas"><main>
 <header class="titulo-pagina"><div><small class="fecha-hoy"></small><h1>Ideas</h1></div></header>
@@ -773,6 +823,15 @@ input[type=checkbox]{accent-color:var(--c10)}
   <button class="cerrar-hoja" data-cerrar-hoja aria-label="Cerrar"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round"><path d="M6 6l12 12M18 6L6 18"/></svg></button>
   <h2 id="depaTitulo"></h2>
   <div id="depaCuerpo"></div>
+</section>
+<section class="hoja" id="hojaSil" role="dialog" aria-modal="true" aria-labelledby="silTitulo" aria-hidden="true">
+  <div class="asa" aria-hidden="true"></div>
+  <button class="cerrar-hoja" data-cerrar-hoja aria-label="Cerrar"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round"><path d="M6 6l12 12M18 6L6 18"/></svg></button>
+  <h2 id="silTitulo">No avisar por</h2>
+  <p class="sub">La vigilancia se pausa y la cámara se apaga. Vuelve sola cuando se acabe el tiempo.</p>
+  <div class="ruedas"><div class="rueda-c"><div class="rueda" id="silH" aria-label="Horas"></div><span>h</span></div><div class="rueda-c"><div class="rueda" id="silM" aria-label="Minutos"></div><span>min</span></div></div>
+  <div class="chips" id="silChips"><button data-m="15">15 min</button><button data-m="30">30 min</button><button data-m="60">1 h</button><button data-m="120">2 h</button><button data-m="480">8 h</button></div>
+  <div class="fila"><button class="naranja" id="silOk">Silenciar</button></div>
 </section>
 <section class="hoja" id="hojaUni" role="dialog" aria-modal="true" aria-labelledby="uniTitulo" aria-hidden="true">
   <div class="asa" aria-hidden="true"></div>
@@ -1836,7 +1895,7 @@ function ir(tab, push){
   const anterior = actual; actual = tab;
   document.documentElement.dataset.tab = tab;
   pintar();
-  if (tab === "cam") camVer();
+  if (tab === "cam"){ camVer(); if (typeof vigCargar === "function") vigCargar(); }
   document.querySelectorAll("nav [role=tab]").forEach(b => b.setAttribute("aria-selected", b.dataset.ir === tab));
   moverPastilla();
   const ob = ordenBarra(), v = vista(tab), dir = Math.sign(ob.indexOf(tab) - ob.indexOf(anterior)) || 1;
@@ -2383,8 +2442,9 @@ async function camVer(){
     const c = cfg(); if (!c){ aviso("Conecta tus datos primero."); break; }
     try{
       const r = await api(c, "cam_ver", { hd:camAbierta });
-      if (r.jpg){ img.src = camFullImg.src = "data:image/jpeg;base64," + r.jpg; img.hidden = false; vivo.hidden = false; est.hidden = true; $("camGrande").hidden = false; camFullVivo.hidden = false; }
-      else { img.hidden = true; $("camGrande").hidden = true; camFullVivo.hidden = true; aviso(r.hace == null || r.hace > 20 ? "Prendiendo la cámara… Si no sale en unos 10 s, la laptop está apagada o dormida." : "Esperando imagen…"); await espera(600); }
+      if (r.vig) vigPintar(r.vig);
+      if (r.jpg){ img.src = camFullImg.src = "data:image/jpeg;base64," + r.jpg; img.hidden = false; vivo.hidden = false; est.hidden = true; $("camGrande").hidden = false; camFullVivo.hidden = false; camCajas(r.cajas || []); }
+      else { img.hidden = true; $("camGrande").hidden = true; camFullVivo.hidden = true; camCajas([]); aviso(r.hace == null || r.hace > 20 ? "Prendiendo la cámara… Si no sale en unos 10 s, la laptop está apagada o dormida." : "Esperando imagen…"); await espera(600); }
     }catch(e){ aviso("Sin conexión: " + e.message); await espera(2000); }
     await espera(120);
   }
@@ -2395,21 +2455,39 @@ document.addEventListener("visibilitychange", () => { if (!document.hidden && ac
 var camAbierta = false;
 const camFull = document.createElement("div");
 camFull.id = "camFull"; camFull.dataset.noDeslizar = ""; camFull.setAttribute("role", "dialog"); camFull.setAttribute("aria-label", "Cam en grande");
-camFull.innerHTML = '<img alt="Cámara de la laptop en grande"><span class="cam-vivo">En vivo</span><button class="cerrar" aria-label="Cerrar">✕</button><span class="zoom"></span>';
+camFull.innerHTML = '<div class="lienzo"><img alt="Cámara de la laptop en grande"><div class="cam-cajas"></div></div><span class="cam-vivo">En vivo</span><button class="cerrar" aria-label="Cerrar">✕</button><span class="zoom"></span>';
 document.body.appendChild(camFull);
-const camFullImg = camFull.querySelector("img"), camFullVivo = camFull.querySelector(".cam-vivo"), camZoom = camFull.querySelector(".zoom");
+const camFullImg = camFull.querySelector("img"), camFullVivo = camFull.querySelector(".cam-vivo"), camZoom = camFull.querySelector(".zoom"), camLienzo = camFull.querySelector(".lienzo");
+/* Cajas naranja neón: se reutilizan los mismos elementos para que se deslicen siguiendo lo que se mueve */
+function camCajas(cs){
+  [$("camCajas"), camLienzo.querySelector(".cam-cajas")].forEach(cont => {
+    const hay = [...cont.children];
+    cs.forEach((c, i) => {
+      let el = hay[i]; if (!el){ el = document.createElement("i"); el.className = "cam-caja"; cont.appendChild(el); }
+      el.classList.remove("sale");
+      el.style.left = c[0] * 100 + "%"; el.style.top = c[1] * 100 + "%"; el.style.width = c[2] * 100 + "%"; el.style.height = c[3] * 100 + "%";
+    });
+    hay.slice(cs.length).forEach(el => el.classList.add("sale"));
+  });
+}
 (function(){
   let s = 1, tx = 0, ty = 0, zoomT = 0, ini = null, ultimoToque = 0, bajar = 0;
   const pts = new Map();
+  const medir = () => {   // el lienzo mide lo mismo que la imagen ajustada a la pantalla (16:9)
+    const W = camFull.clientWidth, H = camFull.clientHeight, k = Math.min(W / 16, H / 9);
+    camLienzo.style.width = 16 * k + "px"; camLienzo.style.height = 9 * k + "px";
+  };
+  addEventListener("resize", () => { if (camAbierta){ medir(); limitar(); pintar(false); } });
   const limitar = () => {   // que la imagen no se salga de la pantalla
-    const W = camFull.clientWidth, H = camFull.clientHeight, nw = camFullImg.naturalWidth || 16, nh = camFullImg.naturalHeight || 9;
+    const W = camFull.clientWidth, H = camFull.clientHeight, nw = 16, nh = 9;
     const k = Math.min(W / nw, H / nh), iw = nw * k * s, ih = nh * k * s;
     const mx = Math.max(0, (iw - W) / 2), my = Math.max(0, (ih - H) / 2);
     tx = Math.max(-mx, Math.min(mx, tx)); ty = Math.max(-my, Math.min(my, ty));
   };
   const pintar = anim => {
-    camFullImg.style.transition = anim ? "transform .25s ease" : "none";
-    camFullImg.style.transform = `translate(${tx}px,${ty + bajar}px) scale(${s})`;
+    camLienzo.style.transition = anim ? "transform .25s ease" : "none";
+    camLienzo.style.transform = `translate(-50%,-50%) translate(${tx}px,${ty + bajar}px) scale(${s})`;
+    camLienzo.style.setProperty("--s", s);
     camFull.style.background = bajar > 0 ? `rgba(0,0,0,${Math.max(.3, 1 - bajar / 400)})` : "#000";
     camZoom.textContent = s.toFixed(1).replace(".0", "") + "×"; camZoom.classList.toggle("ver", s > 1.01);
     clearTimeout(zoomT); zoomT = setTimeout(() => camZoom.classList.remove("ver"), 1200);
@@ -2421,7 +2499,7 @@ const camFullImg = camFull.querySelector("img"), camFullVivo = camFull.querySele
   };
   window.camAbrir = () => {
     if (!camFullImg.src) return;
-    s = 1; tx = ty = 0; bajar = 0; pintar(false);
+    s = 1; tx = ty = 0; bajar = 0; medir(); pintar(false);
     camAbierta = true; camFull.classList.add("abierta"); document.querySelector("nav")?.classList.add("oculta");
   };
   const cerrar = () => { camAbierta = false; camFull.classList.remove("abierta"); document.querySelector("nav")?.classList.remove("oculta"); };
@@ -2465,6 +2543,96 @@ const camFullImg = camFull.querySelector("img"), camFullVivo = camFull.querySele
   camFull.addEventListener("pointerup", soltar); camFull.addEventListener("pointercancel", soltar);
   $("v-cam").querySelector(".cam-marco").addEventListener("click", () => window.camAbrir());
 })();
+
+/* ---------- Vigilancia: avisos de movimiento (la laptop detecta, Claude Haiku dice si es persona, llega como notificación) ---------- */
+const VAPID = "BDcYm1WUn3qwtAXZm_I393tzmfI_w8eVoejehkkODkii4zID836TDgsQ6Y0PJ0PfX0uQwqGRDzkaz6AxYfn8qkg";
+let VIG = null, vigFotoT = 0;
+const hhmm = t => new Date(t * 1000).toLocaleTimeString("es-MX", { hour:"numeric", minute:"2-digit" });
+const durTxt = m => { m = Math.max(1, Math.round(m)); const h = Math.floor(m / 60), r = m % 60; return (h ? h + " h" : "") + (h && r ? " " : "") + (r ? r + " min" : ""); };
+function vigPintar(v){
+  if (v) VIG = v; v = VIG; if (!v) return;
+  const desfase = v.ahora ? v.ahora - Date.now() / 1000 : 0, ahora = Date.now() / 1000 + desfase;   // reloj del server
+  const sil = v.on && v.silencio > ahora;
+  $("vigOn").setAttribute("aria-checked", !!v.on); $("vigPers").setAttribute("aria-checked", !!v.solo_personas);
+  $("vigEstado").textContent = !v.on ? "Apagada" : sil ? `Silenciada hasta las ${hhmm(v.silencio)} (faltan ${durTxt((v.silencio - ahora) / 60)})`
+    : v.solo_personas ? "Activa: te aviso si ve a una persona" : "Activa: te aviso de cualquier movimiento";
+  $("vigSil").hidden = !v.on; $("vigQuitar").hidden = !sil; $("vigSil").textContent = sil ? "Cambiar tiempo…" : "Silenciar…";
+  const u = v.ult;
+  $("vigUlt").hidden = !u;
+  if (u){
+    const hoy = new Date(u.t * 1000).toDateString() === new Date().toDateString();
+    $("vigUltTxt").innerHTML = `<b>Último movimiento</b><br>${hoy ? "" : new Date(u.t * 1000).toLocaleDateString("es-MX", { day:"numeric", month:"short" }) + ", "}${hhmm(u.t)} · ${u.persona ? "persona" : "sin persona"}${u.que ? " · " + esc(u.que) : ""}`;
+    if (vigFotoT !== u.t){ vigFotoT = u.t; const c = cfg(); if (c) api(c, "cam_aviso_foto", {}).then(r => { $("vigFoto").hidden = !r.jpg; if (r.jpg) $("vigFoto").src = "data:image/jpeg;base64," + r.jpg; }).catch(() => {}); }
+  }
+  notifPintar();
+}
+async function vigMandar(input, msg){
+  const c = cfg(); if (!c) return;
+  $("vigMsg").textContent = "";
+  try{ vigPintar(await api(c, "cam_vig", input)); if (msg) $("vigMsg").textContent = msg; if (navigator.vibrate) navigator.vibrate(10); }
+  catch(e){ $("vigMsg").textContent = "No se pudo: " + e.message; }
+}
+$("vigOn").onclick = () => {
+  const on = $("vigOn").getAttribute("aria-checked") !== "true";
+  vigMandar(on ? { on:true, silencio_min:0 } : { on:false }, on ? "Listo: la laptop vigila. Tiene que estar prendida y sin dormirse." : "");
+  if (on && pushPosible() && Notification.permission !== "granted") notifActivar();
+};
+$("vigPers").onclick = () => vigMandar({ solo_personas:$("vigPers").getAttribute("aria-checked") !== "true" });
+$("vigQuitar").onclick = () => vigMandar({ silencio_min:0 }, "Listo: vuelve a avisar.");
+setInterval(() => { if (actual === "cam") vigPintar(); }, 30000);   // la cuenta regresiva del silencio
+/* si la cámara no responde (laptop dormida) igual se muestra el estado de la vigilancia */
+function vigCargar(){ const c = cfg(); if (c) api(c, "cam_vig", {}).then(vigPintar).catch(() => {}); }
+$("vigFoto").onclick = () => { if (!$("vigFoto").src) return; camFullImg.src = $("vigFoto").src; window.camAbrir(); };
+
+/* Rueda de horas y minutos (como el temporizador del Reloj) */
+(function(){
+  const H = $("silH"), M = $("silM"), ALTO = 40;
+  H.innerHTML = Array.from({ length:24 }, (_, i) => `<div>${i}</div>`).join("");
+  M.innerHTML = Array.from({ length:12 }, (_, i) => `<div>${String(i * 5).padStart(2, "0")}</div>`).join("");
+  const valor = () => Math.round(H.scrollTop / ALTO) * 60 + Math.round(M.scrollTop / ALTO) * 5;
+  const poner = (m, suave) => { const b = suave ? "smooth" : "auto"; H.scrollTo({ top:Math.floor(m / 60) * ALTO, behavior:b }); M.scrollTo({ top:Math.round((m % 60) / 5) * ALTO, behavior:b }); };
+  $("vigSil").onclick = () => { hoja($("hojaSil"), true); setTimeout(() => poner(60, false), 30); };
+  $("silChips").onclick = e => { const b = e.target.closest("[data-m]"); if (b) poner(+b.dataset.m, true); };
+  $("silOk").onclick = () => {
+    const m = valor(); if (!m) return;
+    hoja($("hojaSil"), false);
+    vigMandar({ silencio_min:m }, `Listo: no te aviso en ${durTxt(m)}.`);
+  };
+})();
+
+/* Notificaciones (Web Push). En iPhone solo funciona con JLP abierto desde el ícono de la pantalla de inicio. */
+const pushPosible = () => "serviceWorker" in navigator && "PushManager" in window && "Notification" in window;
+let swReg = null;
+if ("serviceWorker" in navigator) navigator.serviceWorker.register("sw.js").then(r => { swReg = r; notifRevisar(); }).catch(() => {});
+function notifPintar(){
+  const b = $("vigNotif");
+  if (!pushPosible()){ b.hidden = true; if (VIG && VIG.on && !$("vigMsg").textContent) $("vigMsg").textContent = "Para que te lleguen avisos, abre JLP desde el ícono en tu pantalla de inicio."; return; }
+  b.hidden = Notification.permission === "granted" && !!localStorage.getItem("jlp-push");
+  b.textContent = Notification.permission === "denied" ? "Notificaciones bloqueadas (actívalas en Ajustes › JLP)" : "Activar notificaciones";
+  b.disabled = Notification.permission === "denied";
+}
+async function notifSuscribir(){
+  const reg = swReg || await navigator.serviceWorker.ready;
+  let sub = await reg.pushManager.getSubscription();
+  if (!sub){
+    const k = atob(VAPID.replace(/-/g, "+").replace(/_/g, "/")), key = Uint8Array.from(k, ch => ch.charCodeAt(0));
+    sub = await reg.pushManager.subscribe({ userVisibleOnly:true, applicationServerKey:key });
+  }
+  const c = cfg(); if (!c) return;
+  await api(c, "cam_vig", { sub:sub.toJSON() });
+  try{ localStorage.setItem("jlp-push", sub.endpoint); }catch(e){}
+}
+async function notifActivar(){
+  try{
+    const p = await Notification.requestPermission();   // va primero: iOS solo lo deja pedir justo después de tocar
+    if (p !== "granted"){ notifPintar(); return; }
+    await notifSuscribir();
+    $("vigMsg").textContent = "Listo: los avisos te llegan a este teléfono.";
+  }catch(e){ $("vigMsg").textContent = "No se pudieron activar: " + e.message; }
+  notifPintar();
+}
+$("vigNotif").onclick = notifActivar;
+function notifRevisar(){ if (pushPosible() && Notification.permission === "granted") notifSuscribir().catch(() => {}); }   // mantiene al server con la suscripción vigente
 async function api(c, tool, input){
   const r = await fetch(API, { method:"POST", headers:{ "Content-Type":"text/plain;charset=utf-8" }, body:JSON.stringify({ k:c.k, tool, input }) });
   const j = await r.json(); if (j.error) throw new Error(j.error); return j.result;
