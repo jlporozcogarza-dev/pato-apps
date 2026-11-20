@@ -1119,9 +1119,10 @@ const verCat = k => filtrosCal.has(k), colCat = k => (CATS_CAL.find(c => c[0] ==
 const catEvento = e => /condotec/i.test(e.c || "") ? "condo" : /\b(tec|trabajo|ternium)\b/i.test(e.c || "") ? "tec" : "personal";
 const catTarea = t => /\btec\b|ternium|tarea|clase|examen|parcial|proyecto|entrega|profe|materia/i.test(t.t + " " + (t.det || "")) ? "tec" : "personal";
 const tareasDe = dia => conCola(TAR || []).filter(t => t.estado !== "hecha" && t.fecha === dia && verCat(catTarea(t)));
-/* Colores del calendario: cumpleaños rosa · rutinas (Ternium, Tec, lo que se repite) azul · tareas urgentes rojo · tareas normales amarillo ·
-   Condotec gris · lo demás verde. Los filtros (Personal/Tec/Condotec) siguen igual. */
-const COL = { cumple:"#FF5FA2", rutina:"var(--st-info)", urgente:"var(--st-crit)", tarea:"#F7C948", condo:"var(--st-neutro)", otro:"var(--st-ok)" };
+/* Colores del calendario (los pidió Pato): cumpleaños rosa · mensualidades (💳, cobros, pagos fijos) rojo ·
+   Tec, Ternium y Condotec (tareas, eventos y rutinas) azul · cosas con Claude naranja · lo personal verde.
+   Los filtros (Personal/Tec/Condotec) siguen igual. */
+const COL = { cumple:"#FF5FA2", pago:"var(--st-crit)", azul:"var(--st-info)", claude:"#FF8A1F", verde:"var(--st-ok)" };
 let rutinasMemo = { ref:null, set:new Set() };
 function esRutina(e){
   const lista = (AG && AG.eventos) || [];
@@ -1132,21 +1133,25 @@ function esRutina(e){
   }
   return rutinasMemo.set.has((e.t || "").trim().toLowerCase());
 }
+const esPago = x => /💳|cobro|mensualidad|domiciliad|pago (fijo|mensual)/i.test((x.t || "") + " " + (x.d || ""));
+const conClaude = x => /claude/i.test((x.t || "") + " " + (x.det || ""));
+const esTrabajo = x => /\btec\b|ternium|condotec|loft|depa|inquilin/i.test((x.t || "") + " " + (x.det || "") + " " + (x.c || ""));
 function colEvento(e){
   if (/cumplea|birthday/i.test((e.c || "") + " " + (e.t || "")) || /#contacts/.test(e.cid || "") || soloNombre(e)) return COL.cumple;
-  const k = catEvento(e);
-  if (k === "condo") return COL.condo;
-  if (k === "tec" || esRutina(e)) return COL.rutina;
-  return COL.otro;
+  if (esPago(e)) return COL.pago;
+  if (conClaude(e)) return COL.claude;
+  if (catEvento(e) !== "personal" || esTrabajo(e) || esRutina(e)) return COL.azul;
+  return COL.verde;
 }
+const tareaUrgente = t => (t.fecha && t.fecha <= hoy) || /urgente/i.test((t.t || "") + " " + (t.det || ""));
+const colTarea = t => conClaude(t) ? COL.claude : (catTarea(t) === "tec" || esTrabajo(t) || t.cond) ? COL.azul : COL.verde;
 /* Un evento de todo el día que es solo un nombre («César», «Ana Lucía», «Tía Mary») = cumpleaños. */
 const NO_NOMBRE = /^(feriado|festivo|vacaciones|viaje|mudanza|examen|entrega|pago|renta|navidad|año nuevo|pendiente|tarea|cita|junta|clase|ternium|tec|condotec)\b/i;
 function soloNombre(e){
   const t = String(e.t || "").replace(/[🎂🎉🎁🥳]/gu, "").trim();
   return !!e.dia && !NO_NOMBRE.test(t) && /^[A-ZÁÉÍÓÚÑ][\p{L}'’.-]*(\s+(de|del|la|[A-ZÁÉÍÓÚÑ][\p{L}'’.-]*)){0,3}$/u.test(t);
 }
-const tareaUrgente = t => (t.fecha && t.fecha <= hoy) || /urgente/i.test((t.t || "") + " " + (t.det || ""));
-const colTarea = t => tareaUrgente(t) ? COL.urgente : COL.tarea;
+
 function pintarFiltrosCal(){
   $("calFiltros").innerHTML = CATS_CAL.map(([k, n, col]) => `<button data-filtro="${k}" aria-pressed="${verCat(k)}" style="--col:${col}"><i></i>${n}</button>`).join("");
 }
@@ -1352,7 +1357,7 @@ function pintarCal(){
     const d = sumaDias(inicio, i), ev = eventosDe(d).slice(0, 3), pe = pendDe(d), ta = tareasDe(d);
     const puntos = ev.map(e => `<i style="--col:${colEvento(e)}"></i>`).join("")
       + ta.slice(0, 2).map(t => `<i style="--col:${colTarea(t)}"></i>`).join("")
-      + (pe.length ? `<i style="--col:${d <= hoy || pe.some(p => /alta/i.test(p.prioridad || "")) ? COL.urgente : COL.tarea}"></i>` : "");
+      + (pe.length ? `<i style="--col:${COL.azul}"></i>` : "");
     const cls = ["dia", d.slice(0, 7) !== agMes && "fuera", d === hoy && "hoy", d === agSel && "sel"].filter(Boolean).join(" ");
     return `<button class="${cls}" data-dia="${d}" aria-label="${corto(d)}${ev.length ? ", " + ev.length + " eventos" : ""}"><span>${+d.slice(8)}</span><span class="puntos">${puntos}</span></button>`;
   }).join("");
