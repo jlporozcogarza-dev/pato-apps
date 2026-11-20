@@ -327,6 +327,8 @@ button.evento:active{filter:brightness(1.15)}
 .dp-pend li{padding:10px 12px;border-radius:14px;background:rgba(255,255,255,.04);border:1px solid rgba(255,255,255,.07);display:flex;flex-direction:column;gap:2px;font-size:14px}
 .dp-pend small{color:var(--muted)}
 #hojaDepa .uni-botones{margin-top:14px}
+#hojaDepa .dp-viejo{opacity:.55}
+#hojaDepa .dp-dif{color:var(--st-warn, #E5A50A)}
 .uni-detalle{margin-top:12px;padding:12px 14px;border-radius:16px;background:rgba(255,255,255,.05);border:1px solid rgba(255,255,255,.08);min-height:62px}
 .uni-detalle .arriba{display:flex;justify-content:space-between;align-items:center;gap:10px}
 .uni-detalle b{font:700 20px/1 var(--display)}
@@ -1785,6 +1787,28 @@ function pintarFicha(d, f){
       `<div><span>Meses que lleva</span><b>${x.lleva ?? "—"}</b></div></div>` +
       (x.necesidades ? `<p class="dp-nec"><span>Necesidades</span>${esc(x.necesidades)}</p>` : "") + `</div>`;
   });
+  // Contratos firmados (PDF de Adrián): lo que dice el papel y en qué no cuadra con la hoja
+  const cts = (f.contratos || []).slice().sort((a, b) => (b.inicio || "").localeCompare(a.inicio || ""));
+  if (cts.length){
+    const hoja1 = ps[0] || {};
+    h += `<h3 class="dp-t">Contrato firmado</h3>`;
+    cts.forEach(k => {
+      const viejo = k.anterior || (k.fin && !k.fin_dudosa && k.fin < hoy);
+      const dif = [];
+      if (!viejo && hoja1.renta && k.renta && hoja1.renta !== k.renta) dif.push(`renta en la hoja ${pesos(hoja1.renta)}`);
+      if (!viejo && hoja1.entrada && k.inicio && hoja1.entrada !== k.inicio) dif.push(`entrada en la hoja ${fechaCorta(hoja1.entrada)}`);
+      if (!viejo && hoja1.salida && k.fin && !k.fin_dudosa && hoja1.salida !== k.fin) dif.push(`salida en la hoja ${fechaCorta(hoja1.salida)}`);
+      h += `<div class="dp-caja${viejo ? " dp-viejo" : ""}"><div class="dp-fila"><span>${viejo ? "Contrato anterior" : "Firma"}</span><b>${esc(k.arrendatario)}</b></div>` +
+        `<div class="dp-datos">` +
+        `<div><span>Renta</span><b>${k.renta ? pesos(k.renta) + "/mes" : "—"}</b></div>` +
+        `<div><span>Depósito</span><b>${esc(k.deposito || "—")}</b></div>` +
+        `<div><span>Inicio</span><b>${fechaCorta(k.inicio)}</b></div>` +
+        `<div><span>Fin</span><b>${k.fin_dudosa ? esc(k.fin_txt) : fechaCorta(k.fin)}</b></div></div>` +
+        (k.renta_txt && /\(/.test(k.renta_txt) ? `<p class="dp-nec"><span>Renta</span>${esc(k.renta_txt)}</p>` : "") +
+        (k.nota ? `<p class="dp-nec"><span>Nota</span>${esc(k.nota)}</p>` : "") +
+        (dif.length ? `<p class="dp-nec dp-dif"><span>No cuadra</span>${esc(dif.join(" · "))}</p>` : "") + `</div>`;
+    });
+  }
   h += `<h3 class="dp-t">Pendientes del depa</h3>` + (f.pendientes.length
     ? `<ul class="dp-pend">${f.pendientes.map(p => `<li><b>${esc(p.texto)}</b>${[p.prioridad, p.fecha, p.estado].filter(Boolean).length ? `<small>${esc([p.prioridad, p.fecha, p.estado].filter(Boolean).join(" · "))}</small>` : ""}</li>`).join("")}</ul>`
     : '<p class="nota">Sin pendientes abiertos.</p>');
