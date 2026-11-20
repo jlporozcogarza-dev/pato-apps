@@ -127,6 +127,7 @@ function eventos(x) {
 // Cambiar o borrar un evento desde JLP. x = { accion:'editar'|'borrar', cid, id, dia0 (AAAA-MM-DD donde está hoy), t, l, d, todo, fecha, ini, fin (HH:MM) }.
 // Se busca en ese día por id (así funciona también con una sola fecha de un evento que se repite).
 function evento(x) {
+  if (x.accion === 'tareas') return tareasCal(x);   // pendientes con fecha → calendario «JLP Pendientes»
   const cal = CalendarApp.getCalendarById(x.cid);
   if (!cal) throw new Error('Calendario no encontrado');
   const z = '-06:00', d0 = new Date(x.dia0 + 'T00:00:00' + z), d1 = new Date(d0.getTime() + 864e5);
@@ -155,4 +156,33 @@ function evento(x) {
     ev.deleteEvent();
   }
   return { ok: true };
+}
+
+// Tus pendientes con fecha (tareas de JLP y de Condotec) como eventos de todo el día en el calendario «JLP Pendientes».
+// x.tareas = [{ id, t, fecha:'AAAA-MM-DD' }] = lo que DEBE estar. Lo que sobra (hecho o sin fecha) se borra; lo que cambió se corrige.
+// Cada evento lleva "jlp:<id>" en la descripción para encontrarlo. JLP no muestra este calendario (ya pinta las tareas él mismo).
+function tareasCal(x) {
+  const NOMBRE = 'JLP Pendientes', z = '-06:00';
+  let cal = CalendarApp.getCalendarsByName(NOMBRE)[0];
+  if (!cal) { cal = CalendarApp.createCalendar(NOMBRE, { color: CalendarApp.Color.YELLOW }); }
+  const hoy = new Date(), desde = new Date(hoy.getTime() - 120 * 864e5), hasta = new Date(hoy.getTime() + 400 * 864e5);
+  const hay = {};
+  cal.getEvents(desde, hasta).forEach(function (ev) {
+    const m = /jlp:(\S+)/.exec(ev.getDescription() || '');
+    if (!m || hay[m[1]]) { ev.deleteEvent(); return; }   // sin etiqueta o repetido: fuera
+    hay[m[1]] = ev;
+  });
+  const quiero = {};
+  (x.tareas || []).forEach(function (t) { if (t && t.id && /^\d{4}-\d{2}-\d{2}$/.test(t.fecha || '')) quiero[t.id] = t; });
+  let creados = 0, cambiados = 0, borrados = 0;
+  Object.keys(hay).forEach(function (id) { if (!quiero[id]) { hay[id].deleteEvent(); borrados++; } });
+  Object.keys(quiero).forEach(function (id) {
+    const t = quiero[id], dia = new Date(t.fecha + 'T00:00:00' + z), titulo = String(t.t).slice(0, 250);
+    const ev = hay[id];
+    if (!ev) { cal.createAllDayEvent(titulo, dia, { description: 'jlp:' + id + '\nSe maneja desde JLP (jlpog.app).' }); creados++; return; }
+    const f = Utilities.formatDate(ev.getAllDayStartDate(), 'America/Monterrey', 'yyyy-MM-dd');
+    if (ev.getTitle() !== titulo) { ev.setTitle(titulo); cambiados++; }
+    if (f !== t.fecha) { ev.setAllDayDate(dia); cambiados++; }
+  });
+  return { creados: creados, cambiados: cambiados, borrados: borrados };
 }
