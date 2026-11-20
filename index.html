@@ -206,7 +206,7 @@ button.card:active{transform:scale(.98)}
 .puntos{display:flex;gap:2px;height:6px;align-items:center}
 button.evento{width:100%;text-align:left;font:inherit;color:inherit;cursor:pointer}
 button.evento:active{filter:brightness(1.15)}
-.evento .ev-nota{display:block;margin-top:3px;white-space:pre-line;opacity:.8}
+.evento .ev-nota{display:block;margin-top:3px;opacity:.8}
 .ev-todo{display:flex;align-items:center;gap:8px;margin:10px 2px;font-size:14px;color:var(--fg)}
 .ev-todo input{width:20px;height:20px;accent-color:var(--c10)}
 .ev-horas{display:grid;grid-template-columns:1fr 1fr;gap:10px}
@@ -234,6 +234,19 @@ button.evento:active{filter:brightness(1.15)}
 .evento .hora{flex:none;width:56px;font:700 13px/1.3 var(--display);color:var(--fg)}
 .evento b{display:block;font-weight:500;font-size:14px;line-height:1.3}
 .evento small{display:block;color:var(--muted);font-size:12px;margin-top:3px}
+/* resumen: nada se sale de la tarjeta; el título a 2 renglones, lugar a 1 y la nota a 2. Lo completo sale al tocarla. */
+.evento .ev-cuerpo{flex:1;min-width:0;overflow-wrap:anywhere}
+.evento .ev-cuerpo b{display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;overflow:hidden}
+.evento .ev-cuerpo small{white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.evento .ev-cuerpo .ev-nota{white-space:normal;display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;overflow:hidden}
+.evento::after{content:"›";align-self:center;color:var(--muted);font-size:20px;flex:none;margin-left:-4px}
+#v-pendientes,#v-inicio{overflow-x:hidden}
+/* ficha de un evento: toda la info */
+.ev-ver-meta{display:grid;gap:10px;margin:4px 0 16px}
+.ev-ver-meta div{display:flex;gap:12px;align-items:flex-start;font-size:15px;line-height:1.35;overflow-wrap:anywhere;min-width:0}
+.ev-ver-meta i{font-style:normal;width:22px;flex:none;text-align:center}
+.ev-ver-nota{white-space:pre-wrap;overflow-wrap:anywhere;font-size:15px;line-height:1.5;margin:0 0 16px;padding:14px;border-radius:16px;background:rgba(255,255,255,.05);border:1px solid rgba(255,255,255,.08)}
+.ev-ver-nota a{color:var(--c10)}
 /* página Condotec: ocupación + mapa del edificio */
 /* rentado es lo normal y va en neutro; solo lo que pide atención lleva color de estado, siempre con una marca además del color */
 [data-e=rentado]{--e:color-mix(in srgb,var(--fg) 78%,var(--c60))}[data-e=vence]{--e:var(--st-warn)}[data-e=vencido]{--e:var(--st-crit)}[data-e=duda]{--e:var(--st-neutro)}[data-e=libre]{--e:var(--st-info)}
@@ -917,6 +930,15 @@ input[type=checkbox]{accent-color:var(--c10)}
     <button data-z="top">Hasta arriba</button><button data-z="up">Subir</button><button data-z="down">Bajar</button><button data-z="bottom">Hasta abajo</button></div></div>
   <button class="idea-borrar" id="ideaBorrar">Borrar post-it</button>
 </section>
+<section class="hoja" id="hojaEvVer" role="dialog" aria-modal="true" aria-labelledby="evVerTitulo" aria-hidden="true">
+  <div class="asa" aria-hidden="true"></div>
+  <button class="cerrar-hoja" data-cerrar-hoja aria-label="Cerrar"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round"><path d="M6 6l12 12M18 6L6 18"/></svg></button>
+  <h2 id="evVerTitulo"></h2>
+  <div class="ev-ver-meta" id="evVerMeta"></div>
+  <div class="ev-ver-nota" id="evVerNota"></div>
+  <div class="tf-enl" id="evVerEnl"></div>
+  <div class="fila"><button class="listo" id="evVerEditar">Editar</button></div>
+</section>
 <section class="hoja" id="hojaTarea" role="dialog" aria-modal="true" aria-labelledby="tfTitulo" aria-hidden="true">
   <div class="asa" aria-hidden="true"></div>
   <button class="cerrar-hoja" data-cerrar-hoja aria-label="Cerrar"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round"><path d="M6 6l12 12M18 6L6 18"/></svg></button>
@@ -1194,7 +1216,35 @@ function abrirEv(n){
 ["evNombre", "evFecha", "evTodo", "evIni", "evFin", "evLugar", "evNota", "evCal"].forEach(id => $(id).addEventListener("input", () => {
   $("evHoras").hidden = $("evTodo").checked; $("evGuardar").disabled = false; }));
 $("evTodo").addEventListener("change", () => { $("evHoras").hidden = $("evTodo").checked; $("evGuardar").disabled = false; });
-$("agDia").addEventListener("click", e => { const b = e.target.closest("[data-ev]"); if (b) abrirEv(+b.dataset.ev); });
+const URL_RE = /https?:\/\/[^\s)"'<>]+/g;
+const sinUrls = t => String(t || "").replace(URL_RE, "🔗").replace(/\s+/g, " ").trim();
+const lugarCorto = l => String(l || "").replace(/\s*[—-]?\s*https?:\/\/\S+/g, "").trim();
+function conEnlaces(t){   // texto seguro con los links tocables
+  let out = "", i = 0; String(t || "").replace(URL_RE, (u, k) => { out += esc(t.slice(i, k)) + `<a href="${esc(u)}" target="_blank" rel="noopener">${esc(u.replace(/^https?:\/\/(www\.)?/, "").slice(0, 40))}${u.length > 48 ? "…" : ""}</a>`; i = k + u.length; return u; });
+  return out + esc(String(t || "").slice(i));
+}
+let evVerN = -1;
+function verEv(n){
+  const e = evDia[n]; if (!e) return; evVerN = n;
+  $("evVerTitulo").textContent = e.t || "Evento";
+  const f = new Date(agSel + "T12:00").toLocaleDateString("es-MX", { weekday:"long", day:"numeric", month:"long" });
+  const hora = e.dia ? "Todo el día" : e.i.slice(11, 16) + (e.f ? "–" + e.f.slice(11, 16) : "");
+  const mapa = (String(e.l || "").match(URL_RE) || [])[0] || (lugarCorto(e.l) ? "https://maps.apple.com/?q=" + encodeURIComponent(lugarCorto(e.l)) : "");
+  $("evVerMeta").innerHTML = [["🗓️", f.replace(/^./, c => c.toUpperCase()) + " · " + hora], ["📁", e.c + (e.ro ? " (solo lectura)" : "")], lugarCorto(e.l) && ["📍", lugarCorto(e.l)]]
+    .filter(Boolean).map(([i, t]) => `<div><i>${i}</i><span>${esc(t)}</span></div>`).join("");
+  $("evVerNota").hidden = !e.d; $("evVerNota").innerHTML = conEnlaces(e.d);
+  const enl = [];
+  if (mapa) enl.push(`<a href="${esc(mapa)}" target="_blank" rel="noopener"><i>🗺️</i><span><b>Abrir en Mapas</b><small>${esc(lugarCorto(e.l) || mapa)}</small></span></a>`);
+  const tel = waDe(e.d || ""); if (tel) enl.push(`<a href="https://wa.me/${tel}" target="_blank" rel="noopener"><i>💬</i><span><b>WhatsApp</b><small>+${tel}</small></span></a>`);
+  $("evVerEnl").innerHTML = enl.join("");
+  $("evVerEditar").hidden = !(e.id && !e.ro);
+  hoja($("hojaEvVer"), true); $("hojaEvVer").scrollTop = 0;
+}
+$("evVerEditar").onclick = () => { const n = evVerN; cerrarHojas(); setTimeout(() => abrirEv(n), 250); };
+$("agDia").addEventListener("click", e => {
+  const b = e.target.closest("[data-ev]"); if (b) return verEv(+b.dataset.ev);
+  const t = e.target.closest("[data-tarea-cal]"); if (t && typeof abrirTarea === "function") abrirTarea(t.dataset.tareaCal);
+});
 async function mandarEv(borrar){
   const e = evSel, c = cfg(); if (!e || !c) return;
   if (borrar && !confirm("¿Borrar «" + e.t + "» de tu Google Calendar?")) return;
@@ -1235,11 +1285,11 @@ function pintarDia(){
   $("agFecha").textContent = fecha.toLocaleDateString("es-MX", { day:"numeric", month:"long" });
   const ev = eventosDe(agSel), pe = pendDe(agSel), ta = tareasDe(agSel);
   evDia = ev;
-  let h = ev.map((e, n) => { const tag = e.id && !e.ro ? `button data-ev="${n}"` : "div";
+  let h = ev.map((e, n) => { const tag = `button data-ev="${n}"`;   // todos se abren; los de solo lectura no traen Editar
     return `<${tag} class="evento" style="--col:${colCat(catEvento(e))}"><span class="barra"></span><span class="hora">${e.dia ? "Todo el día" : esc(e.i.slice(11, 16))}</span>` +
-      `<span><b>${esc(e.t)}</b><small>${esc([e.c, e.l].filter(Boolean).join(" · "))}</small>${e.d ? `<small class="ev-nota">${esc(e.d)}</small>` : ""}</span></${tag.split(" ")[0]}>`; }).join("");
-  h += ta.map(t => `<div class="evento" style="--col:${colCat(catTarea(t))}"><span class="barra"></span><span class="hora">Tarea</span>` +
-    `<span><b>${esc(t.t)}</b><small>${esc(t.det || (catTarea(t) === "tec" ? "Tec" : "Personal"))}</small></span></div>`).join("");
+      `<span class="ev-cuerpo"><b>${esc(e.t)}</b><small>${esc([e.c, lugarCorto(e.l)].filter(Boolean).join(" · "))}</small>${e.d ? `<small class="ev-nota">${esc(sinUrls(e.d))}</small>` : ""}</span></${tag.split(" ")[0]}>`; }).join("");
+  h += ta.map(t => `<button class="evento" data-tarea-cal="${esc(t.id)}" style="--col:${colCat(catTarea(t))}"><span class="barra"></span><span class="hora">Tarea</span>` +
+    `<span class="ev-cuerpo"><b>${esc(t.t)}</b><small>${esc(t.det || (catTarea(t) === "tec" ? "Tec" : "Personal"))}</small></span></button>`).join("");
   h += pe.map(p => `<button class="renglon at" data-pend="${esc(p.n)}"><div class="arriba"><b>${esc(p.n)}. ${esc(p.texto)}</b><span class="marca t-${agSel < hoy ? "rojo" : "gris"}">vence</span></div>${p.depas ? `<p>${esc(p.depas)}</p>` : ""}</button>`).join("");
   if (!h) h = AG && AG.eventos == null
     ? '<p class="nota">Tu Google Calendar todavía no llega al server: falta publicar el puente en Apps Script (Implementar → Versión nueva).</p>'

@@ -56,7 +56,7 @@ Cada uno lleva quién lo destraba y una estimación de tiempo (sale del promedio
 ### Para Claude (no esperan a nadie)
 | ID | Pendiente | Est. |
 |---|---|---|
-| C1 | Que las **tareas** que salen en el calendario también se abran al tocarlas (hoy solo se editan desde la lista de Pendientes) | 10 min |
+| C1 | **HECHA 20 nov:** las tareas del calendario se abren al tocarlas (misma ficha que en Pendientes) | — |
 | C2 | Fede por voz no conoce Mis comidas ni las recetas (café, sandwich…): pasárselas en su contexto | 10 min |
 | C3 | Revisar «Gastado desde el inicio» = 1520.5 en Config de Finanzas | 10 min |
 | C4 | Respaldo de Ideas (post-its) en Sheets; hoy solo viven en el teléfono | 20 min |
@@ -170,4 +170,5 @@ Hoy, al tocar un depa, solo cambia el cuadrito de abajo (`detalleUni` en `index.
 - 20 nov: WHOOP se copia cada 15 min (antes cada hora); Cam arranca sola con Windows; Cam en grande con zoom de pellizco y HD (1280 px) mientras está en grande.
 - 20 nov: **Vigilancia en Cam**: la laptop detecta movimiento (OpenCV, `fede/camara.pyw`), Claude Haiku (`claude -p --model haiku`) dice si es persona, aviso por Web Push (`sw.js`, llaves en `fede/cam_vapid.json`, suscripciones en `/opt/pato-puente/cam.json`). Cajas naranja neón siguen lo que se mueve. Silenciar con rueda de horas/min. Máx. 1 aviso cada 2 min y 1 revisión de IA por minuto. Herramientas del puente: cam_vig, cam_evento, cam_aviso_foto, cam_sub_quitar.
 - 20 nov: tocar una tarea en Pendientes abre su ficha con el texto completo y enlaces de dónde revisarlo (chat de WhatsApp, pedido y pagos de Amazon, Gmail, Cloudflare, BBVA, Canvas, pestaña del app…). Dejar picada sigue siendo la fecha.
+- 20 nov: eventos del calendario en Pendientes salen en resumen (título 2 renglones, lugar sin URL, nota 2 renglones) y nunca se salen del ancho; tocar abre la ficha completa con links, Mapas, WhatsApp y botón Editar.
 - Suscripciones investigadas: unos $6,079 al mes en total (falta P2).
