@@ -661,8 +661,7 @@ input[type=checkbox]{accent-color:var(--c10)}
 .vig-botones button.fuerte{background:#FF6A00;border-color:transparent;color:#1a0d00;font-weight:600}
 .vig-botones button[hidden]{display:none}
 .vig-ult{display:flex;gap:12px;align-items:center;margin-top:14px;padding-top:14px;border-top:1px solid rgba(255,255,255,.08)}
-.vig-ult img{width:84px;height:47px;border-radius:10px;object-fit:cover;flex:none;background:#000;cursor:zoom-in}
-.vig-ult[hidden],.vig-ult img[hidden]{display:none}
+.vig-ult[hidden]{display:none}
 .vig-ult .vig-txt{font-size:13.5px;line-height:1.35}
 .vig-msg{margin:10px 0 0;font-size:12.5px;color:var(--muted)}
 .vig-msg:empty{display:none}
@@ -757,7 +756,7 @@ input[type=checkbox]{accent-color:var(--c10)}
   <div class="vig-botones"><button id="vigSil">Silenciar…</button><button class="fuerte" id="vigQuitar" hidden>Quitar silencio</button></div>
   <div class="vig-botones"><button id="vigNotif" hidden>Activar notificaciones</button></div>
   <p class="vig-msg" id="vigMsg" role="status"></p>
-  <div class="vig-ult" id="vigUlt" hidden><img id="vigFoto" alt="Foto del último aviso" hidden><div class="vig-txt" id="vigUltTxt"></div></div>
+  <div class="vig-ult" id="vigUlt" hidden><div class="vig-txt" id="vigUltTxt"></div></div>
 </section>
 </main></div>
 <div class="vista" id="v-ideas" role="tabpanel" aria-label="Ideas"><main>
@@ -2546,7 +2545,7 @@ function camCajas(cs){
 
 /* ---------- Vigilancia: avisos de movimiento (la laptop detecta, Claude Haiku dice si es persona, llega como notificación) ---------- */
 const VAPID = "BDcYm1WUn3qwtAXZm_I393tzmfI_w8eVoejehkkODkii4zID836TDgsQ6Y0PJ0PfX0uQwqGRDzkaz6AxYfn8qkg";
-let VIG = null, vigFotoT = 0;
+let VIG = null;
 const hhmm = t => new Date(t * 1000).toLocaleTimeString("es-MX", { hour:"numeric", minute:"2-digit" });
 const durTxt = m => { m = Math.max(1, Math.round(m)); const h = Math.floor(m / 60), r = m % 60; return (h ? h + " h" : "") + (h && r ? " " : "") + (r ? r + " min" : ""); };
 function vigPintar(v){
@@ -2562,7 +2561,6 @@ function vigPintar(v){
   if (u){
     const hoy = new Date(u.t * 1000).toDateString() === new Date().toDateString();
     $("vigUltTxt").innerHTML = `<b>Último movimiento</b><br>${hoy ? "" : new Date(u.t * 1000).toLocaleDateString("es-MX", { day:"numeric", month:"short" }) + ", "}${hhmm(u.t)} · ${u.persona ? "persona" : "sin persona"}${u.que ? " · " + esc(u.que) : ""}`;
-    if (vigFotoT !== u.t){ vigFotoT = u.t; const c = cfg(); if (c) api(c, "cam_aviso_foto", {}).then(r => { $("vigFoto").hidden = !r.jpg; if (r.jpg) $("vigFoto").src = "data:image/jpeg;base64," + r.jpg; }).catch(() => {}); }
   }
   notifPintar();
 }
@@ -2582,7 +2580,6 @@ $("vigQuitar").onclick = () => vigMandar({ silencio_min:0 }, "Listo: vuelve a av
 setInterval(() => { if (actual === "cam") vigPintar(); }, 30000);   // la cuenta regresiva del silencio
 /* si la cámara no responde (laptop dormida) igual se muestra el estado de la vigilancia */
 function vigCargar(){ const c = cfg(); if (c) api(c, "cam_vig", {}).then(vigPintar).catch(() => {}); }
-$("vigFoto").onclick = () => { if (!$("vigFoto").src) return; camFullImg.src = $("vigFoto").src; window.camAbrir(); };
 
 /* Rueda de horas y minutos (como el temporizador del Reloj) */
 (function(){
