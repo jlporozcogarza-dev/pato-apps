@@ -624,7 +624,18 @@ nav button[aria-selected=true]::after{content:"";position:absolute;left:50%;top:
 .dia.hoy{box-shadow:inset 0 0 0 1.5px var(--c10),0 0 14px -3px var(--c10)}
 .zona b{text-shadow:0 0 8px var(--c10)}
 input[type=checkbox]{accent-color:var(--c10)}
-.cam-marco{position:relative;border-radius:24px;overflow:hidden;aspect-ratio:4/3;display:grid;place-items:center;background:#000}
+.cam-marco{position:relative;border-radius:24px;overflow:hidden;aspect-ratio:16/9;display:grid;place-items:center;background:#000;cursor:zoom-in}
+.cam-grande{position:absolute;right:10px;bottom:10px;z-index:1;width:38px;height:38px;border-radius:50%;border:0;display:grid;place-items:center;background:rgba(0,0,0,.5);color:#fff;-webkit-backdrop-filter:blur(8px);backdrop-filter:blur(8px)}
+.cam-grande svg{width:18px;height:18px}
+.cam-grande[hidden]{display:none}
+/* pantalla completa: pellizcar para zoom, arrastrar para moverte, doble toque acerca/aleja, ✕ o deslizar abajo cierra */
+#camFull{position:fixed;inset:0;z-index:300;background:#000;touch-action:none;overflow:hidden;opacity:0;pointer-events:none;transition:opacity .2s}
+#camFull.abierta{opacity:1;pointer-events:auto}
+#camFull img{position:absolute;inset:0;width:100%;height:100%;object-fit:contain;transform-origin:50% 50%;will-change:transform;-webkit-user-select:none;user-select:none;-webkit-touch-callout:none;pointer-events:none}
+#camFull .cerrar{position:absolute;top:max(14px,env(safe-area-inset-top));right:14px;z-index:2;width:40px;height:40px;border-radius:50%;border:0;background:rgba(255,255,255,.16);color:#fff;font-size:20px;-webkit-backdrop-filter:blur(10px);backdrop-filter:blur(10px)}
+#camFull .cam-vivo{top:max(20px,calc(env(safe-area-inset-top) + 6px));left:16px}
+#camFull .zoom{position:absolute;bottom:max(18px,env(safe-area-inset-bottom));left:50%;transform:translateX(-50%);z-index:2;padding:5px 12px;border-radius:999px;background:rgba(0,0,0,.5);color:#fff;font-size:12.5px;font-weight:600;opacity:0;transition:opacity .3s}
+#camFull .zoom.ver{opacity:1}
 .cam-marco img{position:absolute;inset:0;width:100%;height:100%;object-fit:cover}
 .cam-estado{margin:0;padding:0 24px;text-align:center;color:var(--muted);font-size:14px;line-height:1.4}
 .cam-vivo{position:absolute;top:12px;left:12px;z-index:1;display:flex;align-items:center;gap:6px;padding:5px 10px;border-radius:999px;background:rgba(0,0,0,.5);font-size:12px;font-weight:600;color:#fff;-webkit-backdrop-filter:blur(8px);backdrop-filter:blur(8px)}
@@ -696,8 +707,8 @@ input[type=checkbox]{accent-color:var(--c10)}
 
 <div class="vista" id="v-cam" role="tabpanel" aria-label="Cam"><main>
 <header class="titulo-pagina"><div><small class="fecha-hoy"></small><h1>Cam</h1></div></header>
-<div class="cam-marco glass"><img id="camImg" alt="Cámara de la laptop en vivo" hidden><span class="cam-vivo" id="camVivo" hidden>En vivo</span><p class="cam-estado" id="camEstado" role="status">Conectando…</p></div>
-<p class="cam-nota">La cámara de tu laptop solo se prende mientras tienes esta pestaña abierta, y se apaga sola unos segundos después de salir. No se graba nada.</p>
+<div class="cam-marco glass"><img id="camImg" alt="Cámara de la laptop en vivo" hidden><span class="cam-vivo" id="camVivo" hidden>En vivo</span><button class="cam-grande" id="camGrande" aria-label="Ver en grande" hidden><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M15 3h6v6M9 21H3v-6M21 3l-7 7M3 21l7-7"/></svg></button><p class="cam-estado" id="camEstado" role="status">Conectando…</p></div>
+<p class="cam-nota">Toca la imagen para verla en grande. Ahí pellizca para hacer zoom, arrastra para moverte y toca dos veces para acercar o alejar.<br>La cámara de tu laptop solo se prende mientras tienes esta pestaña abierta, y se apaga sola unos segundos después de salir. No se graba nada.</p>
 </main></div>
 <div class="vista" id="v-ideas" role="tabpanel" aria-label="Ideas"><main>
 <header class="titulo-pagina"><div><small class="fecha-hoy"></small><h1>Ideas</h1></div></header>
@@ -2371,15 +2382,89 @@ async function camVer(){
   while (actual === "cam" && !document.hidden){
     const c = cfg(); if (!c){ aviso("Conecta tus datos primero."); break; }
     try{
-      const r = await api(c, "cam_ver", {});
-      if (r.jpg){ img.src = "data:image/jpeg;base64," + r.jpg; img.hidden = false; vivo.hidden = false; est.hidden = true; }
-      else { img.hidden = true; aviso(r.hace == null || r.hace > 20 ? "Prendiendo la cámara… Si no sale en unos 10 s, la laptop está apagada o dormida." : "Esperando imagen…"); await espera(600); }
+      const r = await api(c, "cam_ver", { hd:camAbierta });
+      if (r.jpg){ img.src = camFullImg.src = "data:image/jpeg;base64," + r.jpg; img.hidden = false; vivo.hidden = false; est.hidden = true; $("camGrande").hidden = false; camFullVivo.hidden = false; }
+      else { img.hidden = true; $("camGrande").hidden = true; camFullVivo.hidden = true; aviso(r.hace == null || r.hace > 20 ? "Prendiendo la cámara… Si no sale en unos 10 s, la laptop está apagada o dormida." : "Esperando imagen…"); await espera(600); }
     }catch(e){ aviso("Sin conexión: " + e.message); await espera(2000); }
     await espera(120);
   }
   camCorre = false;
 }
 document.addEventListener("visibilitychange", () => { if (!document.hidden && actual === "cam") camVer(); });
+/* Cam en grande: mientras está abierta pide HD a la laptop (1280 px) para que el zoom se vea nítido. */
+var camAbierta = false;
+const camFull = document.createElement("div");
+camFull.id = "camFull"; camFull.dataset.noDeslizar = ""; camFull.setAttribute("role", "dialog"); camFull.setAttribute("aria-label", "Cam en grande");
+camFull.innerHTML = '<img alt="Cámara de la laptop en grande"><span class="cam-vivo">En vivo</span><button class="cerrar" aria-label="Cerrar">✕</button><span class="zoom"></span>';
+document.body.appendChild(camFull);
+const camFullImg = camFull.querySelector("img"), camFullVivo = camFull.querySelector(".cam-vivo"), camZoom = camFull.querySelector(".zoom");
+(function(){
+  let s = 1, tx = 0, ty = 0, zoomT = 0, ini = null, ultimoToque = 0, bajar = 0;
+  const pts = new Map();
+  const limitar = () => {   // que la imagen no se salga de la pantalla
+    const W = camFull.clientWidth, H = camFull.clientHeight, nw = camFullImg.naturalWidth || 16, nh = camFullImg.naturalHeight || 9;
+    const k = Math.min(W / nw, H / nh), iw = nw * k * s, ih = nh * k * s;
+    const mx = Math.max(0, (iw - W) / 2), my = Math.max(0, (ih - H) / 2);
+    tx = Math.max(-mx, Math.min(mx, tx)); ty = Math.max(-my, Math.min(my, ty));
+  };
+  const pintar = anim => {
+    camFullImg.style.transition = anim ? "transform .25s ease" : "none";
+    camFullImg.style.transform = `translate(${tx}px,${ty + bajar}px) scale(${s})`;
+    camFull.style.background = bajar > 0 ? `rgba(0,0,0,${Math.max(.3, 1 - bajar / 400)})` : "#000";
+    camZoom.textContent = s.toFixed(1).replace(".0", "") + "×"; camZoom.classList.toggle("ver", s > 1.01);
+    clearTimeout(zoomT); zoomT = setTimeout(() => camZoom.classList.remove("ver"), 1200);
+  };
+  const zoomEn = (ns, px, py) => {   // escala ns dejando quieto el punto (px, py) de la pantalla
+    ns = Math.max(1, Math.min(8, ns));
+    const cx = px - camFull.clientWidth / 2, cy = py - camFull.clientHeight / 2;
+    tx = cx - (cx - tx) * ns / s; ty = cy - (cy - ty) * ns / s; s = ns; limitar();
+  };
+  window.camAbrir = () => {
+    if (!camFullImg.src) return;
+    s = 1; tx = ty = 0; bajar = 0; pintar(false);
+    camAbierta = true; camFull.classList.add("abierta"); document.querySelector("nav")?.classList.add("oculta");
+  };
+  const cerrar = () => { camAbierta = false; camFull.classList.remove("abierta"); document.querySelector("nav")?.classList.remove("oculta"); };
+  camFull.querySelector(".cerrar").addEventListener("click", cerrar);
+  camFull.addEventListener("pointerdown", e => {
+    if (e.target.closest(".cerrar")) return;
+    try{ camFull.setPointerCapture(e.pointerId); }catch(_){}
+    pts.set(e.pointerId, { x:e.clientX, y:e.clientY });
+    const p = [...pts.values()];
+    if (p.length === 2){ ini = { d:Math.hypot(p[0].x - p[1].x, p[0].y - p[1].y), s, mx:(p[0].x + p[1].x) / 2, my:(p[0].y + p[1].y) / 2 }; bajar = 0; }
+    else if (p.length === 1){
+      const ahora = Date.now();
+      if (ahora - ultimoToque < 300){   // doble toque: acerca 3× donde tocaste, o regresa a 1×
+        if (s > 1.5){ s = 1; tx = ty = 0; } else zoomEn(3, e.clientX, e.clientY);
+        pintar(true); ultimoToque = 0; ini = null; return;
+      }
+      ultimoToque = ahora; ini = { x:e.clientX, y:e.clientY, tx, ty };
+    }
+  });
+  camFull.addEventListener("pointermove", e => {
+    if (!pts.has(e.pointerId) || !ini) return;
+    pts.set(e.pointerId, { x:e.clientX, y:e.clientY });
+    const p = [...pts.values()];
+    if (p.length >= 2 && ini.d){
+      const d = Math.hypot(p[0].x - p[1].x, p[0].y - p[1].y), mx = (p[0].x + p[1].x) / 2, my = (p[0].y + p[1].y) / 2;
+      zoomEn(ini.s * d / ini.d, mx, my); tx += mx - ini.mx; ty += my - ini.my; ini.mx = mx; ini.my = my; limitar(); pintar(false);
+    } else if (p.length === 1 && ini.x != null){
+      if (s > 1.01){ tx = ini.tx + e.clientX - ini.x; ty = ini.ty + e.clientY - ini.y; limitar(); }
+      else bajar = Math.max(0, e.clientY - ini.y);   // sin zoom: deslizar hacia abajo cierra
+      pintar(false);
+    }
+  });
+  const soltar = e => {
+    pts.delete(e.pointerId);
+    if (bajar > 120){ bajar = 0; cerrar(); return; }
+    if (bajar){ bajar = 0; pintar(true); }
+    if (s < 1.05 && !pts.size){ s = 1; tx = ty = 0; pintar(true); }
+    const p = [...pts.values()];
+    ini = p.length === 1 ? { x:p[0].x, y:p[0].y, tx, ty } : null;   // al soltar un dedo del pellizco, sigue moviendo con el otro
+  };
+  camFull.addEventListener("pointerup", soltar); camFull.addEventListener("pointercancel", soltar);
+  $("v-cam").querySelector(".cam-marco").addEventListener("click", () => window.camAbrir());
+})();
 async function api(c, tool, input){
   const r = await fetch(API, { method:"POST", headers:{ "Content-Type":"text/plain;charset=utf-8" }, body:JSON.stringify({ k:c.k, tool, input }) });
   const j = await r.json(); if (j.error) throw new Error(j.error); return j.result;

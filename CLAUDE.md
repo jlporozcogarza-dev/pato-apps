@@ -167,5 +167,5 @@ Hoy, al tocar un depa, solo cambia el cuadrito de abajo (`detalleUni` en `index.
 - Se quitó el calendario semanal.
 
 **Otros**
-- 20 nov: WHOOP se copia cada 15 min (antes cada hora); Cam arranca sola con Windows.
+- 20 nov: WHOOP se copia cada 15 min (antes cada hora); Cam arranca sola con Windows; Cam en grande con zoom de pellizco y HD (1280 px) mientras está en grande.
 - Suscripciones investigadas: unos $6,079 al mes en total (falta P2).
