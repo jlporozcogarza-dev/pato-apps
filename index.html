@@ -1819,9 +1819,35 @@ function pintarFicha(d, f){
 async function abrirDepa(d){
   $("depaTitulo").textContent = d; pintarFicha(d, fichas[d]); hoja($("hojaDepa"), true);
   const c = cfg(); if (!c) return;
+  vecinosDepa(d).forEach(precargarDepa);
   try{ fichas[d] = await api(c, "depa", { depa:d, hoy }); if ($("depaTitulo").textContent === d) pintarFicha(d, fichas[d]); }
   catch(e){ if (!fichas[d]) $("depaCuerpo").insertAdjacentHTML("beforeend", `<p class="nota">No pude cargar la ficha: ${esc(e.message)}</p>`); }
 }
+/* Deslizar a los lados en la ficha = depa siguiente / anterior (en el orden del mapa). Las fichas vecinas se cargan antes para que sea al instante. */
+const ordenDepas = () => [...$("panelCuerpo").querySelectorAll("[data-uni]")].map(b => b.dataset.uni);
+function vecinosDepa(d){ const o = ordenDepas(), i = o.indexOf(d); return i < 0 ? [] : [o[(i + 1) % o.length], o[(i - 1 + o.length) % o.length]]; }
+async function precargarDepa(d){ const c = cfg(); if (!c || !d || fichas[d]) return; try{ fichas[d] = await api(c, "depa", { depa:d, hoy }); }catch(e){} }
+function irDepa(paso){
+  const o = ordenDepas(), i = o.indexOf($("depaTitulo").textContent); if (i < 0 || !o.length) return;
+  const d = o[(i + paso + o.length) % o.length], h = $("hojaDepa");
+  h.animate([{ transform:"translateX(0)", opacity:1 }, { transform:`translateX(${paso > 0 ? -40 : 40}px)`, opacity:0 }], { duration:110, easing:"ease-in", fill:"forwards" });
+  setTimeout(() => {   // setTimeout y no onfinish: así cambia aunque la animación no corra
+    uniSel = d;
+    $("panelCuerpo").querySelectorAll(".uni").forEach(x => x.classList.toggle("sel", x.dataset.uni === d));
+    if ($("uniDetalle")) $("uniDetalle").innerHTML = detalleUni(aplicarUni((PANEL && PANEL.unidades) || []).find(u => u.d === d));
+    panelPintado = JSON.stringify(PANEL) + "|" + uniSel;
+    h.scrollTop = 0; abrirDepa(d);
+    h.animate([{ transform:`translateX(${paso > 0 ? 40 : -40}px)`, opacity:0 }, { transform:"translateX(0)", opacity:1 }], { duration:160, easing:"ease-out" });
+    h.getAnimations().forEach(x => { if (x.effect && x.effect.getTiming().fill === "forwards") x.cancel(); });
+    setTimeout(() => h.getAnimations().forEach(x => { if (!x.animationName) x.cancel(); }), 400);   // por si la animación se queda trabada
+  }, 110);
+}
+(function(){ const h = $("hojaDepa"); let x0 = null, y0 = 0, t0 = 0;
+  h.addEventListener("touchstart", e => { x0 = e.touches[0].clientX; y0 = e.touches[0].clientY; t0 = Date.now(); }, { passive:true });
+  h.addEventListener("touchend", e => { if (x0 == null) return; const dx = e.changedTouches[0].clientX - x0, dy = e.changedTouches[0].clientY - y0; x0 = null;
+    if (Math.abs(dx) < 60 || Math.abs(dx) < Math.abs(dy) * 1.5 || Date.now() - t0 > 800) return;
+    irDepa(dx < 0 ? 1 : -1); });
+})();
 $("depaCuerpo").addEventListener("click", e => {
   const ok = e.target.closest("[data-uni-ok]"); if (ok){ cerrarHojas(); return confirmarUni(ok.dataset.uniOk); }
   const cam = e.target.closest("[data-uni-cambiar]"); if (cam){ cerrarHojas(); return setTimeout(() => abrirUni(cam.dataset.uniCambiar), 250); }
