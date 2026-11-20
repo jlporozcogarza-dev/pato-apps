@@ -14,7 +14,7 @@ Este archivo es la memoria de trabajo del app de Pato. Léelo antes de tocar JLP
 - **JLP** (`index.html`): PWA de una sola página. Tracker y Finanzas son iframes que se generan con `python build.py` desde `src/`.
 - **Publicar:** `git commit` → `git push` → `ssh pato@192.168.1.110 'cd ~/apps/pato-apps && git pull -q --ff-only'`.
 - **Server** (`../servidor-casa/puente/puente.py`, en `/opt/pato-puente`): se sube con `bash subir_puente.sh`. Copia las hojas y el Google Calendar cada 5 min sin gastar tokens.
-- **Puente de Google Apps Script:** proyecto «Proyecto sin título», hoy en la **versión 5**. El `bridge.gs` local **no tiene la clave real**.
+- **Puente de Google Apps Script:** proyecto «Proyecto sin título», hoy en la **versión 7**. El `bridge.gs` local **no tiene la clave real**.
   - En el editor, cambia solo funciones (cortando desde `function eventos(`).
   - Apps Script autoguarda lo que pongas con `setValue`.
   - Después: Implementar → Gestionar → lápiz → Versión nueva.
@@ -174,4 +174,6 @@ Hoy, al tocar un depa, solo cambia el cuadrito de abajo (`detalleUni` en `index.
 - 20 nov: editar y borrar eventos es instantáneo (jlp-ev-local): se ve al momento y Google Calendar se actualiza por detrás; borrar trae «Deshacer» 4 s; solo si falla avisa y regresa.
 - 20 nov: Pendientes es una sola lista: tareas + pendientes de Condotec (hoja y WhatsApp), por fecha y nivel, con «Condotec · Loft X». Se quitó la sección «De Condotec». Palomear o editar los de Condotec es instantáneo (Fede/server por detrás).
 - 20 nov: WhatsApp se revisa **cada hora** (cron de pato a la media, sync.mjs --rapida): pendientes nuevos, cambios de texto/fecha en los que ya están y resueltos a Hechas, directo en Pendientes de JLP. Sin mensajes nuevos no gasta a Claude.
+- 20 nov: colores del calendario: cumpleaños rosa, rutinas (Tec/Ternium o título que se repite 3+ días) azul, tareas urgentes (vencidas/hoy) rojo, normales amarillo. Palomita en el calendario quita la tarea al instante.
+- 20 nov: **pendientes con fecha → Google Calendar** («JLP Pendientes», eventos de todo el día con `jlp:<id>`): el puente (`ciclo_tareas_cal`, cada 20 s, solo si algo cambió) manda la lista a Apps Script (`evento` con accion `tareas`); palomear, cambiar fecha/texto o cerrar uno de Condotec se refleja en < 1 min. JLP no muestra ese calendario.
 - Suscripciones investigadas: unos $6,079 al mes en total (falta P2).
