@@ -1452,7 +1452,7 @@ const contacto = (rol, nombre, wa) => `<div class="dp-fila"><span>${rol}</span>`
 function pintarFicha(d, f){
   const u = aplicarUni((PANEL && PANEL.unidades) || []).find(x => x.d === d) || { d, e:"", q:[] };
   const nombreE = (ESTADOS.find(e => e[0] === u.e) || [, u.e])[1];
-  let h = `<p class="sub"><span class="marca" data-e="${esc(u.e)}">${esc(nombreE || "")}</span></p>`;
+  let h = nombreE ? `<p class="sub"><span class="marca" data-e="${esc(u.e)}">${esc(nombreE)}</span></p>` : "";
   if (!f){ $("depaCuerpo").innerHTML = h + '<p class="nota">Cargando la ficha…</p>'; return; }
   const ps = f.personas.filter(x => x.nombre && !/disponible/i.test(x.estado));
   if (!ps.length && !f.contactos.length) h += '<p class="nota">Sin inquilino.</p>';

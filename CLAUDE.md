@@ -63,6 +63,7 @@ Cada uno lleva quién lo destraba y una estimación de tiempo (sale del promedio
 | C5 | La lista de calendarios del editor de eventos sale de los eventos copiados; un calendario sin eventos en ±2 meses no aparece (atajo, `index.html` abrirEv) | 10 min |
 | C6 | Pestaña **Cam** (HECHA 19 nov, commit ec718c3). Falta: 1) que camara.pyw arranque con Windows (no me dejaron crear el acceso directo en Inicio; Pato decide), 2) la prueba salió en negro: tapa cerrada o tapita de la cámara | 5 min |
 | C7 | Fede rápido para cosas fáciles: cerebro rápido (Haiku por API o modelo local) además del Sonnet con manos. Medido 19 nov: cerebro 1.5–5.5 s, ElevenLabs flash 0.3 s, v3 2.7 s por frase | 30 min (espera decisión de Pato) |
+| C8 | **HECHA 19 nov (commit 1c45294):** Condotec › Edificio: al tocar un depa se abre su ficha con inquilino y responsable de pago (tocar el nombre abre su WhatsApp; si no hay teléfono, dice «Faltante»), renta, día de pago, entrada, salida, meses pagados, meses que faltan y la lista de pendientes de ese depa (19 nov) | 25 min |
 
 #### C6 — Cam en vivo
 - **Pasos:**
@@ -73,12 +74,37 @@ Cada uno lleva quién lo destraba y una estimación de tiempo (sale del promedio
 - **Probar:** abrir la pestaña Cam en el navegador y ver que la imagen cambia. Al cerrarla, la luz de la cámara se apaga en unos 10 s.
 - **Cuidado:** solo con la clave. No se guarda ningún cuadro en disco. La cámara solo se prende mientras alguien está viendo.
 
+#### C8 — Ficha del depa en Edificio
+Hoy, al tocar un depa, solo cambia el cuadrito de abajo (`detalleUni` en `index.html`), que muestra el inquilino, la renta y la fecha del contrato. La hoja `hojaUni` es solo para editar.
+- **Pasos:**
+  1. **Hoja Inquilinos Condotec, pestaña Depas:** hoy tiene las columnas Depa, Estado, Inquilino, Renta mensual, Día de pago, Entrada y Salida. **No hay teléfonos ni responsable de pago.** Con el conector de Google Sheets, agrega al final las columnas «Teléfono», «Responsable de pago» y «Tel. responsable», vacías. No muevas las que ya están.
+  2. **`../servidor-casa/puente/puente.py`, `unidades()`:** hoy usa `armar_panel.leer_depas`, que solo lee 5 columnas. Lee además, con `armar_panel.columnas`, las columnas «Día de pago», «Entrada», «Teléfono», «Responsable de pago» y «Tel. responsable», igual que lo hace `armar_mapa` en `../fede/buzon/armar_panel.py`. Por cada depa, agrega `p` = lista de `{nombre, tel, resp, tel_resp, dia, entrada, salida, renta}`, una por inquilino. Deja `q`, `r` y `s` como están, porque `aplicarUni` y `confirmarUni` los usan. Súbelo con `bash subir_puente.sh`.
+  3. **`index.html`:** al tocar un depa (el listener de `[data-uni]`, cerca de la línea 1540), abre una hoja nueva, `hojaDepa`. Cópiala de `hojaUni`: misma `.hoja`, misma asa y mismo ✕, y se abre con `hoja(el, true)`. Deja el cuadrito de abajo como está.
+     - Por cada inquilino muestra su nombre y su responsable de pago. Si hay teléfono, cada nombre es un `<a href="https://wa.me/52XXXXXXXXXX">`: quita todo lo que no sea número y pon 52 adelante si el número tiene 10 dígitos. Si no hay teléfono, junto al nombre va «Faltante» en gris.
+     - Muestra también la renta, el día de pago, la entrada y la salida.
+  4. **Meses pagados y meses que faltan:** calcúlalos en el cliente.
+     - Meses pagados = meses entre la Entrada y hoy, contando el mes actual solo si el depa está en `pagos.json` (no le llega al app; ver la duda).
+     - Meses que faltan = meses entre hoy y la Salida.
+     - Si falta la fecha, pon «—».
+  5. **Pendientes del depa:** filtra `AG.pendientes` (viene de la herramienta `agenda`, ya cargada) por los que mencionan ese depa en `depas`. Compara con `rotuloUni` y sin acentos, para que «Loft 3» no cuente como «Loft 13». Si no hay, pon «Sin pendientes». Al tocar uno, abre lo mismo que se abre al tocarlo en la pestaña Pendientes.
+  6. En la ficha, deja el botón «Cambiar info o estado», que llama a `abrirUni(d)`, y también la pregunta «¿la info está bien?» de los depas por confirmar.
+- **Probar:**
+  - `servidor.llamar("panel", {"hoy": "2026-11-19"})`: cada unidad trae `p` con `dia`, `entrada` y las claves de teléfono.
+  - En el navegador: toca el Loft 3, se abre la ficha y el nombre sin teléfono dice «Faltante». Pon un teléfono de prueba en la hoja, espera la copia de 5 min y revisa que el enlace sea `wa.me/52…`.
+  - En el iPhone: tocar el nombre abre WhatsApp en ese chat.
+- **Cuidado:**
+  - La hoja es de Adrián. Solo agrega columnas al final; no reordenes ni borres filas.
+  - En el server, la hoja es de solo lectura.
+  - Los teléfonos son datos personales: no los pongas en logs ni en `fede_orden`.
+  - Si `unidades()` truena, se cae toda la pestaña Condotec. Si la columna no existe, `columnas` debe regresar «vacío», no un error.
+  - No necesita `python build.py`, porque es solo `index.html`.
+
 ## Plan (orden propuesto)
 
 1. **Hoy, rápido y de alto riesgo:** P1 (Cloudflare). Si se cae el dominio, se cae todo el app.
 2. **Respuestas de Pato que destraban trabajo corto:** P3, P2 y P4. Juntas son unos 15 min míos.
 3. **Ronda de pruebas en el iPhone.** Pato abre el app y manda capturas de lo que se vea mal. Eso va antes de agregar cosas nuevas.
-4. **Para Claude, de más útil a menos:** C1 → C2 → C3 → C4 → C5.
+4. **Para Claude, de más útil a menos:** C1 → C8 → C2 → C3 → C4 → C5.
 5. **Cuando Pato pueda:** P6 y P7.
 
 ## Tiempos (medidos con `tools/tiempos.py`)
