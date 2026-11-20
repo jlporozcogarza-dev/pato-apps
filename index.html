@@ -1133,11 +1133,17 @@ function esRutina(e){
   return rutinasMemo.set.has((e.t || "").trim().toLowerCase());
 }
 function colEvento(e){
-  if (/cumplea|birthday/i.test((e.c || "") + " " + (e.t || "")) || /#contacts/.test(e.cid || "")) return COL.cumple;
+  if (/cumplea|birthday/i.test((e.c || "") + " " + (e.t || "")) || /#contacts/.test(e.cid || "") || soloNombre(e)) return COL.cumple;
   const k = catEvento(e);
   if (k === "condo") return COL.condo;
   if (k === "tec" || esRutina(e)) return COL.rutina;
   return COL.otro;
+}
+/* Un evento de todo el día que es solo un nombre («César», «Ana Lucía», «Tía Mary») = cumpleaños. */
+const NO_NOMBRE = /^(feriado|festivo|vacaciones|viaje|mudanza|examen|entrega|pago|renta|navidad|año nuevo|pendiente|tarea|cita|junta|clase|ternium|tec|condotec)\b/i;
+function soloNombre(e){
+  const t = String(e.t || "").replace(/[🎂🎉🎁🥳]/gu, "").trim();
+  return !!e.dia && !NO_NOMBRE.test(t) && /^[A-ZÁÉÍÓÚÑ][\p{L}'’.-]*(\s+(de|del|la|[A-ZÁÉÍÓÚÑ][\p{L}'’.-]*)){0,3}$/u.test(t);
 }
 const tareaUrgente = t => (t.fecha && t.fecha <= hoy) || /urgente/i.test((t.t || "") + " " + (t.det || ""));
 const colTarea = t => tareaUrgente(t) ? COL.urgente : COL.tarea;
