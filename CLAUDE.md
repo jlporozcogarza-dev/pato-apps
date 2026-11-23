@@ -64,6 +64,7 @@ Cada uno lleva quién lo destraba y una estimación de tiempo (sale del promedio
 | C6 | **HECHA 20 nov:** Pestaña Cam funcionando. camara.pyw arranca con Windows (acceso directo «Pato cam JLP» en Inicio); probado con cuadro real | — |
 | C7 | Fede rápido para cosas fáciles: cerebro rápido (Haiku por API o modelo local) además del Sonnet con manos. Medido 19 nov: cerebro 1.5–5.5 s, ElevenLabs flash 0.3 s, v3 2.7 s por frase | 30 min (espera decisión de Pato) |
 | C8 | **HECHA 19 nov (commit 1c45294):** Condotec › Edificio: al tocar un depa se abre su ficha con inquilino y responsable de pago (tocar el nombre abre su WhatsApp; si no hay teléfono, dice «Faltante»), renta, día de pago, entrada, salida, meses pagados, meses que faltan y la lista de pendientes de ese depa (19 nov) | 25 min |
+| C9 | Debajo de la gráfica «Déficit de calorías · Últimos 7 días» de Inicio: total de déficit por semana y por mes, en verde si hubo déficit y rojo si comió de más, con kilos aprox (kcal / 7700). Sirve para ver cuánto acumuló y cuánto peso ha bajado | 25 min |
 
 #### C6 — Cam en vivo
 - **Pasos:**
@@ -99,12 +100,25 @@ Hoy, al tocar un depa, solo cambia el cuadrito de abajo (`detalleUni` en `index.
   - Si `unidades()` truena, se cae toda la pestaña Condotec. Si la columna no existe, `columnas` debe regresar «vacío», no un error.
   - No necesita `python build.py`, porque es solo `index.html`.
 
+#### C9 — Totales de déficit por semana y mes, con kilos aprox
+Hoy la tarjeta «Déficit de calorías · Últimos 7 días» solo muestra 7 días (`barrasDef` en `index.html`, cerca de la línea 2948). Pato quiere, debajo de esa gráfica, el total de déficit por semana y por mes, verde si hubo déficit y rojo si comió de más, y los kilos aprox.
+- **Pasos:**
+  1. `../servidor-casa/puente/puente.py`, `resumen(hoy)` (línea ~270): hoy `serieDeficit` solo cubre 7 días. Agrega `semanas` y `meses` con las mismas hojas: por cada semana (lunes a domingo) y cada mes, la suma de los días con dato, cuántos días tienen dato y `kg = suma / 7700`. Súbelo con `bash subir_puente.sh`.
+  2. `index.html`, debajo de `barrasDef` (línea ~2948, render en ~2979): dos renglones, «Semana» y «Mes», cada uno con kcal y kg aprox. Verde si la suma es ≥ 0 (déficit), rojo si es negativa (comió de más). Usa los mismos colores que la gráfica.
+  3. Si un periodo no tiene días con dato, pon «—» en vez de 0.
+- **Probar:** `servidor.llamar("panel", {"hoy": "2026-11-23"})` debe traer `semanas` y `meses`. En el navegador, Inicio: debajo de la gráfica salen los totales. Comprueba una semana a mano: la suma de sus días debe coincidir con la gráfica o con Tracker. En el iPhone: verde y rojo se leen bien, y los kilos aparecen con «aprox».
+- **Cuidado:**
+  - El déficit es lo que WHOOP dice que quemas, menos lo que anotas en comidas (igual que `serie_def`). Los kilos son aproximados (7700 kcal por kilo).
+  - Los días sin comidas anotadas no cuentan (así ya lo hace `serie_def`). Si se cuentan como 0, el total se sesga.
+  - Si `resumen` truena, se cae la gráfica de Inicio. Protege el bloque con try y regresa «—».
+  - Duda para Pato abajo: semana lunes a domingo o últimos 7 días.
+
 ## Plan (orden propuesto)
 
 1. **Hoy, rápido y de alto riesgo:** P1 (Cloudflare). Si se cae el dominio, se cae todo el app.
 2. **Respuestas de Pato que destraban trabajo corto:** P3, P2 y P4. Juntas son unos 15 min míos.
 3. **Ronda de pruebas en el iPhone.** Pato abre el app y manda capturas de lo que se vea mal. Eso va antes de agregar cosas nuevas.
-4. **Para Claude, de más útil a menos:** C1 → C8 → C2 → C3 → C4 → C5.
+4. **Para Claude, de más útil a menos:** C1 → C8 → C9 → C2 → C3 → C4 → C5.
 5. **Cuando Pato pueda:** P6 y P7.
 
 ## Tiempos (medidos con `tools/tiempos.py`)

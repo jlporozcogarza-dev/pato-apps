@@ -188,6 +188,13 @@ button.card:active{transform:scale(.98)}
 .col.foco i{background:var(--c10);box-shadow:0 0 16px color-mix(in srgb,var(--c10) 45%,transparent)}
 .col.neg i{background:color-mix(in srgb,var(--st-crit) 70%,transparent)}
 .col.neg .val{color:var(--st-crit)}
+.acum{display:grid;grid-template-columns:1fr 1fr;gap:6px;margin-top:10px;padding-top:10px;border-top:1px solid rgba(255,255,255,.08)}
+.acum div{display:flex;flex-direction:column;gap:2px;padding:7px 10px;border-radius:14px;background:rgba(255,255,255,.04);text-align:left}
+.acum small{font:500 11px/1.2 var(--sans);color:var(--muted)}
+.acum b{font:600 15px/1.2 var(--sans);font-variant-numeric:tabular-nums}
+.acum em{font:500 11px/1.2 var(--sans);font-style:normal;color:var(--muted)}
+.acum .bien b{color:var(--st-ok,#34C759)}
+.acum .mal b{color:var(--st-crit)}
 .col.foco .val{color:var(--fg);font:700 12px/1 var(--display)}
 .dias{display:grid;grid-template-columns:repeat(7,1fr);margin-top:8px;padding-right:22px;font-size:12px;text-align:center;color:var(--muted)}
 
@@ -763,6 +770,7 @@ input[type=checkbox]{accent-color:var(--c10)}
   <div class="row"><span class="t">Déficit de calorías</span><span class="cap">Últimos 7 días</span></div>
   <div class="barras" id="barsDef"></div>
   <div class="dias" id="diasDef"></div>
+  <div class="acum" id="acumDef" hidden></div>
 </button>
 <button class="grafica glass card" data-ir="tracker" data-ancla="hero" aria-label="Horas de sueño de los últimos 7 días">
   <div class="row"><span class="t">Horas de sueño</span><span class="cap">Últimos 7 días</span></div>
@@ -2947,6 +2955,18 @@ const kMil = v => (v < 0 ? "−" : "") + (Math.abs(v) >= 1000 ? (Math.abs(v) / 1
 const barras = serie => grafica("", serie, { meta:10000, nombre:"Pasos", corto:kMil, largo:v => Math.round(v).toLocaleString("es-MX") + " pasos" });
 const barrasDef = serie => grafica("Def", serie, { meta:300, nombre:"Déficit de calorías", corto:kMil,
   largo:v => v < 0 ? "comiste " + Math.round(-v).toLocaleString("es-MX") + " kcal de más" : Math.round(v).toLocaleString("es-MX") + " kcal de déficit" });
+/* Déficit acumulado (23 nov): semana, semana pasada, mes y total. Verde = déficit (bajaste), rojo = comiste de más.
+   ~7700 kcal ≈ 1 kg de grasa: es una estimación, el agua y la báscula mueven más día a día. */
+function pintarAcum(a){
+  const caja = $("acumDef"); if (!a){ caja.hidden = true; return; }
+  const kg = v => (v < 0 ? "+" : "−") + (Math.abs(v) / 7700).toFixed(2).replace(/0$/, "") + " kg";
+  const kc = v => (v < 0 ? "−" : "") + Math.abs(v).toLocaleString("es-MX") + " kcal";
+  const fila = (t, x) => !x || !x[1] ? `<div><small>${t}</small><b>–</b><em>sin datos</em></div>`
+    : `<div class="${x[0] >= 0 ? "bien" : "mal"}"><small>${t}</small><b>${kc(x[0])}</b><em>≈ ${kg(x[0])} · ${x[1]} día${x[1] > 1 ? "s" : ""}</em></div>`;
+  const desde = a.desde ? "Desde " + new Date(a.desde + "T12:00").toLocaleDateString("es-MX", { day:"numeric", month:"short" }) : "Total";
+  caja.innerHTML = fila("Esta semana", a.semana) + fila("Semana pasada", a.semanaPasada) + fila("Este mes", a.mes) + fila(desde, a.total);
+  caja.hidden = false;
+}
 const horasTxt = v => { const h = Math.floor(v), m = Math.round((v - h) * 60); return m === 60 ? (h + 1) + "h" : h + "h" + (m ? String(m).padStart(2, "0") : ""); };
 const barrasSue = serie => grafica("Sue", serie, { meta:7, nombre:"Horas de sueño", corto:v => horasTxt(v).replace(/h00$/, "h"), largo:v => horasTxt(v) });
 function ultimos7(){ return [...Array(7)].map((_, i) => { const d = new Date(); d.setDate(d.getDate() - 6 + i); return d.toLocaleDateString("sv-SE"); }); }
@@ -2977,6 +2997,7 @@ function poner(id, txt){
 function mostrar(r){ // { serie:[[fecha, recovery]], rec, recFecha, sueno, hrv, gastoHoy, gastoMes }
   const serieDe = s => { const v = Object.fromEntries(s || []); return ultimos7().map(d => ({ d, v:v[d] == null ? NaN : v[d] })); };
   barras(serieDe(r.seriePasos)); barrasDef(serieDe(r.serieDeficit)); barrasSue(serieDe(r.serieSueno));
+  pintarAcum(r.deficitAcum);
   poner("rec", r.rec == null ? "–" : String(Math.round(r.rec)));
   $("recNota").textContent = !r.recFecha ? "" : r.recFecha === hoy ? "hoy" : "del " + new Date(r.recFecha + "T12:00").toLocaleDateString("es-MX", { day:"numeric", month:"short" });
   // Anillos WHOOP (la parte llena es el avance) y abajo pasos, calorías y gastos. Sin dato: no se muestra.
