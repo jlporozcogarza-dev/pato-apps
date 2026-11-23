@@ -188,6 +188,7 @@ button.card:active{transform:scale(.98)}
 .col.foco i{background:var(--c10);box-shadow:0 0 16px color-mix(in srgb,var(--c10) 45%,transparent)}
 .col.neg i{background:color-mix(in srgb,var(--st-crit) 70%,transparent)}
 .col.neg .val{color:var(--st-crit)}
+#v-inicio .grafica:has(#acumDef:not([hidden])){flex:0 0 auto}  /* con el acumulado, la tarjeta crece lo que necesite */
 .acum{display:grid;grid-template-columns:1fr 1fr;gap:6px;margin-top:10px;padding-top:10px;border-top:1px solid rgba(255,255,255,.08)}
 .acum div{display:flex;flex-direction:column;gap:2px;padding:7px 10px;border-radius:14px;background:rgba(255,255,255,.04);text-align:left}
 .acum small{font:500 11px/1.2 var(--sans);color:var(--muted)}

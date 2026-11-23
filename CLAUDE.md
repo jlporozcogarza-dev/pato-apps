@@ -64,7 +64,7 @@ Cada uno lleva quién lo destraba y una estimación de tiempo (sale del promedio
 | C6 | **HECHA 20 nov:** Pestaña Cam funcionando. camara.pyw arranca con Windows (acceso directo «Pato cam JLP» en Inicio); probado con cuadro real | — |
 | C7 | Fede rápido para cosas fáciles: cerebro rápido (Haiku por API o modelo local) además del Sonnet con manos. Medido 19 nov: cerebro 1.5–5.5 s, ElevenLabs flash 0.3 s, v3 2.7 s por frase | 30 min (espera decisión de Pato) |
 | C8 | **HECHA 19 nov (commit 1c45294):** Condotec › Edificio: al tocar un depa se abre su ficha con inquilino y responsable de pago (tocar el nombre abre su WhatsApp; si no hay teléfono, dice «Faltante»), renta, día de pago, entrada, salida, meses pagados, meses que faltan y la lista de pendientes de ese depa (19 nov) | 25 min |
-| C9 | Debajo de la gráfica «Déficit de calorías · Últimos 7 días» de Inicio: total de déficit por semana y por mes, en verde si hubo déficit y rojo si comió de más, con kilos aprox (kcal / 7700). Sirve para ver cuánto acumuló y cuánto peso ha bajado | 25 min |
+| C9 | **HECHA 23 nov:** Debajo de la gráfica «Déficit de calorías · Últimos 7 días» de Inicio: total de déficit por semana y por mes, en verde si hubo déficit y rojo si comió de más, con kilos aprox (kcal / 7700). Sirve para ver cuánto acumuló y cuánto peso ha bajado | 25 min |
 
 #### C6 — Cam en vivo
 - **Pasos:**
