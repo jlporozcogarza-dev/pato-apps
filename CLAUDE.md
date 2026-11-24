@@ -42,6 +42,7 @@ Cada uno lleva quién lo destraba y una estimación de tiempo (sale del promedio
 | P8 | Impresora 3D fuera del cuarto: arrancar impresiones desde el app, cámara que la vigile y la IA avise o pause si sale mal (19 nov) | Modelo de impresora y dónde queda respecto al server | — |
 | P9 | Persiana motorizada (domingo 22 nov): plan en PDF mandado por WhatsApp. Claude debe diseñar placa motor + soporte + tapones (STL), programa del ESP32 (GPIO 25 STEP, 26 DIR, 27 EN, 32/33 finales) y botón Persiana en JLP | Ancho de la ventana y si se atornilla a techo o pared | 60 min |
 | P10 | Cyberdeck propio para las vacaciones de invierno: Raspberry Pi 5 + pantalla 7" + batería USB-C + caja impresa en 3D; radio con RTL-SDR y ESP32 (CC1101 + IR). Ya se vio uConsole como alternativa armada | Que llegue invierno; luego armar lista con links y precios | — |
+| P11 | Báscula Withings: alta de la app de desarrollador y autorizar una vez (C10, paso 4). Claude hace lo demás en el Chrome de Pato | Su login de Withings en ese Chrome; si sale código o captcha, solo ese paso | 3 min |
 
 ### Probar en el iPhone (hecho, pero Pato no lo ha confirmado)
 - Comida por texto y por foto (Fede calcula y guarda).
@@ -65,6 +66,7 @@ Cada uno lleva quién lo destraba y una estimación de tiempo (sale del promedio
 | C7 | Fede rápido para cosas fáciles: cerebro rápido (Haiku por API o modelo local) además del Sonnet con manos. Medido 19 nov: cerebro 1.5–5.5 s, ElevenLabs flash 0.3 s, v3 2.7 s por frase | 30 min (espera decisión de Pato) |
 | C8 | **HECHA 19 nov (commit 1c45294):** Condotec › Edificio: al tocar un depa se abre su ficha con inquilino y responsable de pago (tocar el nombre abre su WhatsApp; si no hay teléfono, dice «Faltante»), renta, día de pago, entrada, salida, meses pagados, meses que faltan y la lista de pendientes de ese depa (19 nov) | 25 min |
 | C9 | **HECHA 23 nov:** Debajo de la gráfica «Déficit de calorías · Últimos 7 días» de Inicio: total de déficit por semana y por mes, en verde si hubo déficit y rojo si comió de más, con kilos aprox (kcal / 7700). Sirve para ver cuánto acumuló y cuánto peso ha bajado | 25 min |
+| C10 | Báscula Withings (Body Smart): cada mañana que se pese, sus datos se anotan solos en la pestaña «Bascula» de la hoja del tracker y salen en una tarjeta «Báscula» en Inicio de JLP, sin que Pato avise (24 nov) | 45 min |
 
 #### C6 — Cam en vivo
 - **Pasos:**
@@ -113,12 +115,26 @@ Hoy la tarjeta «Déficit de calorías · Últimos 7 días» solo muestra 7 día
   - Si `resumen` truena, se cae la gráfica de Inicio. Protege el bloque con try y regresa «—».
   - Duda para Pato abajo: semana lunes a domingo o últimos 7 días.
 
+#### C10 — Báscula Withings automática
+- **Pasos:**
+  1. Carpeta nueva `C:\Users\jlpor\CLAUDE\servidor-casa\withings\`, copiando el patrón de `servidor-casa\whoop\`: `lib.js` (OAuth y `tokens.json`), `autorizar.js` (`url` y `canje`) y `sincronizar.js` (escribe por `http://127.0.0.1:8787/` con `PUENTE_CLAVE` de `/etc/pato-puente.env`, como `whoop\sincronizar.js` línea 38). Withings: authorize `https://account.withings.com/oauth2_user/authorize2` (scope `user.metrics,user.info`); token `POST https://wbsapi.withings.net/v2/oauth2` con `action=requesttoken` (el refresh rota en cada uso, el access dura 3 h); medidas `POST https://wbsapi.withings.net/measure` con `action=getmeas`, `category=1`, `lastupdate`. Tipos: 1 peso kg, 6 grasa %, 8 masa grasa kg, 5 masa libre de grasa, 76 músculo kg, 77 agua kg, 88 hueso kg, 11 pulso, 170 grasa visceral, 226 metabolismo basal, 155 edad vascular, 91 velocidad de onda de pulso. Valor = `value × 10^unit`.
+  2. `servidor-casa\puente\puente.py`, línea 23 (mapeo de pestañas de la hoja `1L90iaeKk…`): agregar la pestaña «Bascula», un renglón por pesada (fecha, hora, peso, grasa %, músculo, agua, visceral…), sin duplicar por `grpid`. Así pasa a Postgres. Subir con `bash subir_puente.sh`.
+  3. Timer `pato-withings` cada 10 min en el server, con código en `/opt/pato-withings`, igual que `pato-whoop` (`servidor-casa\puente\paginas.sh`, líneas 35–62).
+  4. Alta de la app de desarrollador en developer.withings.com: Claude lo hace en el Chrome de Pato. Pato solo mete su login y autoriza una vez (P11).
+  5. `index.html`: tarjeta «Báscula» en Inicio, junto a la gráfica de déficit (línea ~775), con la última pesada (peso, grasa, músculo, agua, visceral) y la tendencia de 7 y 30 días. Herramienta del puente que la sirva en el panel (`panel`, junto a `seriePasos`).
+- **Probar:** Pato se pesa; en ≤10 min aparece el renglón en la hoja «Bascula» y la tarjeta en Inicio de JLP. Revisar con `servidor.llamar("panel", {"hoy": "2026-11-24"})` que traiga la última pesada. En el iPhone, cerrar JLP por completo y volver a abrirlo.
+- **Cuidado:**
+  - No escribir `client_secret` ni tokens en el repo: `config.json` y `tokens.json` fuera de git (revisar `.gitignore`).
+  - No borrar filas de la hoja.
+  - Son datos de salud: no ponerlos en logs ni en `fede_orden`.
+  - Si Withings falla, la tarjeta dice «—» y no tumba Inicio.
+
 ## Plan (orden propuesto)
 
 1. **Hoy, rápido y de alto riesgo:** P1 (Cloudflare). Si se cae el dominio, se cae todo el app.
-2. **Respuestas de Pato que destraban trabajo corto:** P3, P2 y P4. Juntas son unos 15 min míos.
+2. **Respuestas de Pato que destraban trabajo corto:** P3, P2, P4 y P11 (login de Withings). Juntas son unos 15 min míos.
 3. **Ronda de pruebas en el iPhone.** Pato abre el app y manda capturas de lo que se vea mal. Eso va antes de agregar cosas nuevas.
-4. **Para Claude, de más útil a menos:** C1 → C8 → C9 → C2 → C3 → C4 → C5.
+4. **Para Claude, de más útil a menos:** C1 → C8 → C9 → C10 → C2 → C3 → C4 → C5.
 5. **Cuando Pato pueda:** P6 y P7.
 
 ## Tiempos (medidos con `tools/tiempos.py`)

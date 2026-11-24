@@ -188,7 +188,7 @@ button.card:active{transform:scale(.98)}
 .col.foco i{background:var(--c10);box-shadow:0 0 16px color-mix(in srgb,var(--c10) 45%,transparent)}
 .col.neg i{background:color-mix(in srgb,var(--st-crit) 70%,transparent)}
 .col.neg .val{color:var(--st-crit)}
-#v-inicio .grafica:has(#acumDef:not([hidden])){flex:0 0 auto}  /* con el acumulado, la tarjeta crece lo que necesite */
+#v-inicio .grafica:has(#acumDef:not([hidden])),#v-inicio #bascCard{flex:0 0 auto}  /* con el acumulado, la tarjeta crece lo que necesite */
 .acum{display:grid;grid-template-columns:1fr 1fr;gap:6px;margin-top:10px;padding-top:10px;border-top:1px solid rgba(255,255,255,.08)}
 .acum div{display:flex;flex-direction:column;gap:2px;padding:7px 10px;border-radius:14px;background:rgba(255,255,255,.04);text-align:left}
 .acum small{font:500 11px/1.2 var(--sans);color:var(--muted)}
@@ -196,6 +196,19 @@ button.card:active{transform:scale(.98)}
 .acum em{font:500 11px/1.2 var(--sans);font-style:normal;color:var(--muted)}
 .acum .bien b{color:var(--st-ok,#34C759)}
 .acum .mal b{color:var(--st-crit)}
+.basc-peso{display:flex;align-items:baseline;gap:6px;margin-top:8px}
+.basc-peso b{font:700 34px/1 var(--display);font-variant-numeric:tabular-nums}
+.basc-peso small,.basc-hora{font:500 12px/1.2 var(--sans);color:var(--muted)}
+.basc-hora{margin-left:auto}
+.basc-camb{display:flex;gap:14px;margin-top:6px;font:600 13px/1.2 var(--sans);font-variant-numeric:tabular-nums}
+.basc-camb .bien{color:var(--st-ok,#34C759)}.basc-camb .mal{color:var(--st-crit)}
+.basc-svg{width:100%;height:46px;margin-top:8px;display:block}
+.basc-svg polyline{fill:none;stroke:var(--neutro,#8E8E93);stroke-width:2;stroke-linejoin:round;stroke-linecap:round}
+.basc-svg circle{fill:var(--c10,#0A84FF)}
+#bascDatos{display:grid;grid-template-columns:repeat(4,1fr);gap:6px;margin-top:10px;padding-top:10px;border-top:1px solid rgba(255,255,255,.08)}
+#bascDatos div{display:flex;flex-direction:column;gap:2px;padding:7px 8px;border-radius:14px;background:rgba(255,255,255,.04);text-align:left}
+#bascDatos small{font:500 11px/1.2 var(--sans);color:var(--muted)}
+#bascDatos b{font:600 15px/1.2 var(--sans);font-variant-numeric:tabular-nums}
 .col.foco .val{color:var(--fg);font:700 12px/1 var(--display)}
 .dias{display:grid;grid-template-columns:repeat(7,1fr);margin-top:8px;padding-right:22px;font-size:12px;text-align:center;color:var(--muted)}
 
@@ -777,6 +790,13 @@ input[type=checkbox]{accent-color:var(--c10)}
   <div class="barras" id="barsDef"></div>
   <div class="dias" id="diasDef"></div>
   <div class="acum" id="acumDef" hidden></div>
+</button>
+<button class="grafica glass card" id="bascCard" data-ir="tracker" data-ancla="hero" aria-label="Báscula">
+  <div class="row"><span class="t">Báscula</span><span class="cap" id="bascCap">Última pesada</span></div>
+  <div class="basc-peso"><b id="bascPeso">—</b><small>kg</small><span class="basc-hora" id="bascHora">—</span></div>
+  <div class="basc-camb" id="bascCamb"><span>7 d —</span><span>30 d —</span></div>
+  <svg class="basc-svg" id="bascSvg" viewBox="0 0 300 46" preserveAspectRatio="none" aria-hidden="true"></svg>
+  <div id="bascDatos"><div><small>Grasa</small><b>—</b></div><div><small>Músculo</small><b>—</b></div><div><small>Agua</small><b>—</b></div><div><small>Visceral</small><b>—</b></div></div>
 </button>
 <button class="grafica glass card" data-ir="tracker" data-ancla="hero" aria-label="Horas de sueño de los últimos 7 días">
   <div class="row"><span class="t">Horas de sueño</span><span class="cap">Últimos 7 días</span></div>
@@ -2973,6 +2993,33 @@ function pintarAcum(a){
   caja.innerHTML = fila("Esta semana", a.semana) + fila("Semana pasada", a.semanaPasada) + fila("Este mes", a.mes) + fila(desde, a.total);
   caja.hidden = false;
 }
+/* Tarjeta Báscula (C10, Withings): última pesada, mini gráfica de 30 días y cambio a 7 y 30 días. Bajar de peso = verde. Sin dato: "—". */
+function pintarBascula(b){
+  const cap = $("bascCap"), sv = $("bascSvg");
+  const vacio = () => { $("bascPeso").textContent = "—"; $("bascHora").textContent = "—"; sv.innerHTML = ""; cap.textContent = "Sin pesadas";
+    $("bascCamb").innerHTML = "<span>7 d —</span><span>30 d —</span>";
+    $("bascDatos").innerHTML = ["Grasa", "Músculo", "Agua", "Visceral"].map(t => `<div><small>${t}</small><b>—</b></div>`).join(""); };
+  if (!b || !b.ultima || b.ultima.peso == null){ vacio(); return; }
+  const u = b.ultima, n1 = (v, d = 1) => v == null ? "—" : Number(v).toLocaleString("es-MX", { minimumFractionDigits:d, maximumFractionDigits:d });
+  $("bascPeso").textContent = n1(u.peso);
+  const f = new Date(u.fecha + "T12:00");
+  $("bascHora").textContent = (u.fecha === hoy ? "hoy" : f.toLocaleDateString("es-MX", { day:"numeric", month:"short" })) + (u.hora ? " · " + u.hora : "");
+  cap.textContent = "Última pesada";
+  const camb = (t, c) => { const d = c && c.peso; if (d == null) return `<span>${t} —</span>`;
+    const flecha = d < 0 ? "↓" : d > 0 ? "↑" : "→";
+    return `<span class="${d < 0 ? "bien" : d > 0 ? "mal" : ""}">${t} ${flecha} ${n1(Math.abs(d), 1)} kg</span>`; };
+  $("bascCamb").innerHTML = camb("7 d", b.cambio7) + camb("30 d", b.cambio30);
+  const pts = (b.serie || []).filter(x => x[1] != null);
+  if (pts.length > 1){
+    const ys = pts.map(x => x[1]), mn = Math.min(...ys), mx = Math.max(...ys), t0 = new Date(pts[0][0] + "T12:00").getTime();
+    const dt = Math.max(1, new Date(pts[pts.length - 1][0] + "T12:00").getTime() - t0);
+    const xy = x => [(6 + (new Date(x[0] + "T12:00").getTime() - t0) / dt * 288).toFixed(1), (40 - (mx === mn ? .5 : (x[1] - mn) / (mx - mn)) * 34).toFixed(1)];
+    const P = pts.map(xy), ult = P[P.length - 1];
+    sv.innerHTML = `<polyline points="${P.map(p => p.join(",")).join(" ")}"/><circle cx="${ult[0]}" cy="${ult[1]}" r="3.5"/>`;
+  } else sv.innerHTML = "";
+  $("bascDatos").innerHTML = [["Grasa", u.grasa == null ? "—" : n1(u.grasa) + "%"], (u.musculo == null && u.masaLibre != null ? ["Masa magra", n1(u.masaLibre) + " kg"] : ["Músculo", u.musculo == null ? "—" : n1(u.musculo) + " kg"]),
+    ["Agua", u.agua == null ? "—" : n1(u.agua) + " kg"], ["Visceral", u.visceral == null ? "—" : n1(u.visceral, 0)]].map(([t, v]) => `<div><small>${t}</small><b>${v}</b></div>`).join("");
+}
 const horasTxt = v => { const h = Math.floor(v), m = Math.round((v - h) * 60); return m === 60 ? (h + 1) + "h" : h + "h" + (m ? String(m).padStart(2, "0") : ""); };
 const barrasSue = serie => grafica("Sue", serie, { meta:7, nombre:"Horas de sueño", corto:v => horasTxt(v).replace(/h00$/, "h"), largo:v => horasTxt(v) });
 function ultimos7(){ return [...Array(7)].map((_, i) => { const d = new Date(); d.setDate(d.getDate() - 6 + i); return d.toLocaleDateString("sv-SE"); }); }
@@ -3004,6 +3051,7 @@ function mostrar(r){ // { serie:[[fecha, recovery]], rec, recFecha, sueno, hrv, 
   const serieDe = s => { const v = Object.fromEntries(s || []); return ultimos7().map(d => ({ d, v:v[d] == null ? NaN : v[d] })); };
   barras(serieDe(r.seriePasos)); barrasDef(serieDe(r.serieDeficit)); barrasSue(serieDe(r.serieSueno));
   pintarAcum(r.deficitAcum);
+  try{ pintarBascula(r.bascula); }catch(e){ pintarBascula(null); }
   poner("rec", r.rec == null ? "–" : String(Math.round(r.rec)));
   $("recNota").textContent = !r.recFecha ? "" : r.recFecha === hoy ? "hoy" : "del " + new Date(r.recFecha + "T12:00").toLocaleDateString("es-MX", { day:"numeric", month:"short" });
   // Anillos WHOOP (la parte llena es el avance) y abajo pasos, calorías y gastos. Sin dato: no se muestra.
