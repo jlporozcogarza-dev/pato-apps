@@ -188,6 +188,29 @@ button.card:active{transform:scale(.98)}
 .col.foco i{background:var(--c10);box-shadow:0 0 16px color-mix(in srgb,var(--c10) 45%,transparent)}
 .col.neg i{background:color-mix(in srgb,var(--st-crit) 70%,transparent)}
 .col.neg .val{color:var(--st-crit)}
+/* Gráfica grande (tocar una gráfica del Inicio): Día / Semana / Mes */
+.g-seg{display:flex;gap:4px;padding:4px;border-radius:14px;background:rgba(255,255,255,.06);margin:10px 0 14px}
+.g-seg button{flex:1;min-height:36px;border-radius:10px;border:0;background:none;color:var(--muted);font:500 14px/1 var(--sans);cursor:pointer}
+.g-seg button.on{background:rgba(255,255,255,.14);color:var(--fg)}
+.g-res{display:grid;grid-template-columns:repeat(3,1fr);gap:6px}
+.g-res div{padding:8px 10px;border-radius:14px;background:rgba(255,255,255,.05);display:flex;flex-direction:column;gap:3px;min-width:0}
+.g-res small{font:500 11px/1.2 var(--sans);color:var(--muted)}
+.g-res b{font:600 15px/1.15 var(--sans);font-variant-numeric:tabular-nums;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.g-lee{min-height:22px;margin:14px 0 4px;font:500 14px/1.3 var(--sans);color:var(--muted)}
+.g-lee b{color:var(--fg)}
+.g-scroll{overflow-x:auto;overflow-y:hidden;-webkit-overflow-scrolling:touch;scrollbar-width:none;padding-bottom:24px}
+.g-scroll::-webkit-scrollbar{display:none}
+.g-barras{position:relative;display:flex;align-items:flex-end;height:200px;padding-top:18px;border-bottom:1px solid rgba(255,255,255,.16);box-sizing:border-box}
+.g-col{flex:0 0 auto;position:relative;height:100%;display:flex;flex-direction:column;justify-content:flex-end;align-items:center;cursor:pointer}
+.g-col i{display:block;width:62%;border-radius:4px 4px 0 0;background:color-mix(in srgb,var(--fg) 32%,transparent)}
+.g-col.neg i{background:color-mix(in srgb,var(--st-crit) 70%,transparent)}
+.g-col.sel i,.g-col.sel .g-pt{background:var(--c10);box-shadow:0 0 14px color-mix(in srgb,var(--c10) 45%,transparent)}
+.g-col span{position:absolute;bottom:-20px;font:500 10px/1 var(--sans);color:var(--muted);white-space:nowrap}
+.g-col .g-pt{position:absolute;width:9px;height:9px;border-radius:50%;background:color-mix(in srgb,var(--fg) 60%,transparent);transform:translateY(50%)}
+.g-meta{position:absolute;z-index:2;left:0;right:0;border-top:1px dashed rgba(255,255,255,.18);pointer-events:none}
+.g-meta b{position:absolute;right:2px;top:-13px;font:500 10px/1 var(--sans);color:var(--muted)}
+.g-svg{position:absolute;left:0;right:0;bottom:0;top:18px;pointer-events:none;overflow:visible}
+.g-svg polyline{fill:none;stroke:color-mix(in srgb,var(--fg) 45%,transparent);stroke-width:2;vector-effect:non-scaling-stroke}
 #v-inicio .grafica:has(#acumDef:not([hidden])),#v-inicio #bascCard{flex:0 0 auto}  /* con el acumulado, la tarjeta crece lo que necesite */
 .acum{display:grid;grid-template-columns:1fr 1fr;gap:6px;margin-top:10px;padding-top:10px;border-top:1px solid rgba(255,255,255,.08)}
 .acum div{display:flex;flex-direction:column;gap:2px;padding:7px 10px;border-radius:14px;background:rgba(255,255,255,.04);text-align:left}
@@ -780,25 +803,25 @@ input[type=checkbox]{accent-color:var(--c10)}
   <button class="stat glass card" data-ir="finanzas" data-ancla="hero" hidden><small><svg class="ico" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="3" y="6" width="18" height="13" rx="3"/><path d="M3 10.5h18"/></svg>Gastado hoy</small><span class="valor"><b class="num" id="gasto">–</b><em></em></span><span class="medidor" hidden><i></i></span></button>
   <button class="stat glass card" data-ir="finanzas" data-ancla="hero" hidden><small><svg class="ico" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="3" y="5" width="18" height="16" rx="3"/><path d="M3 10h18M8 3v4M16 3v4"/></svg>Gastado esta semana</small><span class="valor"><b class="num" id="semana">–</b><em></em></span><span class="medidor" hidden><i></i></span></button>
 </div>
-<button class="grafica glass card" data-ir="tracker" data-ancla="hero" aria-label="Pasos de los últimos 7 días">
+<button class="grafica glass card" data-graf="pasos" aria-label="Pasos de los últimos 7 días">
   <div class="row"><span class="t">Pasos por día</span><span class="cap">Últimos 7 días</span></div>
   <div class="barras" id="bars"></div>
   <div class="dias" id="dias"></div>
 </button>
-<button class="grafica glass card" data-ir="tracker" data-ancla="hero" aria-label="Déficit de calorías de los últimos 7 días">
+<button class="grafica glass card" data-graf="deficit" aria-label="Déficit de calorías de los últimos 7 días">
   <div class="row"><span class="t">Déficit de calorías</span><span class="cap">Últimos 7 días</span></div>
   <div class="barras" id="barsDef"></div>
   <div class="dias" id="diasDef"></div>
   <div class="acum" id="acumDef" hidden></div>
 </button>
-<button class="grafica glass card" id="bascCard" data-ir="tracker" data-ancla="hero" aria-label="Báscula">
+<button class="grafica glass card" id="bascCard" data-graf="peso" aria-label="Báscula">
   <div class="row"><span class="t">Báscula</span><span class="cap" id="bascCap">Última pesada</span></div>
   <div class="basc-peso"><b id="bascPeso">—</b><small>kg</small><span class="basc-hora" id="bascHora">—</span></div>
   <div class="basc-camb" id="bascCamb"><span>7 d —</span><span>30 d —</span></div>
   <svg class="basc-svg" id="bascSvg" viewBox="0 0 300 46" preserveAspectRatio="none" aria-hidden="true"></svg>
   <div id="bascDatos"><div><small>Grasa</small><b>—</b></div><div><small>Músculo</small><b>—</b></div><div><small>Agua</small><b>—</b></div><div><small>Visceral</small><b>—</b></div></div>
 </button>
-<button class="grafica glass card" data-ir="tracker" data-ancla="hero" aria-label="Horas de sueño de los últimos 7 días">
+<button class="grafica glass card" data-graf="sueno" aria-label="Horas de sueño de los últimos 7 días">
   <div class="row"><span class="t">Horas de sueño</span><span class="cap">Últimos 7 días</span></div>
   <div class="barras" id="barsSue"></div>
   <div class="dias" id="diasSue"></div>
@@ -892,6 +915,16 @@ input[type=checkbox]{accent-color:var(--c10)}
 </div>
 <button class="colores-flota glass" id="abrirColores2" aria-label="Colores de esta pestaña" title="Colores de esta pestaña"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><circle cx="12" cy="12" r="9"/><circle cx="8.5" cy="9.5" r="1.4" fill="currentColor"/><circle cx="12.5" cy="7.5" r="1.4" fill="currentColor"/><circle cx="16" cy="10.5" r="1.4" fill="currentColor"/><path d="M12 21a2.5 2.5 0 0 1 0-5h2a3 3 0 0 0 3-3"/></svg></button>
 <div class="velo" id="velo"></div>
+<section class="hoja" id="hojaGraf" role="dialog" aria-modal="true" aria-labelledby="grafTitulo" aria-hidden="true">
+  <div class="asa" aria-hidden="true"></div>
+  <button class="cerrar-hoja" data-cerrar-hoja aria-label="Cerrar"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round"><path d="M6 6l12 12M18 6L6 18"/></svg></button>
+  <h2 id="grafTitulo"></h2>
+  <div class="g-seg" role="tablist"><button data-gper="dia" class="on">Día</button><button data-gper="sem">Semana</button><button data-gper="mes">Mes</button></div>
+  <div class="g-res" id="grafRes"></div>
+  <div class="g-lee" id="grafLee"></div>
+  <div class="g-scroll" id="grafScroll"><div class="g-barras" id="grafBarras"></div></div>
+  <p class="nota" id="grafNota"></p>
+</section>
 <section class="hoja" id="hojaDepa" role="dialog" aria-modal="true" aria-labelledby="depaTitulo" aria-hidden="true">
   <div class="asa" aria-hidden="true"></div>
   <button class="cerrar-hoja" data-cerrar-hoja aria-label="Cerrar"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round"><path d="M6 6l12 12M18 6L6 18"/></svg></button>
@@ -3024,6 +3057,92 @@ const horasTxt = v => { const h = Math.floor(v), m = Math.round((v - h) * 60); r
 const barrasSue = serie => grafica("Sue", serie, { meta:7, nombre:"Horas de sueño", corto:v => horasTxt(v).replace(/h00$/, "h"), largo:v => horasTxt(v) });
 function ultimos7(){ return [...Array(7)].map((_, i) => { const d = new Date(); d.setDate(d.getDate() - 6 + i); return d.toLocaleDateString("sv-SE"); }); }
 barras(ultimos7().map(d => ({ d, v:NaN }))); barrasDef(ultimos7().map(d => ({ d, v:NaN }))); barrasSue(ultimos7().map(d => ({ d, v:NaN })));
+
+/* ---------- Gráfica grande del Inicio (pedido 25 nov): tocar pasos, déficit, báscula o sueño abre su historial por Día, Semana o Mes.
+   Datos: herramienta "historia" del puente (todo lo que hay, día por día). Semana = lunes a domingo, Mes = mes de calendario.
+   Pasos, sueño y peso se promedian; el déficit se suma (es lo que bajaste). Tocar una barra dice su valor. */
+const GRAF = {
+  pasos:  { t:"Pasos", meta:10000, junta:"prom", f:v => Math.round(v).toLocaleString("es-MX"), u:" pasos" },
+  deficit:{ t:"Déficit de calorías", meta:300, junta:"suma", f:v => (v < 0 ? "−" : "") + Math.round(Math.abs(v)).toLocaleString("es-MX"), u:" kcal" },
+  sueno:  { t:"Horas de sueño", meta:7, junta:"prom", f:v => horasTxt(v), u:"" },
+  peso:   { t:"Peso", junta:"prom", linea:true, f:v => v.toLocaleString("es-MX", { minimumFractionDigits:1, maximumFractionDigits:1 }), u:" kg" }
+};
+let HIST = (() => { try{ return JSON.parse(localStorage.getItem("jlp-historia") || "null"); }catch(e){ return null; } })(), grafK = null, grafP = "dia", grafSel = null;
+const MESES = ["ene","feb","mar","abr","may","jun","jul","ago","sep","oct","nov","dic"];
+function agrupar(serie, per, junta){
+  if (per === "dia") return serie.slice(-90).map(([d, v]) => ({ k:d, v, n:1 }));
+  const g = new Map();
+  serie.forEach(([d, v]) => {
+    let k;
+    if (per === "mes") k = d.slice(0, 7);
+    else { const f = new Date(d + "T12:00"); f.setDate(f.getDate() - (f.getDay() + 6) % 7); k = f.toLocaleDateString("sv-SE"); }
+    const x = g.get(k) || { k, s:0, n:0 }; x.s += v; x.n++; g.set(k, x);
+  });
+  return [...g.values()].sort((a, b) => a.k.localeCompare(b.k)).map(x => ({ k:x.k, v:junta === "suma" ? x.s : x.s / x.n, n:x.n }));
+}
+function etiqueta(x, per, larga){
+  if (per === "mes"){ const [y, m] = x.k.split("-"); return MESES[+m - 1] + (larga || m === "01" ? " " + y : ""); }
+  const f = new Date(x.k + "T12:00");
+  if (per === "sem") return (larga ? "Semana del " : "") + f.getDate() + " " + MESES[f.getMonth()];
+  return larga ? f.toLocaleDateString("es-MX", { weekday:"short", day:"numeric", month:"short" }) : String(f.getDate());
+}
+function pintarGraf(){
+  const o = GRAF[grafK], serie = (HIST && HIST[grafK]) || [];
+  $("grafTitulo").textContent = o.t;
+  document.querySelectorAll("[data-gper]").forEach(b => b.classList.toggle("on", b.dataset.gper === grafP));
+  const xs = agrupar(serie, grafP, o.junta), caja = $("grafBarras");
+  const nom = { dia:"día", sem:"semana", mes:"mes" }[grafP];
+  if (!xs.length){
+    $("grafRes").innerHTML = ""; $("grafLee").textContent = ""; caja.innerHTML = ""; caja.style.width = "";
+    $("grafNota").textContent = HIST ? "Todavía no hay datos." : "Cargando…"; return;
+  }
+  const vs = xs.map(x => x.v), prom = vs.reduce((a, b) => a + b, 0) / vs.length;
+  const cel = (t, v) => `<div><small>${t}</small><b>${v}</b></div>`;
+  if (o.linea){
+    const d = vs[vs.length - 1] - vs[0];
+    $("grafRes").innerHTML = cel("Último", o.f(vs[vs.length - 1]) + o.u) + cel("Mínimo", o.f(Math.min(...vs)) + o.u) +
+      cel("Cambio", (d > 0 ? "+" : d < 0 ? "−" : "") + o.f(Math.abs(d)) + o.u);
+  } else {
+    const tot = vs.reduce((a, b) => a + b, 0);
+    $("grafRes").innerHTML = cel("Promedio por " + nom, o.f(prom) + o.u) +
+      cel(o.junta === "suma" ? "Total" : "Mejor " + nom, o.f(o.junta === "suma" ? tot : Math.max(...vs)) + o.u) +
+      cel(o.meta && grafP === "dia" ? "Meta cumplida" : { sem:"Semanas", mes:"Meses", dia:"Días" }[grafP] + " con datos", o.meta && grafP === "dia" ? vs.filter(v => v >= o.meta).length + " de " + vs.length : String(vs.length));
+  }
+  const ancho = grafP === "dia" ? 26 : grafP === "sem" ? 42 : 56;
+  const W = Math.max($("grafScroll").clientWidth || 340, xs.length * ancho), cw = W / xs.length;
+  caja.style.width = W + "px";
+  const conMeta = !o.linea && o.meta && (o.junta !== "suma" || grafP === "dia");
+  let mn = 0, mx = Math.max(conMeta ? o.meta : 0, ...vs.map(Math.abs)) || 1;
+  if (o.linea){ mn = Math.min(...vs) - .5; mx = Math.max(...vs) + .5; }
+  const alto = v => o.linea ? (v - mn) / (mx - mn) * 100 : Math.max(1.5, Math.abs(v) / mx * 100);
+  const H = 182;
+  caja.innerHTML = (conMeta ? `<div class="g-meta" style="bottom:${o.meta / mx * H}px"><b>meta ${esc(o.f(o.meta))}</b></div>` : "") +
+    (o.linea ? `<svg class="g-svg" viewBox="0 0 ${W} ${H}" preserveAspectRatio="none"><polyline points="${xs.map((x, i) => ((i + .5) * cw).toFixed(1) + "," + (H - alto(x.v) / 100 * H).toFixed(1)).join(" ")}"/></svg>` : "") +
+    xs.map((x, i) => `<div class="g-col${x.v < 0 ? " neg" : ""}" data-gi="${i}" style="width:${cw}px">` +
+      (o.linea ? `<em class="g-pt" style="bottom:${alto(x.v) / 100 * H}px"></em>` : `<i style="height:${alto(x.v)}%"></i>`) +
+      `<span>${grafP === "dia" && xs.length > 20 && (xs.length - 1 - i) % 3 ? "" : esc(etiqueta(x, grafP))}</span></div>`).join("");
+  $("grafNota").textContent = (grafP === "dia" && serie.length > 90 ? "Últimos 90 días. " : "") +
+    (grafP === "dia" ? "" : o.junta === "suma" ? "Cada " + nom + " = suma de los días con comidas anotadas. " : "Cada " + nom + " = promedio de los días con dato. ") +
+    "Toca una barra para ver su valor; desliza a los lados para ver más atrás.";
+  selGraf(grafSel != null && grafSel < xs.length ? grafSel : xs.length - 1, xs);
+  $("grafScroll").scrollLeft = W;
+}
+function selGraf(i, xs){
+  const o = GRAF[grafK]; xs = xs || agrupar((HIST && HIST[grafK]) || [], grafP, o.junta); grafSel = i;
+  document.querySelectorAll("#grafBarras .g-col").forEach(c => c.classList.toggle("sel", +c.dataset.gi === i));
+  const x = xs[i]; if (!x) return;
+  $("grafLee").innerHTML = `${esc(etiqueta(x, grafP, true))} · <b>${esc(o.f(x.v) + o.u)}</b>` + (grafP !== "dia" ? ` <small>(${x.n} día${x.n > 1 ? "s" : ""})</small>` : "");
+}
+function abrirGraf(k){
+  grafK = k; grafSel = null; hoja($("hojaGraf"), true); $("hojaGraf").scrollTop = 0; pintarGraf();
+  const c = cfg(); if (!c) return;
+  api(c, "historia", { hoy }).then(r => { HIST = r; try{ localStorage.setItem("jlp-historia", JSON.stringify(r)); }catch(e){} if (grafK === k) pintarGraf(); }).catch(() => {});
+}
+document.addEventListener("click", e => { const g = e.target.closest("[data-graf]"); if (g) abrirGraf(g.dataset.graf); });
+$("hojaGraf").addEventListener("click", e => {
+  const p = e.target.closest("[data-gper]"); if (p){ grafP = p.dataset.gper; grafSel = null; return pintarGraf(); }
+  const c = e.target.closest("#grafBarras .g-col"); if (c) selGraf(+c.dataset.gi);
+});
 
 /* Si un número no cabe en su tarjeta (p. ej. $12,345 con 3 tarjetas en fila), se achica hasta caber. */
 function ajustarNumeros(){
