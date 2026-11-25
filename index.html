@@ -3172,7 +3172,7 @@ function mostrar(r){ // { serie:[[fecha, recovery]], rec, recFecha, sueno, hrv, 
   pintarAcum(r.deficitAcum);
   try{ pintarBascula(r.bascula); }catch(e){ pintarBascula(null); }
   poner("rec", r.rec == null ? "–" : String(Math.round(r.rec)));
-  $("recNota").textContent = !r.recFecha ? "" : r.recFecha === hoy ? "hoy" : "del " + new Date(r.recFecha + "T12:00").toLocaleDateString("es-MX", { day:"numeric", month:"short" });
+  $("recNota").textContent = !r.recFecha ? "" : r.recFecha === hoy ? "" : "del " + new Date(r.recFecha + "T12:00").toLocaleDateString("es-MX", { day:"numeric", month:"short" });
   // Anillos WHOOP (la parte llena es el avance) y abajo pasos, calorías y gastos. Sin dato: no se muestra.
   const entero = x => Math.round(x).toLocaleString("es-MX");
   const arco = (id, p) => { $("arco-" + id).style.strokeDasharray = `${p == null ? 0 : Math.max(0, Math.min(100, p))} 100`; };
