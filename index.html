@@ -211,6 +211,13 @@ button.card:active{transform:scale(.98)}
 .g-meta b{position:absolute;right:2px;top:-13px;font:500 10px/1 var(--sans);color:var(--muted)}
 .g-svg{position:absolute;left:0;right:0;bottom:0;top:18px;pointer-events:none;overflow:visible}
 .g-svg polyline{fill:none;stroke:color-mix(in srgb,var(--fg) 45%,transparent);stroke-width:2;vector-effect:non-scaling-stroke}
+.grafica[hidden]{display:none!important}
+.sg-barras{height:170px}
+#v-inicio #statGraf{flex:0 0 auto;text-align:left}
+#statGraf:not([data-k=deficit]) #acumDef{display:none}
+#statGraf .g-scroll{padding-bottom:22px}
+.stat.abierta{box-shadow:inset 0 0 0 1.5px color-mix(in srgb,var(--c10) 70%,transparent)}
+.stat .num.neg{color:var(--st-crit)}
 #v-inicio .grafica:has(#acumDef:not([hidden])),#v-inicio #bascCard{flex:0 0 auto}  /* con el acumulado, la tarjeta crece lo que necesite */
 .acum{display:grid;grid-template-columns:1fr 1fr;gap:6px;margin-top:10px;padding-top:10px;border-top:1px solid rgba(255,255,255,.08)}
 .acum div{display:flex;flex-direction:column;gap:2px;padding:7px 10px;border-radius:14px;background:rgba(255,255,255,.04);text-align:left}
@@ -798,21 +805,30 @@ input[type=checkbox]{accent-color:var(--c10)}
   <div class="whoop-pie"><span class="estado" id="recEstado" hidden><i></i><span></span></span><span>HRV <b id="hrv">–</b> ms</span><span>Dormiste <b id="sueno">–</b> h</span><span id="recNota"></span></div>
 </section>
 <div class="cuatro">
-  <button class="stat glass card" data-ir="tracker" data-ancla="whoopCard"><small><svg class="ico" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M4 20h4v-4h4v-4h4V8h4"/></svg>Pasos</small><span class="valor"><b class="num" id="pasos">–</b><em></em></span><span class="medidor" hidden><i></i></span></button>
-  <button class="stat glass card" data-ir="tracker" data-ancla="whoopCard"><small><svg class="ico" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M12 3c1 3 4.5 5 4.5 9.5a4.5 4.5 0 0 1-9 0c0-2 1-3.2 2-4.2.2 2 1 3 2 3 .2-3-1-5 .5-8.3z"/></svg>Calorías quemadas</small><span class="valor"><b class="num" id="kcal">–</b><em></em></span><span class="medidor" hidden><i></i></span></button>
+  <button class="stat glass card" data-sgraf="pasos"><small><svg class="ico" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M4 20h4v-4h4v-4h4V8h4"/></svg>Pasos</small><span class="valor"><b class="num" id="pasos">–</b><em></em></span><span class="medidor" hidden><i></i></span></button>
+  <button class="stat glass card" data-sgraf="kcal"><small><svg class="ico" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M12 3c1 3 4.5 5 4.5 9.5a4.5 4.5 0 0 1-9 0c0-2 1-3.2 2-4.2.2 2 1 3 2 3 .2-3-1-5 .5-8.3z"/></svg>Calorías quemadas</small><span class="valor"><b class="num" id="kcal">–</b><em></em></span><span class="medidor" hidden><i></i></span></button>
+  <button class="stat glass card" data-sgraf="deficit"><small><svg class="ico" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M12 4v13M6 11l6 6 6-6M5 20h14"/></svg>Déficit</small><span class="valor"><b class="num" id="defHoy">–</b><em id="defHoyEm"></em></span><span class="medidor" hidden><i></i></span></button>
   <button class="stat glass card" data-ir="finanzas" data-ancla="hero" hidden><small><svg class="ico" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="3" y="6" width="18" height="13" rx="3"/><path d="M3 10.5h18"/></svg>Gastado hoy</small><span class="valor"><b class="num" id="gasto">–</b><em></em></span><span class="medidor" hidden><i></i></span></button>
   <button class="stat glass card" data-ir="finanzas" data-ancla="hero" hidden><small><svg class="ico" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="3" y="5" width="18" height="16" rx="3"/><path d="M3 10h18M8 3v4M16 3v4"/></svg>Gastado esta semana</small><span class="valor"><b class="num" id="semana">–</b><em></em></span><span class="medidor" hidden><i></i></span></button>
 </div>
-<button class="grafica glass card" data-graf="pasos" aria-label="Pasos de los últimos 7 días">
+<section class="grafica glass card sgraf" id="statGraf" hidden>
+  <div class="row"><span class="t" id="sgTit"></span></div>
+  <div class="g-seg"><button data-sper="7d" class="on">Semana</button><button data-sper="30d">Mes</button><button data-sper="ano">Año</button></div>
+  <div class="g-res" id="sgRes"></div>
+  <div class="g-lee" id="sgLee"></div>
+  <div class="g-scroll" id="sgScroll"><div class="g-barras sg-barras" id="sgBarras"></div></div>
+  <div class="acum" id="acumDef" hidden></div>
+  <p class="nota" id="sgNota"></p>
+</section>
+<button class="grafica glass card" aria-label="Pasos de los últimos 7 días" hidden>
   <div class="row"><span class="t">Pasos por día</span><span class="cap">Últimos 7 días</span></div>
   <div class="barras" id="bars"></div>
   <div class="dias" id="dias"></div>
 </button>
-<button class="grafica glass card" data-graf="deficit" aria-label="Déficit de calorías de los últimos 7 días">
+<button class="grafica glass card" data-graf="deficit" aria-label="Déficit de calorías de los últimos 7 días" hidden>
   <div class="row"><span class="t">Déficit de calorías</span><span class="cap">Últimos 7 días</span></div>
   <div class="barras" id="barsDef"></div>
   <div class="dias" id="diasDef"></div>
-  <div class="acum" id="acumDef" hidden></div>
 </button>
 <button class="grafica glass card" id="bascCard" data-graf="peso" aria-label="Báscula">
   <div class="row"><span class="t">Báscula</span><span class="cap" id="bascCap">Última pesada</span></div>
@@ -3058,90 +3074,139 @@ const barrasSue = serie => grafica("Sue", serie, { meta:7, nombre:"Horas de sue�
 function ultimos7(){ return [...Array(7)].map((_, i) => { const d = new Date(); d.setDate(d.getDate() - 6 + i); return d.toLocaleDateString("sv-SE"); }); }
 barras(ultimos7().map(d => ({ d, v:NaN }))); barrasDef(ultimos7().map(d => ({ d, v:NaN }))); barrasSue(ultimos7().map(d => ({ d, v:NaN })));
 
-/* ---------- Gráfica grande del Inicio (pedido 25 nov): tocar pasos, déficit, báscula o sueño abre su historial por Día, Semana o Mes.
-   Datos: herramienta "historia" del puente (todo lo que hay, día por día). Semana = lunes a domingo, Mes = mes de calendario.
-   Pasos, sueño y peso se promedian; el déficit se suma (es lo que bajaste). Tocar una barra dice su valor. */
+/* ---------- Gráficas del Inicio con historial (pedidos 25 nov) ----------
+   · Tocar Pasos, Calorías quemadas o Déficit (tarjetas chicas) abre su gráfica abajo, siempre cerrada al abrir el app;
+     volver a tocar la misma tarjeta la cierra. Semana / Mes = un dato por día (7 y 30 días); Año = un dato por mes.
+   · Tocar Báscula u Horas de sueño abre la hoja grande con Día / Semana / Mes.
+   Datos: herramienta "historia" del puente, día por día. Pasos, calorías, sueño y peso se promedian; el déficit se suma. */
 const GRAF = {
   pasos:  { t:"Pasos", meta:10000, junta:"prom", f:v => Math.round(v).toLocaleString("es-MX"), u:" pasos" },
+  kcal:   { t:"Calorías quemadas", junta:"prom", f:v => Math.round(v).toLocaleString("es-MX"), u:" kcal" },
   deficit:{ t:"Déficit de calorías", meta:300, junta:"suma", f:v => (v < 0 ? "−" : "") + Math.round(Math.abs(v)).toLocaleString("es-MX"), u:" kcal" },
   sueno:  { t:"Horas de sueño", meta:7, junta:"prom", f:v => horasTxt(v), u:"" },
   peso:   { t:"Peso", junta:"prom", linea:true, f:v => v.toLocaleString("es-MX", { minimumFractionDigits:1, maximumFractionDigits:1 }), u:" kg" }
 };
-let HIST = (() => { try{ return JSON.parse(localStorage.getItem("jlp-historia") || "null"); }catch(e){ return null; } })(), grafK = null, grafP = "dia", grafSel = null;
-const MESES = ["ene","feb","mar","abr","may","jun","jul","ago","sep","oct","nov","dic"];
+let HIST = (() => { try{ return JSON.parse(localStorage.getItem("jlp-historia") || "null"); }catch(e){ return null; } })();
+const MESES = ["ene","feb","mar","abr","may","jun","jul","ago","sep","oct","nov","dic"], DSEM = ["Do","Lu","Ma","Mi","Ju","Vi","Sá"];
+const POR_DIA = { dia:1, "7d":1, "30d":1 };
 function agrupar(serie, per, junta){
   if (per === "dia") return serie.slice(-90).map(([d, v]) => ({ k:d, v, n:1 }));
-  const g = new Map();
+  if (per === "7d" || per === "30d"){   // todos los días del rango, aunque no haya dato (hueco)
+    const m = new Map(serie), n = per === "7d" ? 7 : 30;
+    return [...Array(n)].map((_, i) => { const f = new Date(hoy + "T12:00"); f.setDate(f.getDate() - (n - 1 - i)); const k = f.toLocaleDateString("sv-SE");
+      return { k, v:m.has(k) ? m.get(k) : NaN, n:1 }; });
+  }
+  const g = new Map(), desde = (() => { const f = new Date(hoy + "T12:00"); f.setDate(1); f.setMonth(f.getMonth() - 11); return f.toLocaleDateString("sv-SE").slice(0, 7); })();
   serie.forEach(([d, v]) => {
     let k;
-    if (per === "mes") k = d.slice(0, 7);
+    if (per === "mes" || per === "ano") k = d.slice(0, 7);
     else { const f = new Date(d + "T12:00"); f.setDate(f.getDate() - (f.getDay() + 6) % 7); k = f.toLocaleDateString("sv-SE"); }
+    if (per === "ano" && k < desde) return;
     const x = g.get(k) || { k, s:0, n:0 }; x.s += v; x.n++; g.set(k, x);
   });
   return [...g.values()].sort((a, b) => a.k.localeCompare(b.k)).map(x => ({ k:x.k, v:junta === "suma" ? x.s : x.s / x.n, n:x.n }));
 }
-function etiqueta(x, per, larga){
-  if (per === "mes"){ const [y, m] = x.k.split("-"); return MESES[+m - 1] + (larga || m === "01" ? " " + y : ""); }
+function etiqueta(x, per, larga, i, total){
+  if (per === "mes" || per === "ano"){ const [y, m] = x.k.split("-"); return MESES[+m - 1] + (larga || (per === "mes" && m === "01") ? " " + y : ""); }
   const f = new Date(x.k + "T12:00");
   if (per === "sem") return (larga ? "Semana del " : "") + f.getDate() + " " + MESES[f.getMonth()];
-  return larga ? f.toLocaleDateString("es-MX", { weekday:"short", day:"numeric", month:"short" }) : String(f.getDate());
+  if (larga) return f.toLocaleDateString("es-MX", { weekday:"short", day:"numeric", month:"short" });
+  if (per === "7d") return DSEM[f.getDay()];
+  if (per === "30d") return (total - 1 - i) % 5 ? "" : String(f.getDate());
+  return total > 20 && (total - 1 - i) % 3 ? "" : String(f.getDate());
 }
-function pintarGraf(){
-  const o = GRAF[grafK], serie = (HIST && HIST[grafK]) || [];
-  $("grafTitulo").textContent = o.t;
-  document.querySelectorAll("[data-gper]").forEach(b => b.classList.toggle("on", b.dataset.gper === grafP));
-  const xs = agrupar(serie, grafP, o.junta), caja = $("grafBarras");
-  const nom = { dia:"día", sem:"semana", mes:"mes" }[grafP];
-  if (!xs.length){
-    $("grafRes").innerHTML = ""; $("grafLee").textContent = ""; caja.innerHTML = ""; caja.style.width = "";
-    $("grafNota").textContent = HIST ? "Todavía no hay datos." : "Cargando…"; return;
+/* Dibuja una gráfica en una caja D = { res, lee, scroll, barras, nota } y deja el estado en D (k, per, sel). */
+function dibujar(D){
+  const o = GRAF[D.k], per = D.per, serie = (HIST && HIST[D.k]) || [];
+  const xs = agrupar(serie, per, o.junta), caja = $(D.barras), ok = xs.filter(x => isFinite(x.v));
+  const nom = { dia:"día", "7d":"día", "30d":"día", sem:"semana", mes:"mes", ano:"mes" }[per];
+  D.xs = xs;
+  if (!ok.length){
+    $(D.res).innerHTML = ""; $(D.lee).textContent = ""; caja.innerHTML = ""; caja.style.width = "";
+    $(D.nota).textContent = HIST ? "Todavía no hay datos de este periodo." : "Cargando…"; return;
   }
-  const vs = xs.map(x => x.v), prom = vs.reduce((a, b) => a + b, 0) / vs.length;
+  const vs = ok.map(x => x.v), prom = vs.reduce((a, b) => a + b, 0) / vs.length;
   const cel = (t, v) => `<div><small>${t}</small><b>${v}</b></div>`;
   if (o.linea){
     const d = vs[vs.length - 1] - vs[0];
-    $("grafRes").innerHTML = cel("Último", o.f(vs[vs.length - 1]) + o.u) + cel("Mínimo", o.f(Math.min(...vs)) + o.u) +
+    $(D.res).innerHTML = cel("Último", o.f(vs[vs.length - 1]) + o.u) + cel("Mínimo", o.f(Math.min(...vs)) + o.u) +
       cel("Cambio", (d > 0 ? "+" : d < 0 ? "−" : "") + o.f(Math.abs(d)) + o.u);
   } else {
-    const tot = vs.reduce((a, b) => a + b, 0);
-    $("grafRes").innerHTML = cel("Promedio por " + nom, o.f(prom) + o.u) +
+    const tot = vs.reduce((a, b) => a + b, 0), diario = POR_DIA[per];
+    $(D.res).innerHTML = cel("Promedio por " + nom, o.f(prom) + o.u) +
       cel(o.junta === "suma" ? "Total" : "Mejor " + nom, o.f(o.junta === "suma" ? tot : Math.max(...vs)) + o.u) +
-      cel(o.meta && grafP === "dia" ? "Meta cumplida" : { sem:"Semanas", mes:"Meses", dia:"Días" }[grafP] + " con datos", o.meta && grafP === "dia" ? vs.filter(v => v >= o.meta).length + " de " + vs.length : String(vs.length));
+      cel(o.meta && diario ? "Meta cumplida" : { día:"Días", semana:"Semanas", mes:"Meses" }[nom] + " con datos",
+        o.meta && diario ? vs.filter(v => v >= o.meta).length + " de " + vs.length : String(vs.length));
   }
-  const ancho = grafP === "dia" ? 26 : grafP === "sem" ? 42 : 56;
-  const W = Math.max($("grafScroll").clientWidth || 340, xs.length * ancho), cw = W / xs.length;
+  const ajusta = per === "7d" || per === "30d" || per === "ano";   // en la tarjeta todo cabe a lo ancho
+  const ancho = per === "dia" ? 26 : per === "sem" ? 42 : 56;
+  const vis = $(D.scroll).clientWidth || 340, W = ajusta ? vis : Math.max(vis, xs.length * ancho), cw = W / xs.length;
   caja.style.width = W + "px";
-  const conMeta = !o.linea && o.meta && (o.junta !== "suma" || grafP === "dia");
+  const conMeta = !o.linea && o.meta && (o.junta !== "suma" || POR_DIA[per]);
   let mn = 0, mx = Math.max(conMeta ? o.meta : 0, ...vs.map(Math.abs)) || 1;
   if (o.linea){ mn = Math.min(...vs) - .5; mx = Math.max(...vs) + .5; }
+  const H = caja.clientHeight - 18 || 182;
   const alto = v => o.linea ? (v - mn) / (mx - mn) * 100 : Math.max(1.5, Math.abs(v) / mx * 100);
-  const H = 182;
   caja.innerHTML = (conMeta ? `<div class="g-meta" style="bottom:${o.meta / mx * H}px"><b>meta ${esc(o.f(o.meta))}</b></div>` : "") +
-    (o.linea ? `<svg class="g-svg" viewBox="0 0 ${W} ${H}" preserveAspectRatio="none"><polyline points="${xs.map((x, i) => ((i + .5) * cw).toFixed(1) + "," + (H - alto(x.v) / 100 * H).toFixed(1)).join(" ")}"/></svg>` : "") +
+    (o.linea ? `<svg class="g-svg" viewBox="0 0 ${W} ${H}" preserveAspectRatio="none"><polyline points="${xs.map((x, i) => isFinite(x.v) ? ((i + .5) * cw).toFixed(1) + "," + (H - alto(x.v) / 100 * H).toFixed(1) : "").filter(Boolean).join(" ")}"/></svg>` : "") +
     xs.map((x, i) => `<div class="g-col${x.v < 0 ? " neg" : ""}" data-gi="${i}" style="width:${cw}px">` +
-      (o.linea ? `<em class="g-pt" style="bottom:${alto(x.v) / 100 * H}px"></em>` : `<i style="height:${alto(x.v)}%"></i>`) +
-      `<span>${grafP === "dia" && xs.length > 20 && (xs.length - 1 - i) % 3 ? "" : esc(etiqueta(x, grafP))}</span></div>`).join("");
-  $("grafNota").textContent = (grafP === "dia" && serie.length > 90 ? "Últimos 90 días. " : "") +
-    (grafP === "dia" ? "" : o.junta === "suma" ? "Cada " + nom + " = suma de los días con comidas anotadas. " : "Cada " + nom + " = promedio de los días con dato. ") +
-    "Toca una barra para ver su valor; desliza a los lados para ver más atrás.";
-  selGraf(grafSel != null && grafSel < xs.length ? grafSel : xs.length - 1, xs);
-  $("grafScroll").scrollLeft = W;
+      (!isFinite(x.v) ? "" : o.linea ? `<em class="g-pt" style="bottom:${alto(x.v) / 100 * H}px"></em>` : `<i style="height:${alto(x.v)}%"></i>`) +
+      `<span>${esc(etiqueta(x, per, false, i, xs.length))}</span></div>`).join("");
+  $(D.nota).textContent = (per === "dia" && serie.length > 90 ? "Últimos 90 días. " : "") +
+    (POR_DIA[per] ? "" : o.junta === "suma" ? "Cada " + nom + " = suma de los días con comidas anotadas. " : "Cada " + nom + " = promedio de los días con dato. ") +
+    "Toca una barra para ver su valor." + (ajusta ? "" : " Desliza a los lados para ver más atrás.");
+  const ult = xs.map(x => isFinite(x.v)).lastIndexOf(true);
+  elegir(D, D.sel != null && isFinite((xs[D.sel] || {}).v) ? D.sel : ult);
+  $(D.scroll).scrollLeft = W;
 }
-function selGraf(i, xs){
-  const o = GRAF[grafK]; xs = xs || agrupar((HIST && HIST[grafK]) || [], grafP, o.junta); grafSel = i;
-  document.querySelectorAll("#grafBarras .g-col").forEach(c => c.classList.toggle("sel", +c.dataset.gi === i));
-  const x = xs[i]; if (!x) return;
-  $("grafLee").innerHTML = `${esc(etiqueta(x, grafP, true))} · <b>${esc(o.f(x.v) + o.u)}</b>` + (grafP !== "dia" ? ` <small>(${x.n} día${x.n > 1 ? "s" : ""})</small>` : "");
+function elegir(D, i){
+  const o = GRAF[D.k], x = (D.xs || [])[i]; D.sel = i;
+  $(D.barras).querySelectorAll(".g-col").forEach(c => c.classList.toggle("sel", +c.dataset.gi === i));
+  if (!x || !isFinite(x.v)){ $(D.lee).innerHTML = x ? `${esc(etiqueta(x, D.per, true))} · <b>sin dato</b>` : ""; return; }
+  $(D.lee).innerHTML = `${esc(etiqueta(x, D.per, true))} · <b>${esc(o.f(x.v) + o.u)}</b>` + (POR_DIA[D.per] ? "" : ` <small>(${x.n} día${x.n > 1 ? "s" : ""})</small>`);
+}
+let histPidiendo = null;
+function traerHist(listo){
+  const c = cfg(); if (!c) return;
+  if (!histPidiendo) histPidiendo = api(c, "historia", { hoy }).then(r => { HIST = r; try{ localStorage.setItem("jlp-historia", JSON.stringify(r)); }catch(e){} return r; })
+    .finally(() => setTimeout(() => { histPidiendo = null; }, 60000));
+  histPidiendo.then(listo).catch(() => {});
+}
+/* Hoja grande (Báscula, Horas de sueño) */
+const GH = { res:"grafRes", lee:"grafLee", scroll:"grafScroll", barras:"grafBarras", nota:"grafNota", k:null, per:"dia", sel:null };
+function pintarGraf(){
+  $("grafTitulo").textContent = GRAF[GH.k].t;
+  document.querySelectorAll("[data-gper]").forEach(b => b.classList.toggle("on", b.dataset.gper === GH.per));
+  dibujar(GH);
 }
 function abrirGraf(k){
-  grafK = k; grafSel = null; hoja($("hojaGraf"), true); $("hojaGraf").scrollTop = 0; pintarGraf();
-  const c = cfg(); if (!c) return;
-  api(c, "historia", { hoy }).then(r => { HIST = r; try{ localStorage.setItem("jlp-historia", JSON.stringify(r)); }catch(e){} if (grafK === k) pintarGraf(); }).catch(() => {});
+  GH.k = k; GH.sel = null; hoja($("hojaGraf"), true); $("hojaGraf").scrollTop = 0; pintarGraf();
+  traerHist(() => { if (GH.k === k) pintarGraf(); });
 }
 document.addEventListener("click", e => { const g = e.target.closest("[data-graf]"); if (g) abrirGraf(g.dataset.graf); });
 $("hojaGraf").addEventListener("click", e => {
-  const p = e.target.closest("[data-gper]"); if (p){ grafP = p.dataset.gper; grafSel = null; return pintarGraf(); }
-  const c = e.target.closest("#grafBarras .g-col"); if (c) selGraf(+c.dataset.gi);
+  const p = e.target.closest("[data-gper]"); if (p){ GH.per = p.dataset.gper; GH.sel = null; return pintarGraf(); }
+  const c = e.target.closest("#grafBarras .g-col"); if (c) elegir(GH, +c.dataset.gi);
+});
+/* Gráfica de las tarjetas chicas (Pasos, Calorías quemadas, Déficit): se abre abajo de las tarjetas y se cierra al volver a tocar */
+const GS = { res:"sgRes", lee:"sgLee", scroll:"sgScroll", barras:"sgBarras", nota:"sgNota", k:null, per:"7d", sel:null };
+function pintarSG(){
+  const box = $("statGraf"); box.dataset.k = GS.k;
+  $("sgTit").textContent = GRAF[GS.k].t;
+  box.querySelectorAll("[data-sper]").forEach(b => b.classList.toggle("on", b.dataset.sper === GS.per));
+  document.querySelectorAll("[data-sgraf]").forEach(b => b.classList.toggle("abierta", b.dataset.sgraf === GS.k && !box.hidden));
+  dibujar(GS);
+}
+function tocarStat(k){
+  const box = $("statGraf");
+  if (!box.hidden && GS.k === k){ box.hidden = true; GS.k = null; document.querySelectorAll("[data-sgraf]").forEach(b => b.classList.remove("abierta")); return; }
+  GS.k = k; GS.per = "7d"; GS.sel = null; box.hidden = false; pintarSG();
+  traerHist(() => { if (GS.k === k && !box.hidden) pintarSG(); });
+}
+document.addEventListener("click", e => { const g = e.target.closest("[data-sgraf]"); if (g) tocarStat(g.dataset.sgraf); });
+$("statGraf").addEventListener("click", e => {
+  const p = e.target.closest("[data-sper]"); if (p){ GS.per = p.dataset.sper; GS.sel = null; return pintarSG(); }
+  const c = e.target.closest("#sgBarras .g-col"); if (c) elegir(GS, +c.dataset.gi);
 });
 
 /* Si un número no cabe en su tarjeta (p. ej. $12,345 con 3 tarjetas en fila), se achica hasta caber. */
@@ -3197,6 +3262,11 @@ function mostrar(r){ // { serie:[[fecha, recovery]], rec, recFecha, sueno, hrv, 
   };
   stat("pasos", r.pasos, entero, 10000);                         // la meta de pasos es la del Tracker
   stat("kcal", r.kcal, entero);                                  // sin meta real: solo el número
+  // Déficit de hoy (quemadas WHOOP − comido). Sin comidas anotadas hoy no hay dato.
+  const dh = (r.serieDeficit || []).find(x => x[0] === hoy), dv = dh && dh[1] != null ? dh[1] : null;
+  poner("defHoy", dv == null ? "–" : (dv < 0 ? "−" : "") + entero(Math.abs(dv)));
+  $("defHoy").classList.toggle("neg", dv != null && dv < 0);
+  $("defHoyEm").textContent = dv == null ? "sin comidas" : dv < 0 ? "de más" : "kcal hoy";
   // 23 nov: escondidas por ahora (Finanzas no está conectado al banco y Pato no registra a mano). Para volver: VER_GASTOS = true.
   const VER_GASTOS = false;
   stat("gasto", VER_GASTOS ? r.gastoHoy || 0 : null, pesos, r.limiteDia, true);      // límite diario de Finanzas
