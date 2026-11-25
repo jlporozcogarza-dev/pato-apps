@@ -825,6 +825,7 @@ input[type=checkbox]{accent-color:var(--c10)}
 <div class="cuatro">
   <button class="stat glass card" data-sgraf="pasos"><small><svg class="ico" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M4 20h4v-4h4v-4h4V8h4"/></svg>Pasos</small><span class="valor"><b class="num" id="pasos">–</b><em></em></span><span class="medidor" hidden><i></i></span></button>
   <button class="stat glass card" data-sgraf="kcal"><small><svg class="ico" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M12 3c1 3 4.5 5 4.5 9.5a4.5 4.5 0 0 1-9 0c0-2 1-3.2 2-4.2.2 2 1 3 2 3 .2-3-1-5 .5-8.3z"/></svg>Calorías quemadas</small><span class="valor"><b class="num" id="kcal">–</b><em></em></span><span class="medidor" hidden><i></i></span></button>
+  <button class="stat glass card" data-sgraf="sueno"><small><svg class="ico" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M20 14.5A8 8 0 0 1 9.5 4a8 8 0 1 0 10.5 10.5z"/></svg>Sueño</small><span class="valor"><b class="num" id="suenoHoy">–</b><em id="suenoHoyEm"></em></span><span class="medidor" hidden><i></i></span></button>
   <button class="stat glass card" data-sgraf="deficit"><small><svg class="ico" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M12 4v13M6 11l6 6 6-6M5 20h14"/></svg>Déficit</small><span class="valor"><b class="num" id="defHoy">–</b><em id="defHoyEm"></em></span><span class="medidor" hidden><i></i></span></button>
   <button class="stat glass card" data-ir="finanzas" data-ancla="hero" hidden><small><svg class="ico" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="3" y="6" width="18" height="13" rx="3"/><path d="M3 10.5h18"/></svg>Gastado hoy</small><span class="valor"><b class="num" id="gasto">–</b><em></em></span><span class="medidor" hidden><i></i></span></button>
   <button class="stat glass card" data-ir="finanzas" data-ancla="hero" hidden><small><svg class="ico" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="3" y="5" width="18" height="16" rx="3"/><path d="M3 10h18M8 3v4M16 3v4"/></svg>Gastado esta semana</small><span class="valor"><b class="num" id="semana">–</b><em></em></span><span class="medidor" hidden><i></i></span></button>
@@ -864,7 +865,7 @@ input[type=checkbox]{accent-color:var(--c10)}
   <div class="g-scroll" id="pesoScroll"><div class="p-barras" id="pesoBarras"></div></div>
   <p class="nota" id="pesoNota"></p>
 </section>
-<button class="grafica glass card" data-graf="sueno" aria-label="Horas de sueño de los últimos 7 días">
+<button class="grafica glass card" data-graf="sueno" aria-label="Horas de sueño de los últimos 7 días" hidden>
   <div class="row"><span class="t">Horas de sueño</span><span class="cap">Últimos 7 días</span></div>
   <div class="barras" id="barsSue"></div>
   <div class="dias" id="diasSue"></div>
@@ -3377,6 +3378,9 @@ function mostrar(r){ // { serie:[[fecha, recovery]], rec, recFecha, sueno, hrv, 
   };
   stat("pasos", r.pasos, entero, 10000);                         // la meta de pasos es la del Tracker
   stat("kcal", r.kcal, entero);                                  // sin meta real: solo el número
+  // Sueño de anoche (WHOOP), en su tarjeta chica; tocarla abre su gráfica
+  poner("suenoHoy", r.sueno == null ? "–" : horasTxt(r.sueno));
+  $("suenoHoyEm").textContent = r.sueno == null ? "" : r.sueno >= 7 ? "meta 7h ✓" : "de 7h";
   // Déficit de hoy (quemadas WHOOP − comido). Sin comidas anotadas hoy no hay dato.
   const dh = (r.serieDeficit || []).find(x => x[0] === hoy), dv = dh && dh[1] != null ? dh[1] : null;
   poner("defHoy", dv == null ? "–" : (dv < 0 ? "−" : "") + entero(Math.abs(dv)));
