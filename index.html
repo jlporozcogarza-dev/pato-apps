@@ -213,6 +213,12 @@ button.card:active{transform:scale(.98)}
 .g-svg polyline{fill:none;stroke:color-mix(in srgb,var(--fg) 45%,transparent);stroke-width:2;vector-effect:non-scaling-stroke}
 .grafica[hidden]{display:none!important}
 .sg-barras{height:170px}
+/* Acomodar el Inicio: todo tiembla, el que llevas se levanta */
+#v-inicio [data-bloque],#v-inicio .cuatro>[data-sgraf]{-webkit-touch-callout:none;-webkit-user-select:none;user-select:none}
+@keyframes tiembla{0%{rotate:-.7deg}50%{rotate:.7deg}100%{rotate:-.7deg}}
+#v-inicio.acomodando main>[data-bloque]:not(.levantada):not([data-bloque=tarjetas]),#v-inicio.acomodando .cuatro>[data-sgraf]:not(.levantada){animation:tiembla .28s ease-in-out infinite}
+#v-inicio.acomodando .cuatro>[data-sgraf]:nth-child(2n),#v-inicio.acomodando main>[data-bloque]:nth-child(2n){animation-delay:-.14s}
+#v-inicio .levantada{position:relative;z-index:30;box-shadow:0 24px 50px -12px rgba(0,0,0,.75);transition:none!important;animation:none!important}
 #v-inicio #pesoGraf{flex:0 0 auto;text-align:left}
 #bascCard.abierta{box-shadow:inset 0 0 0 1.5px color-mix(in srgb,var(--c10) 70%,transparent)}
 .p-chips{display:flex;flex-wrap:wrap;gap:6px;margin:0 0 12px}
@@ -813,16 +819,16 @@ input[type=checkbox]{accent-color:var(--c10)}
   <button class="ajustes glass" id="abrirColores" aria-label="Cambiar colores"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><circle cx="12" cy="12" r="9"/><circle cx="8.5" cy="9.5" r="1.4" fill="currentColor"/><circle cx="12.5" cy="7.5" r="1.4" fill="currentColor"/><circle cx="16" cy="10.5" r="1.4" fill="currentColor"/><path d="M12 21a2.5 2.5 0 0 1 0-5h2a3 3 0 0 0 3-3"/></svg></button>
 </header>
 <button class="conectar glass" id="conectar" hidden>Conectar mis datos · pega tu link de WhatsApp</button>
-<section class="whoop glass" aria-label="WHOOP">
+<section class="whoop glass" aria-label="WHOOP" data-bloque="whoop">
   <div class="marca-whoop">WHOOP</div>
   <div class="anillos">
-    <button class="anillo" data-ir="tracker" data-ancla="whoopCard" style="--col:var(--neutro)"><span class="aro"><svg viewBox="0 0 120 120" aria-hidden="true"><circle class="pista" cx="60" cy="60" r="52"/><circle class="arco" id="arco-suenoPct" cx="60" cy="60" r="52" pathLength="100"/></svg><b class="num"><span id="suenoPct">–</span><sup>%</sup></b></span><span class="lbl">Sueño<i>›</i></span></button>
-    <button class="anillo foco" data-ir="tracker" data-ancla="whoopCard" style="--col:var(--c10)"><span class="aro"><svg viewBox="0 0 120 120" aria-hidden="true"><circle class="pista" cx="60" cy="60" r="52"/><circle class="arco" id="arco-rec" cx="60" cy="60" r="52" pathLength="100"/></svg><b class="num"><span id="rec">–</span><sup>%</sup></b></span><span class="lbl">Recuperación<i>›</i></span></button>
-    <button class="anillo" data-ir="tracker" data-ancla="whoopCard" style="--col:var(--neutro)"><span class="aro"><svg viewBox="0 0 120 120" aria-hidden="true"><circle class="pista" cx="60" cy="60" r="52"/><circle class="arco" id="arco-strain" cx="60" cy="60" r="52" pathLength="100"/></svg><b class="num"><span id="strain">–</span></b></span><span class="lbl">Esfuerzo<i>›</i></span></button>
+    <button class="anillo" style="--col:var(--neutro)"><span class="aro"><svg viewBox="0 0 120 120" aria-hidden="true"><circle class="pista" cx="60" cy="60" r="52"/><circle class="arco" id="arco-suenoPct" cx="60" cy="60" r="52" pathLength="100"/></svg><b class="num"><span id="suenoPct">–</span><sup>%</sup></b></span><span class="lbl">Sueño<i>›</i></span></button>
+    <button class="anillo foco" style="--col:var(--c10)"><span class="aro"><svg viewBox="0 0 120 120" aria-hidden="true"><circle class="pista" cx="60" cy="60" r="52"/><circle class="arco" id="arco-rec" cx="60" cy="60" r="52" pathLength="100"/></svg><b class="num"><span id="rec">–</span><sup>%</sup></b></span><span class="lbl">Recuperación<i>›</i></span></button>
+    <button class="anillo" style="--col:var(--neutro)"><span class="aro"><svg viewBox="0 0 120 120" aria-hidden="true"><circle class="pista" cx="60" cy="60" r="52"/><circle class="arco" id="arco-strain" cx="60" cy="60" r="52" pathLength="100"/></svg><b class="num"><span id="strain">–</span></b></span><span class="lbl">Esfuerzo<i>›</i></span></button>
   </div>
   <div class="whoop-pie"><span class="estado" id="recEstado" hidden><i></i><span></span></span><span>HRV <b id="hrv">–</b> ms</span><span>Dormiste <b id="sueno">–</b> h</span><span id="recNota"></span></div>
 </section>
-<div class="cuatro">
+<div class="cuatro" data-bloque="tarjetas">
   <button class="stat glass card" data-sgraf="pasos"><small><svg class="ico" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M4 20h4v-4h4v-4h4V8h4"/></svg>Pasos</small><span class="valor"><b class="num" id="pasos">–</b><em></em></span><span class="medidor" hidden><i></i></span></button>
   <button class="stat glass card" data-sgraf="kcal"><small><svg class="ico" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M12 3c1 3 4.5 5 4.5 9.5a4.5 4.5 0 0 1-9 0c0-2 1-3.2 2-4.2.2 2 1 3 2 3 .2-3-1-5 .5-8.3z"/></svg>Calorías quemadas</small><span class="valor"><b class="num" id="kcal">–</b><em></em></span><span class="medidor" hidden><i></i></span></button>
   <button class="stat glass card" data-sgraf="sueno"><small><svg class="ico" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M20 14.5A8 8 0 0 1 9.5 4a8 8 0 1 0 10.5 10.5z"/></svg>Sueño</small><span class="valor"><b class="num" id="suenoHoy">–</b><em id="suenoHoyEm"></em></span><span class="medidor" hidden><i></i></span></button>
@@ -849,7 +855,7 @@ input[type=checkbox]{accent-color:var(--c10)}
   <div class="barras" id="barsDef"></div>
   <div class="dias" id="diasDef"></div>
 </button>
-<button class="grafica glass card" id="bascCard" aria-label="Peso">
+<button class="grafica glass card" id="bascCard" aria-label="Peso" data-bloque="peso">
   <div class="row"><span class="t">Peso</span><span class="cap" id="bascCap">Última pesada</span></div>
   <div class="basc-peso"><b id="bascPeso">—</b><small>kg</small><span class="basc-hora" id="bascHora">—</span></div>
   <div class="basc-camb" id="bascCamb"><span>7 d —</span><span>30 d —</span></div>
@@ -3324,6 +3330,92 @@ $("pesoGraf").addEventListener("click", e => {
     try{ localStorage.setItem("jlp-peso-ver", JSON.stringify(GP.ver)); }catch(e){} return pintarPeso(); }
   const c = e.target.closest("#pesoBarras .p-col"); if (c) elegirPeso(+c.dataset.pi);
 });
+
+/* ---------- Acomodar el Inicio (pedido 25 nov): dejar picado ~0.45 s una tarjeta o un bloque y arrastrarlo, como las apps del iPhone.
+   Todo tiembla mientras acomodas, los demás se hacen a un lado con animación y al soltar se queda en su lugar. Se guarda en el teléfono.
+   · Tarjetas chicas (Pasos, Calorías, Sueño, Déficit): se acomodan entre ellas.
+   · Bloques (WHOOP, tarjetas, Peso): se acomodan en la pantalla; su gráfica abierta va pegada abajo de su dueño. */
+(() => {
+  const vista = $("v-inicio"), main = vista.querySelector("main"), cuatro = vista.querySelector(".cuatro");
+  const LS = "jlp-orden-inicio";
+  const bloques = () => [...main.querySelectorAll(":scope > [data-bloque]")];
+  const tarjetas = () => [...cuatro.querySelectorAll(":scope > [data-sgraf]")];
+  function pegarPaneles(){ cuatro.after($("statGraf")); $("bascCard").after($("pesoGraf")); }
+  function guardar(){ try{ localStorage.setItem(LS, JSON.stringify({ b:bloques().map(x => x.dataset.bloque), t:tarjetas().map(x => x.dataset.sgraf) })); }catch(e){} }
+  try{
+    const o = JSON.parse(localStorage.getItem(LS) || "null");
+    if (o){
+      const ancla = bloques()[bloques().length - 1].nextSibling;
+      (o.b || []).forEach(k => { const el = main.querySelector(`:scope > [data-bloque="${k}"]`); if (el) main.insertBefore(el, ancla); });
+      const primeroOculto = cuatro.querySelector(":scope > [hidden]");
+      (o.t || []).forEach(k => { const el = cuatro.querySelector(`:scope > [data-sgraf="${k}"]`); if (el) cuatro.insertBefore(el, primeroOculto); });
+      pegarPaneles();
+    }
+  }catch(e){}
+
+  let timer = 0, el = null, lista = null, gx = 0, gy = 0, fx = 0, fy = 0, x0 = 0, y0 = 0, quitarClick = false, auto = 0;
+  const rects = els => new Map(els.map(x => [x, x.getBoundingClientRect()]));
+  function flip(antes){   // los que se movieron de lugar se deslizan a su nuevo sitio
+    antes.forEach((r, x) => { if (x === el) return; const n = x.getBoundingClientRect(), dx = r.left - n.left, dy = r.top - n.top;
+      if (dx || dy) x.animate([{ transform:`translate(${dx}px,${dy}px)` }, { transform:"translate(0,0)" }], { duration:240, easing:"cubic-bezier(.2,.8,.2,1)" }); });
+  }
+  function seguir(){
+    el.style.transform = ""; const r = el.getBoundingClientRect();
+    el.style.transform = `translate(${fx - gx - r.left}px,${fy - gy - r.top}px) scale(1.04)`;
+  }
+  function empezar(t){
+    el = t; const esT = !!t.dataset.sgraf; lista = esT ? tarjetas : bloques;
+    if (!esT){ ["statGraf", "pesoGraf"].forEach(id => { $(id).hidden = true; }); document.querySelectorAll(".abierta").forEach(x => x.classList.remove("abierta")); if (typeof GS !== "undefined") GS.k = null; }
+    const r = el.getBoundingClientRect(); gx = fx - r.left; gy = fy - r.top;
+    vista.classList.add("acomodando"); el.classList.add("levantada");
+    if (navigator.vibrate) navigator.vibrate(15);
+    seguir();
+    auto = setInterval(() => {   // cerca de arriba o de abajo, la pantalla se recorre sola
+      const v = fy < 110 ? -9 : fy > innerHeight - 150 ? 9 : 0;
+      if (v){ vista.scrollTop += v; mover(); }
+    }, 16);
+  }
+  function mover(){
+    if (!el) return;
+    const otros = lista();
+    const sobre = otros.find(x => { if (x === el) return false; const q = x.getBoundingClientRect(); return fx > q.left && fx < q.right && fy > q.top && fy < q.bottom; });
+    if (sobre){
+      const antes = rects(otros), i = otros.indexOf(el), j = otros.indexOf(sobre);
+      if (j > i) sobre.after(el); else sobre.before(el);
+      if (!el.dataset.sgraf) pegarPaneles();
+      flip(antes);
+    }
+    seguir();
+  }
+  function soltar(){
+    clearTimeout(timer); clearInterval(auto);
+    if (!el) return;
+    const r0 = el.getBoundingClientRect(); el.style.transform = ""; const r1 = el.getBoundingClientRect();
+    el.animate([{ transform:`translate(${r0.left - r1.left}px,${r0.top - r1.top}px) scale(1.04)` }, { transform:"none" }], { duration:220, easing:"cubic-bezier(.2,.8,.2,1)" });
+    el.classList.remove("levantada"); el = null; guardar();
+    quitarClick = true; setTimeout(() => { quitarClick = false; }, 400);
+    setTimeout(() => vista.classList.remove("acomodando"), 250);
+  }
+  const blanco = t => (t.closest(".cuatro > [data-sgraf]") || t.closest("main > [data-bloque]"));
+  vista.addEventListener("touchstart", e => {
+    const t = blanco(e.target); if (!t || e.touches.length > 1) return;
+    x0 = fx = e.touches[0].clientX; y0 = fy = e.touches[0].clientY; clearTimeout(timer);
+    timer = setTimeout(() => empezar(t), 450);
+  }, { passive:true });
+  vista.addEventListener("touchmove", e => {
+    fx = e.touches[0].clientX; fy = e.touches[0].clientY;
+    if (!el){ if (Math.abs(fx - x0) > 9 || Math.abs(fy - y0) > 9) clearTimeout(timer); return; }
+    e.preventDefault(); mover();
+  }, { passive:false });
+  vista.addEventListener("touchend", e => { if (el){ e.stopPropagation(); } soltar(); });
+  vista.addEventListener("touchcancel", soltar);
+  // computadora (para probar): lo mismo con el mouse
+  vista.addEventListener("mousedown", e => { const t = blanco(e.target); if (!t) return; x0 = fx = e.clientX; y0 = fy = e.clientY; clearTimeout(timer); timer = setTimeout(() => empezar(t), 450); });
+  addEventListener("mousemove", e => { fx = e.clientX; fy = e.clientY; if (!el){ if (Math.abs(fx - x0) > 9 || Math.abs(fy - y0) > 9) clearTimeout(timer); return; } mover(); });
+  addEventListener("mouseup", soltar);
+  vista.addEventListener("click", e => { if (quitarClick){ e.stopPropagation(); e.preventDefault(); quitarClick = false; } }, true);   // soltar no abre la gráfica
+  vista.addEventListener("contextmenu", e => { if (blanco(e.target)) e.preventDefault(); });
+})();
 
 /* Si un número no cabe en su tarjeta (p. ej. $12,345 con 3 tarjetas en fila), se achica hasta caber. */
 function ajustarNumeros(){
