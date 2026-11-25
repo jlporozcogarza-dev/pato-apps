@@ -213,6 +213,24 @@ button.card:active{transform:scale(.98)}
 .g-svg polyline{fill:none;stroke:color-mix(in srgb,var(--fg) 45%,transparent);stroke-width:2;vector-effect:non-scaling-stroke}
 .grafica[hidden]{display:none!important}
 .sg-barras{height:170px}
+#v-inicio #pesoGraf{flex:0 0 auto;text-align:left}
+#bascCard.abierta{box-shadow:inset 0 0 0 1.5px color-mix(in srgb,var(--c10) 70%,transparent)}
+.p-chips{display:flex;flex-wrap:wrap;gap:6px;margin:0 0 12px}
+.p-chips button{display:flex;align-items:center;gap:6px;min-height:32px;padding:0 12px;border-radius:16px;border:1px solid rgba(255,255,255,.12);background:none;color:var(--muted);font:500 13px/1 var(--sans);cursor:pointer}
+.p-chips button i{width:9px;height:9px;border-radius:50%;border:1.5px solid var(--col)}
+.p-chips button.on{background:rgba(255,255,255,.1);color:var(--fg);border-color:color-mix(in srgb,var(--col) 55%,transparent)}
+.p-chips button.on i{background:var(--col)}
+.g-res .bien b{color:var(--st-ok)}.g-res .mal b{color:var(--st-crit)}
+.p-lee{display:flex;flex-wrap:wrap;gap:4px 12px;min-height:22px;margin:14px 0 6px;font:500 13px/1.3 var(--sans);color:var(--muted)}
+.p-lee span{display:inline-flex;align-items:center;gap:5px}.p-lee b{color:var(--fg)}
+.p-lee i{width:8px;height:8px;border-radius:50%}
+.p-barras{position:relative;height:150px;border-bottom:1px solid rgba(255,255,255,.16);margin-top:8px}
+.p-svg{position:absolute;inset:0;width:100%;height:100%;overflow:visible;pointer-events:none}
+.p-svg polyline{fill:none;stroke-width:2;vector-effect:non-scaling-stroke;stroke-linejoin:round}
+.p-col{position:absolute;top:0;bottom:0;cursor:pointer}
+.p-col.sel{background:linear-gradient(180deg,transparent,rgba(255,255,255,.07));border-radius:6px}
+.p-col span{position:absolute;bottom:-20px;left:50%;transform:translateX(-50%);font:500 10px/1 var(--sans);color:var(--muted);white-space:nowrap}
+#pesoScroll{padding-bottom:24px}
 #v-inicio #statGraf{flex:0 0 auto;text-align:left}
 #statGraf:not([data-k=deficit]) #acumDef{display:none}
 #statGraf .g-scroll{padding-bottom:22px}
@@ -830,13 +848,22 @@ input[type=checkbox]{accent-color:var(--c10)}
   <div class="barras" id="barsDef"></div>
   <div class="dias" id="diasDef"></div>
 </button>
-<button class="grafica glass card" id="bascCard" data-graf="peso" aria-label="Báscula">
-  <div class="row"><span class="t">Báscula</span><span class="cap" id="bascCap">Última pesada</span></div>
+<button class="grafica glass card" id="bascCard" aria-label="Peso">
+  <div class="row"><span class="t">Peso</span><span class="cap" id="bascCap">Última pesada</span></div>
   <div class="basc-peso"><b id="bascPeso">—</b><small>kg</small><span class="basc-hora" id="bascHora">—</span></div>
   <div class="basc-camb" id="bascCamb"><span>7 d —</span><span>30 d —</span></div>
   <svg class="basc-svg" id="bascSvg" viewBox="0 0 300 46" preserveAspectRatio="none" aria-hidden="true"></svg>
   <div id="bascDatos"><div><small>Grasa</small><b>—</b></div><div><small>Músculo</small><b>—</b></div><div><small>Agua</small><b>—</b></div><div><small>Visceral</small><b>—</b></div></div>
 </button>
+<section class="grafica glass card sgraf" id="pesoGraf" hidden>
+  <div class="row"><span class="t">Historial de peso</span></div>
+  <div class="g-seg"><button data-pper="dia" class="on">Día</button><button data-pper="sem">Semana</button><button data-pper="mes">Mes</button><button data-pper="ano">Año</button></div>
+  <div class="p-chips" id="pesoChips"></div>
+  <div class="g-res" id="pesoRes"></div>
+  <div class="p-lee" id="pesoLee"></div>
+  <div class="g-scroll" id="pesoScroll"><div class="p-barras" id="pesoBarras"></div></div>
+  <p class="nota" id="pesoNota"></p>
+</section>
 <button class="grafica glass card" data-graf="sueno" aria-label="Horas de sueño de los últimos 7 días">
   <div class="row"><span class="t">Horas de sueño</span><span class="cap">Últimos 7 días</span></div>
   <div class="barras" id="barsSue"></div>
@@ -3207,6 +3234,94 @@ document.addEventListener("click", e => { const g = e.target.closest("[data-sgra
 $("statGraf").addEventListener("click", e => {
   const p = e.target.closest("[data-sper]"); if (p){ GS.per = p.dataset.sper; GS.sel = null; return pintarSG(); }
   const c = e.target.closest("#sgBarras .g-col"); if (c) elegir(GS, +c.dataset.gi);
+});
+
+/* ---------- Peso (antes Báscula), pedido 25 nov: tocar la tarjeta abre abajo su historial y volver a tocar lo cierra (cerrado por default).
+   Día = cada pesada (últimos 90 días) · Semana / Mes / Año = promedio. Cinco medidas en una sola gráfica: Peso, Músculo, Grasa, Agua y
+   Visceral; tocar su botón la muestra u oculta (se recuerda en el teléfono). Cada línea usa su propia escala (unidades distintas):
+   lo que se compara es la tendencia; los valores exactos salen al tocar un punto. Datos: "bas" de la herramienta historia. */
+const PMED = [
+  { k:"peso", t:"Peso", i:1, u:" kg", d:1, col:"var(--fg)" },
+  { k:"musculo", t:"Músculo", i:3, u:" kg", d:1, col:"#3987e5" },
+  { k:"grasa", t:"Grasa", i:2, u:"%", d:1, col:"#fab219" },
+  { k:"agua", t:"Agua", i:4, u:" kg", d:1, col:"#4dd0e1" },
+  { k:"visceral", t:"Visceral", i:5, u:"", d:1, col:"#ff6b8b" }
+];
+const GP = { per:"dia", sel:null, ver:(() => { try{ return JSON.parse(localStorage.getItem("jlp-peso-ver") || "null") || ["peso"]; }catch(e){ return ["peso"]; } })() };
+function gruposPeso(){
+  const filas = (HIST && HIST.bas) || [];
+  if (GP.per === "dia") return filas.slice(-90).map(r => ({ k:r[0], v:r, n:1 }));
+  const g = new Map();
+  filas.forEach(r => {
+    const d = r[0]; let k;
+    if (GP.per === "ano") k = d.slice(0, 4);
+    else if (GP.per === "mes") k = d.slice(0, 7);
+    else { const f = new Date(d + "T12:00"); f.setDate(f.getDate() - (f.getDay() + 6) % 7); k = f.toLocaleDateString("sv-SE"); }
+    const x = g.get(k) || { k, s:[0,0,0,0,0,0], c:[0,0,0,0,0,0], n:0 };
+    for (let i = 1; i <= 5; i++) if (r[i] != null && isFinite(r[i])){ x.s[i] += r[i]; x.c[i]++; }
+    x.n++; g.set(k, x);
+  });
+  return [...g.values()].sort((a, b) => a.k.localeCompare(b.k)).map(x => ({ k:x.k, v:x.s.map((s, i) => x.c[i] ? s / x.c[i] : null), n:x.n }));
+}
+function etqPeso(x, larga){
+  if (GP.per === "ano") return x.k;
+  if (GP.per === "mes"){ const [y, m] = x.k.split("-"); return MESES[+m - 1] + (larga || m === "01" ? " " + y : ""); }
+  const f = new Date(x.k + "T12:00");
+  if (GP.per === "sem") return (larga ? "Semana del " : "") + f.getDate() + " " + MESES[f.getMonth()];
+  return larga ? f.toLocaleDateString("es-MX", { weekday:"short", day:"numeric", month:"short" }) : f.getDate() + " " + MESES[f.getMonth()];
+}
+const fmtMed = (m, v) => v == null || !isFinite(v) ? "—" : v.toLocaleString("es-MX", { minimumFractionDigits:m.d, maximumFractionDigits:m.d }) + m.u;
+function pintarPeso(){
+  const box = $("pesoGraf");
+  box.querySelectorAll("[data-pper]").forEach(b => b.classList.toggle("on", b.dataset.pper === GP.per));
+  $("pesoChips").innerHTML = PMED.map(m => `<button data-pmed="${m.k}" class="${GP.ver.includes(m.k) ? "on" : ""}" style="--col:${m.col}"><i></i>${m.t}</button>`).join("");
+  const xs = gruposPeso(), caja = $("pesoBarras"), ver = PMED.filter(m => GP.ver.includes(m.k));
+  GP.xs = xs;
+  if (!xs.length){ $("pesoRes").innerHTML = ""; $("pesoLee").textContent = ""; caja.innerHTML = ""; $("pesoNota").textContent = HIST ? "Todavía no hay pesadas." : "Cargando…"; return; }
+  // resumen de la primera medida que se ve (Peso si está prendido)
+  const m0 = ver[0] || PMED[0], vs = xs.map(x => x.v[m0.i]).filter(v => v != null && isFinite(v));
+  const cel = (t, v) => `<div><small>${t}</small><b>${v}</b></div>`;
+  if (vs.length){ const d = vs[vs.length - 1] - vs[0];
+    $("pesoRes").innerHTML = cel(m0.t + " último", fmtMed(m0, vs[vs.length - 1])) + cel("Mínimo", fmtMed(m0, Math.min(...vs))) +
+      `<div class="${d < 0 ? "bien" : d > 0 ? "mal" : ""}"><small>Cambio</small><b>${(d > 0 ? "+" : d < 0 ? "−" : "") + fmtMed(m0, Math.abs(d))}</b></div>`; }
+  else $("pesoRes").innerHTML = "";
+  const vis = $("pesoScroll").clientWidth || 340, W = Math.max(vis, xs.length * (GP.per === "dia" ? 34 : 46)), cw = W / xs.length, H = 150;
+  caja.style.width = W + "px";
+  const lineas = ver.map(m => {
+    const ys = xs.map(x => x.v[m.i]).filter(v => v != null && isFinite(v)); if (!ys.length) return "";
+    let mn = Math.min(...ys), mx = Math.max(...ys); const pad = Math.max((mx - mn) * .15, m.k === "grasa" ? .3 : .5); mn -= pad; mx += pad;
+    const pts = xs.map((x, i) => x.v[m.i] == null ? null : [((i + .5) * cw).toFixed(1), (H - (x.v[m.i] - mn) / (mx - mn) * H).toFixed(1)]).filter(Boolean);
+    return `<polyline style="stroke:${m.col}" points="${pts.map(p => p.join(",")).join(" ")}"/>` +
+      pts.map(p => `<circle style="fill:${m.col}" cx="${p[0]}" cy="${p[1]}" r="2.6"/>`).join("");
+  }).join("");
+  const cada = Math.ceil(xs.length / Math.max(1, Math.floor(W / 52)));
+  caja.innerHTML = `<svg class="p-svg" viewBox="0 0 ${W} ${H}" preserveAspectRatio="none">${lineas}</svg>` +
+    xs.map((x, i) => `<div class="p-col" data-pi="${i}" style="left:${i * cw}px;width:${cw}px"><span>${(xs.length - 1 - i) % cada ? "" : esc(etqPeso(x))}</span></div>`).join("");
+  $("pesoNota").textContent = (GP.per === "dia" ? "Cada punto es una pesada." : "Cada punto es el promedio de las pesadas de ese periodo.") +
+    " Cada línea tiene su propia escala; toca un punto para ver los valores. Toca una medida para mostrarla u ocultarla.";
+  elegirPeso(GP.sel != null && GP.sel < xs.length ? GP.sel : xs.length - 1);
+  $("pesoScroll").scrollLeft = W;
+}
+function elegirPeso(i){
+  GP.sel = i; const x = (GP.xs || [])[i]; if (!x) return;
+  $("pesoBarras").querySelectorAll(".p-col").forEach(c => c.classList.toggle("sel", +c.dataset.pi === i));
+  const ver = PMED.filter(m => GP.ver.includes(m.k));
+  $("pesoLee").innerHTML = `<span>${esc(etqPeso(x, true))}${GP.per === "dia" ? "" : ` · ${x.n} pesada${x.n > 1 ? "s" : ""}`}</span>` +
+    ver.map(m => `<span><i style="background:${m.col}"></i>${m.t} <b>${esc(fmtMed(m, x.v[m.i]))}</b></span>`).join("");
+}
+function tocarPeso(){
+  const box = $("pesoGraf");
+  if (!box.hidden){ box.hidden = true; $("bascCard").classList.remove("abierta"); return; }
+  GP.per = "dia"; GP.sel = null; box.hidden = false; $("bascCard").classList.add("abierta"); pintarPeso();
+  traerHist(() => { if (!box.hidden) pintarPeso(); });
+}
+$("bascCard").addEventListener("click", tocarPeso);
+$("pesoGraf").addEventListener("click", e => {
+  const p = e.target.closest("[data-pper]"); if (p){ GP.per = p.dataset.pper; GP.sel = null; return pintarPeso(); }
+  const m = e.target.closest("[data-pmed]");
+  if (m){ const k = m.dataset.pmed; GP.ver = GP.ver.includes(k) ? GP.ver.filter(x => x !== k) : [...GP.ver, k];
+    try{ localStorage.setItem("jlp-peso-ver", JSON.stringify(GP.ver)); }catch(e){} return pintarPeso(); }
+  const c = e.target.closest("#pesoBarras .p-col"); if (c) elegirPeso(+c.dataset.pi);
 });
 
 /* Si un número no cabe en su tarjeta (p. ej. $12,345 con 3 tarjetas en fila), se achica hasta caber. */
