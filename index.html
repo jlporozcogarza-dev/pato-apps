@@ -239,6 +239,14 @@ button.card:active{transform:scale(.98)}
 #pesoScroll{padding-bottom:24px}
 #v-inicio #statGraf{flex:0 0 auto;text-align:left}
 #statGraf:not([data-k=deficit]) #acumDef{display:none}
+#statGraf:not([data-k=sueno]) #cpapNoche{display:none}
+.cpap{margin-top:12px;padding-top:12px;border-top:1px solid rgba(255,255,255,.08)}
+.cpap h4{margin:14px 0 8px;font:600 12px/1 var(--sans);letter-spacing:.08em;text-transform:uppercase;color:var(--muted)}
+.cp-nav{display:flex;align-items:center;justify-content:space-between;gap:8px}
+.cp-nav b{font:600 16px/1.2 var(--sans)}
+.cp-nav button{width:40px;height:36px;border-radius:12px;border:1px solid rgba(255,255,255,.12);background:rgba(255,255,255,.05);color:var(--fg);font:500 22px/1 var(--sans);cursor:pointer}
+.cp-nav button:disabled{opacity:.3}
+.cp-nada{margin:4px 0;color:var(--muted);font:500 14px/1.35 var(--sans)}
 #statGraf .g-scroll{padding-bottom:22px}
 .stat.abierta{box-shadow:inset 0 0 0 1.5px color-mix(in srgb,var(--c10) 70%,transparent)}
 .stat .num.neg{color:var(--st-crit)}
@@ -844,6 +852,7 @@ input[type=checkbox]{accent-color:var(--c10)}
   <div class="g-scroll" id="sgScroll"><div class="g-barras sg-barras" id="sgBarras"></div></div>
   <div class="acum" id="acumDef" hidden></div>
   <p class="nota" id="sgNota"></p>
+  <div class="cpap" id="cpapNoche" hidden></div>
 </section>
 <button class="grafica glass card" aria-label="Pasos de los últimos 7 días" hidden>
   <div class="row"><span class="t">Pasos por día</span><span class="cap">Últimos 7 días</span></div>
@@ -3230,17 +3239,74 @@ function pintarSG(){
   box.querySelectorAll("[data-sper]").forEach(b => b.classList.toggle("on", b.dataset.sper === GS.per));
   document.querySelectorAll("[data-sgraf]").forEach(b => b.classList.toggle("abierta", b.dataset.sgraf === GS.k && !box.hidden));
   dibujar(GS);
+  if (GS.k === "sueno" && typeof pintarCpap === "function") pintarCpap();
 }
 function tocarStat(k){
   const box = $("statGraf");
   if (!box.hidden && GS.k === k){ box.hidden = true; GS.k = null; document.querySelectorAll("[data-sgraf]").forEach(b => b.classList.remove("abierta")); return; }
-  GS.k = k; GS.per = "7d"; GS.sel = null; box.hidden = false; pintarSG();
+  GS.k = k; GS.per = "7d"; GS.sel = null; if (typeof GC !== "undefined") GC.noche = null; box.hidden = false; pintarSG();
   traerHist(() => { if (GS.k === k && !box.hidden) pintarSG(); });
 }
 document.addEventListener("click", e => { const g = e.target.closest("[data-sgraf]"); if (g) tocarStat(g.dataset.sgraf); });
 $("statGraf").addEventListener("click", e => {
   const p = e.target.closest("[data-sper]"); if (p){ GS.per = p.dataset.sper; GS.sel = null; return pintarSG(); }
   const c = e.target.closest("#sgBarras .g-col"); if (c) elegir(GS, +c.dataset.gi);
+});
+
+/* ---------- Sueño con la CPAP (pedido 26 nov): al abrir la gráfica de Sueño, abajo sale "Cómo dormiste" de una noche:
+   la máquina (myAir: puntaje, IAH, horas de uso, fuga, mascarilla) y WHOOP de esa misma noche. ‹ › cambia de noche y tocar
+   una barra de la gráfica abre esa noche. Datos: "cpap" de la herramienta historia (lo sube CLAUDE/cpap/bajar.py a las 07:45).
+   Ojo: la noche se fecha con el día en que te acuestas; WHOOP pone la barra en el día en que despiertas (noche = barra − 1 día). */
+const GC = { noche:null };
+function nochesCpap(){ return ((HIST && HIST.cpap && HIST.cpap.noches) || []).filter(n => n.fecha); }
+function diaMenos(f, d){ const x = new Date(f + "T12:00"); x.setDate(x.getDate() - d); return x.toLocaleDateString("sv-SE"); }
+function pintarCpap(){
+  const caja = $("cpapNoche"), ns = nochesCpap();
+  if (!ns.length){ caja.hidden = !HIST; caja.innerHTML = `<p class="cp-nada">Todavía no llegan noches de la CPAP.</p>`; return; }
+  caja.hidden = false;
+  let i = ns.findIndex(n => n.fecha === GC.noche); if (i < 0) i = ns.length - 1;
+  const n = ns[i]; GC.noche = n.fecha;
+  const num = k => n[k] == null || n[k] === "" ? null : +n[k];
+  const cel = (t, v, cls) => `<div class="${cls || ""}"><small>${t}</small><b>${v == null ? "—" : v}</b></div>`;
+  const hm = h => h == null ? null : Math.floor(h) + "h" + String(Math.round((h % 1) * 60)).padStart(2, "0");
+  const ahi = num("iah"), uso = num("uso_min"), fuga = num("fuga"), pts = num("puntaje"), masc = num("mascarilla_puesta_quitada");
+  const hayCpap = [ahi, uso, fuga, pts].some(v => v != null);
+  const f = new Date(n.fecha + "T12:00");
+  const tit = "Noche del " + f.toLocaleDateString("es-MX", { weekday:"short", day:"numeric", month:"short" });
+  let h = `<div class="cp-nav"><button data-cpn="-1" ${i ? "" : "disabled"} aria-label="Noche anterior">‹</button><b>${esc(tit)}</b>` +
+    `<button data-cpn="1" ${i < ns.length - 1 ? "" : "disabled"} aria-label="Noche siguiente">›</button></div>`;
+  h += `<h4>Máquina CPAP</h4>`;
+  if (hayCpap){
+    h += `<div class="g-res">` +
+      cel("Puntaje", pts == null ? null : Math.round(pts) + "/100", pts == null ? "" : pts >= 80 ? "bien" : pts < 60 ? "mal" : "") +
+      cel("IAH (eventos/h)", ahi == null ? null : ahi.toFixed(1), ahi == null ? "" : ahi < 5 ? "bien" : ahi >= 15 ? "mal" : "") +
+      cel("Uso", uso == null ? null : hm(uso / 60), uso == null ? "" : uso >= 240 ? "bien" : "mal") +
+      cel("Fuga (L/min)", fuga == null ? null : Math.round(fuga), fuga == null ? "" : fuga < 24 ? "bien" : "mal") +
+      cel("Mascarilla", masc == null ? null : masc + (masc === 1 ? " vez" : " veces")) + `</div>`;
+  } else h += `<p class="cp-nada">Sin datos de la máquina para esta noche.</p>`;
+  const w = k => num("whoop_" + k);
+  h += `<h4>WHOOP esa noche</h4><div class="g-res">` +
+    cel("Te dormiste", n.whoop_duerme || null) + cel("Despertaste", n.whoop_despierta || null) +
+    cel("Dormido", hm(w("horas_dormido")), w("horas_dormido") == null ? "" : w("horas_dormido") >= 7 ? "bien" : "") +
+    cel("Profundo", hm(w("profundo_h"))) + cel("REM", hm(w("rem_h"))) + cel("Interrupciones", w("interrupciones")) +
+    cel("Oxígeno", w("spo2") == null ? null : w("spo2").toFixed(1) + "%", w("spo2") == null ? "" : w("spo2") < 94 ? "mal" : "") +
+    cel("Respiración", w("respiracion") == null ? null : w("respiracion").toFixed(1) + "/min") +
+    cel("Recuperación", w("recuperacion") == null ? null : w("recuperacion") + "%", w("recuperacion") == null ? "" : w("recuperacion") >= 67 ? "bien" : w("recuperacion") < 34 ? "mal" : "") + `</div>`;
+  h += `<p class="nota">IAH bueno: menos de 5 por hora. Uso bueno: 4 h o más. Fuga buena: menos de 24 L/min.` +
+    (HIST.cpap.at ? ` Actualizado ${esc(new Date(HIST.cpap.at).toLocaleString("es-MX", { day:"numeric", month:"short", hour:"2-digit", minute:"2-digit" }))}` : "") + `</p>`;
+  caja.innerHTML = h;
+}
+$("cpapNoche").addEventListener("click", e => {
+  const b = e.target.closest("[data-cpn]"); if (!b) return;
+  e.stopPropagation();
+  const ns = nochesCpap(), i = ns.findIndex(n => n.fecha === GC.noche) + +b.dataset.cpn;
+  if (ns[i]){ GC.noche = ns[i].fecha; pintarCpap(); }
+});
+// tocar una barra de Sueño (por día) abre esa noche
+$("statGraf").addEventListener("click", e => {
+  if (GS.k !== "sueno" || !POR_DIA[GS.per]) return;
+  const c = e.target.closest("#sgBarras .g-col"); if (!c) return;
+  const x = (GS.xs || [])[+c.dataset.gi]; if (x && x.k){ GC.noche = diaMenos(x.k, 1); pintarCpap(); }
 });
 
 /* ---------- Peso (antes Báscula), pedido 25 nov: tocar la tarjeta abre abajo su historial y volver a tocar lo cierra (cerrado por default).
