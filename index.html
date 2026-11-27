@@ -246,6 +246,15 @@ button.card:active{transform:scale(.98)}
 .cp-nav b{font:600 16px/1.2 var(--sans)}
 .cp-nav button{width:40px;height:36px;border-radius:12px;border:1px solid rgba(255,255,255,.12);background:rgba(255,255,255,.05);color:var(--fg);font:500 22px/1 var(--sans);cursor:pointer}
 .cp-nav button:disabled{opacity:.3}
+.hp{display:flex;gap:6px;align-items:stretch}
+.hp-ej{position:relative;width:38px;flex:0 0 38px;height:150px;font:500 10px/1 var(--sans);color:var(--muted);white-space:nowrap}
+.hp-ej span{position:absolute;left:0}.hp-ej span:nth-child(1){top:10px}.hp-ej span:nth-child(2){top:43px}.hp-ej span:nth-child(3){top:76px}.hp-ej span:nth-child(4){top:108px}
+.hp-svg{flex:1;min-width:0;height:150px;overflow:visible}
+.hp-l{fill:none;stroke:rgba(255,255,255,.35);stroke-width:1}
+.hp-g{stroke:rgba(255,255,255,.07)}
+.hp-t{font:500 10px var(--sans);fill:var(--muted);text-anchor:middle}
+.hp-aprox{font-style:normal;font-weight:500;letter-spacing:0;text-transform:none;padding:2px 6px;border-radius:8px;background:rgba(255,255,255,.08);margin-left:4px}
+.hp-ley{margin-top:6px}
 .cp-nada{margin:4px 0;color:var(--muted);font:500 14px/1.35 var(--sans)}
 #statGraf .g-scroll{padding-bottom:22px}
 .stat.abierta{box-shadow:inset 0 0 0 1.5px color-mix(in srgb,var(--c10) 70%,transparent)}
@@ -3260,6 +3269,60 @@ $("statGraf").addEventListener("click", e => {
 const GC = { noche:null };
 function nochesCpap(){ return ((HIST && HIST.cpap && HIST.cpap.noches) || []).filter(n => n.fecha); }
 function diaMenos(f, d){ const x = new Date(f + "T12:00"); x.setDate(x.getDate() - d); return x.toLocaleDateString("sv-SE"); }
+/* Gráfica de etapas de la noche (APROX, pedido 26 nov): WHOOP solo da los minutos totales por etapa, no el orden.
+   Se arma con ciclos típicos de ~90 min: el profundo pesa más al principio y el REM al final; las interrupciones salen como
+   ratitos despierto entre ciclos. Los minutos de cada etapa son los reales de WHOOP. n.eventos = [[minuto, tipo]] cuando haya SD. */
+function hipnoAprox(n){
+  const hora = t => { if (!t) return null; const [h, m] = t.split(":").map(Number); return h * 60 + m; };
+  let ini = hora(n.whoop_duerme), fin = hora(n.whoop_despierta); if (ini == null || fin == null) return null;
+  if (fin <= ini) fin += 1440;
+  const cama = fin - ini, num = k => n[k] == null || n[k] === "" ? 0 : +n[k] * 60;
+  const dorm = num("whoop_horas_dormido"), prof = num("whoop_profundo_h"), rem = num("whoop_rem_h");
+  if (!dorm) return null;
+  const lig = Math.max(0, dorm - prof - rem), desp = Math.max(0, cama - dorm);
+  const nc = Math.max(1, Math.round(dorm / 90)), intr = Math.max(0, +(n.whoop_interrupciones || 0));
+  const wP = [...Array(nc)].map((_, i) => (nc - i) ** 2), wR = [...Array(nc)].map((_, i) => i + 1);
+  const sP = wP.reduce((a, b) => a + b, 0), sR = wR.reduce((a, b) => a + b, 0);
+  const seg = []; const pon = (e, m) => { if (m > .5) seg.push([e, m]); };
+  // ratitos despierto: uno al dormirse, el resto entre ciclos y al final
+  const nDesp = Math.min(intr, nc + 1) || 1, dCada = desp / nDesp;
+  let quedan = nDesp;
+  pon("desp", Math.min(dCada, desp)); quedan--;
+  for (let i = 0; i < nc; i++){
+    const p = prof * wP[i] / sP, r = rem * wR[i] / sR, l = lig / nc;
+    pon("lig", l * .55); pon("prof", p); pon("lig", l * .45); pon("rem", r);
+    if (quedan > 0){ pon("desp", dCada); quedan--; }
+  }
+  return { ini, fin, seg, tot:{ desp, rem, lig, prof } };
+}
+function svgHipno(n){
+  const H = hipnoAprox(n); if (!H) return "";
+  const W = 320, alto = 120, Y = { desp:10, rem:40, lig:70, prof:100 }, COL = { desp:"#ff6b8b", rem:"#4dd0e1", lig:"#8f8cf0", prof:"#3d5afe" };
+  const x = m => (m / (H.fin - H.ini)) * W;
+  let t = 0, linea = "", bloques = "";
+  H.seg.forEach(([e, m], i) => {
+    const x0 = x(t), x1 = x(t + m);
+    bloques += `<rect x="${x0.toFixed(1)}" y="${Y[e] - 7}" width="${Math.max(1, x1 - x0).toFixed(1)}" height="14" rx="3" fill="${COL[e]}"/>`;
+    if (i) linea += ` L${x0.toFixed(1)},${Y[e]}`; else linea = `M0,${Y[e]}`;
+    linea += ` L${x1.toFixed(1)},${Y[e]}`; t += m;
+  });
+  let marcas = "";
+  for (let h = Math.ceil(H.ini / 60) * 60; h <= H.fin; h += 60){
+    const xx = x(h - H.ini); if (xx < 14 || xx > W - 14) continue;
+    marcas += `<line x1="${xx}" x2="${xx}" y1="0" y2="${alto - 8}" class="hp-g"/><text x="${xx}" y="${alto + 10}" class="hp-t">${(h / 60) % 24}</text>`;
+  }
+  const ev = (n.eventos || []).map(([m]) => `<circle cx="${x(m).toFixed(1)}" cy="2" r="3" fill="#fab219"/>`).join("");
+  const hm = m => Math.floor(m / 60) + "h" + String(Math.round(m % 60)).padStart(2, "0");
+  const ley = [["desp", "Despierto"], ["rem", "REM"], ["lig", "Ligero"], ["prof", "Profundo"]]
+    .map(([k, tt]) => `<span><i style="background:${COL[k]}"></i>${tt} <b>${hm(H.tot[k])}</b></span>`).join("");
+  return `<h4>Etapas de la noche <em class="hp-aprox">aprox</em></h4>` +
+    `<div class="hp"><div class="hp-ej"><span>Desp.</span><span>REM</span><span>Ligero</span><span>Prof.</span></div>` +
+    `<svg viewBox="0 -4 ${W} ${alto + 18}" class="hp-svg">${marcas}<path d="${linea}" class="hp-l"/>${bloques}${ev}` +
+    `<text x="0" y="${alto + 10}" class="hp-t" text-anchor="start">${esc(n.whoop_duerme)}</text><text x="${W}" y="${alto + 10}" class="hp-t" text-anchor="end">${esc(n.whoop_despierta)}</text></svg></div>` +
+    `<div class="p-lee hp-ley">${ley}</div>` +
+    `<p class="nota">El orden es aproximado (ciclos típicos de 90 min); los minutos de cada etapa son los reales de WHOOP. ` +
+    (n.eventos && n.eventos.length ? "Puntos amarillos: eventos de la CPAP." : "Los puntos de eventos de la CPAP saldrán cuando conectemos la tarjeta SD.") + `</p>`;
+}
 function pintarCpap(){
   const caja = $("cpapNoche"), ns = nochesCpap();
   if (!ns.length){ caja.hidden = !HIST; caja.innerHTML = `<p class="cp-nada">Todavía no llegan noches de la CPAP.</p>`; return; }
@@ -3275,6 +3338,7 @@ function pintarCpap(){
   const tit = "Noche del " + f.toLocaleDateString("es-MX", { weekday:"short", day:"numeric", month:"short" });
   let h = `<div class="cp-nav"><button data-cpn="-1" ${i ? "" : "disabled"} aria-label="Noche anterior">‹</button><b>${esc(tit)}</b>` +
     `<button data-cpn="1" ${i < ns.length - 1 ? "" : "disabled"} aria-label="Noche siguiente">›</button></div>`;
+  h += svgHipno(n);
   h += `<h4>Máquina CPAP</h4>`;
   if (hayCpap){
     h += `<div class="g-res">` +
